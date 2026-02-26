@@ -91,8 +91,8 @@ class NotificationDetailsPage extends StatelessWidget {
               const SizedBox(height: 24),
 
 
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
+              Row( ///هنا قسمت الصفحة يمين ويسار
+              crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
 
                   Expanded(

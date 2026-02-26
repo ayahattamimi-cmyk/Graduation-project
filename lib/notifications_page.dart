@@ -1,132 +1,14 @@
 import 'package:flutter/material.dart';
 import 'notification_details_page.dart';
 
-class NotificationsPage extends StatelessWidget {
+class NotificationsPage extends StatefulWidget {
   const NotificationsPage({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return Directionality(
-      textDirection: TextDirection.rtl,
-      child: SingleChildScrollView(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // ================= العنوان =================
-            const Text(
-              'الإشعارات',
-              style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 4),
-            const Text(
-              'جميع التحديثات والبلاغات الواردة',
-              style: TextStyle(color: Colors.grey),
-            ),
-
-            const SizedBox(height: 32),
-
-            // ================= الكروت العلوية =================
-            Row(
-              children: const [
-                _NotificationStat(
-                  title: 'إجمالي الإشعارات',
-                  value: '6',
-                  icon: Icons.notifications,
-                  color: Colors.blue,
-                ),
-                SizedBox(width: 16),
-                _NotificationStat(
-                  title: 'البلاغات المحلولة',
-                  value: '2',
-                  icon: Icons.check_circle,
-                  color: Colors.green,
-                ),
-                SizedBox(width: 16),
-                _NotificationStat(
-                  title: 'البلاغات الجديدة',
-                  value: '4',
-                  icon: Icons.error,
-                  color: Colors.orange,
-                ),
-              ],
-            ),
-
-            const SizedBox(height: 32),
-
-            //   البلاغات الجديدة
-            _sectionTitle('البلاغات الجديدة (2)'),
-
-            _notificationItem(
-              context,
-              id: '#2025-001',
-              category: 'نظافة الشوارع',
-              priority: 'عاجل',
-              days: 'منذ 57 يوم',
-              status: 'جديد',
-            ),
-            _notificationItem(
-              context,
-              id: '#2025-002',
-              category: 'تركيب المخلفات',
-              priority: 'متوسط',
-              days: 'منذ 57 يوم',
-              status: 'جديد',
-            ),
-
-            const SizedBox(height: 32),
-
-            // قيد المعالجة
-            _sectionTitle('البلاغات قيد المعالجة'),
-
-            _notificationItem(
-              context,
-              id: '#2025-010',
-              category: 'مكافحة الآفات',
-              priority: 'متوسط',
-              days: 'منذ 20 يوم',
-              status: 'قيد المعالجة',
-            ),
-
-            const SizedBox(height: 32),
-
-            // البلاغات المحلولة
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: const [
-                Text(
-                  'البلاغات المحلولة (2)',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                ),
-                Icon(Icons.check_circle, color: Colors.green),
-              ],
-            ),
-
-            const SizedBox(height: 16),
-
-            _solvedNotificationItem(
-              context,
-              id: '#2025-004',
-              category: 'أعطال الحدائق',
-              tag: 'كنس',
-              days: 'منذ 58 يوم',
-            ),
-            _solvedNotificationItem(
-              context,
-              id: '#2025-006',
-              category: 'تركيب المخلفات',
-              tag: 'رفع',
-              days: 'منذ 59 يوم',
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
+  State<NotificationsPage> createState() => _NotificationsPageState();
 
   static Widget _sectionTitle(String title) {
-    return Padding(
+    return Padding(//مسافة اسفل العنوان
       padding: const EdgeInsets.only(bottom: 16),
       child: Text(
         title,
@@ -144,7 +26,7 @@ class NotificationsPage extends StatelessWidget {
         required String days,
         required String status,
       }) {
-    return Container(
+    return Container(//الشكل الكامل حق كرت البلاغ
       margin: const EdgeInsets.only(bottom: 16),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -152,7 +34,7 @@ class NotificationsPage extends StatelessWidget {
         borderRadius: BorderRadius.circular(14),
         border: Border.all(color: Colors.grey.shade200),
       ),
-      child: Row(
+      child: Row(//قسيم المحتوى حقت البلاغ
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
@@ -207,7 +89,7 @@ class NotificationsPage extends StatelessWidget {
 
   }
 
-  // البلاغات المحلوله
+
   static Widget _solvedNotificationItem(
       BuildContext context, {
         required String id,
@@ -285,6 +167,128 @@ class NotificationsPage extends StatelessWidget {
         borderRadius: BorderRadius.circular(20),
       ),
       child: Text(text, style: TextStyle(fontSize: 12, color: color)),
+    );
+  }
+}
+
+class _NotificationsPageState extends State<NotificationsPage> {
+  @override
+  Widget build(BuildContext context) {
+    return Directionality(//ذا عشان الاتجاه حق النص من اليمين الى اليسار
+      textDirection: TextDirection.rtl,
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.all(24),//مسافة حول المحتوى كله
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            //العنوان
+            const Text(
+              'الإشعارات',
+              style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 4),
+            const Text(
+              'جميع التحديثات والبلاغات الواردة',
+              style: TextStyle(color: Colors.grey),
+            ),
+
+            const SizedBox(height: 32),
+
+            //
+            Row(
+              children: const [
+                _NotificationStat(//الشرطة يعني انه خاص م نقدر نستدعية من ملف ثاني
+                  title: 'إجمالي الإشعارات',
+                  value: '6',
+                  icon: Icons.notifications,
+                  color: Colors.blue,
+                ),
+                SizedBox(width: 16),
+                _NotificationStat(
+                  title: 'البلاغات المحلولة',
+                  value: '2',
+                  icon: Icons.check_circle,
+                  color: Colors.green,
+                ),
+                SizedBox(width: 16),
+                _NotificationStat(
+                  title: 'البلاغات الجديدة',
+                  value: '4',
+                  icon: Icons.error,
+                  color: Colors.orange,
+                ),
+              ],
+            ),
+
+            const SizedBox(height: 32),
+
+            //   البلاغات الجديدة
+            NotificationsPage._sectionTitle('البلاغات الجديدة (2)'),
+
+            NotificationsPage._notificationItem(
+              context,
+              id: '#2025-001',
+              category: 'نظافة الشوارع',
+              priority: 'عاجل',
+              days: 'منذ 57 يوم',
+              status: 'جديد',
+            ),
+            NotificationsPage._notificationItem(
+              context,
+              id: '#2025-002',
+              category: 'تركيب المخلفات',
+              priority: 'متوسط',
+              days: 'منذ 57 يوم',
+              status: 'جديد',
+            ),
+
+            const SizedBox(height: 32),
+
+            // قيد المعالجة
+            NotificationsPage._sectionTitle('البلاغات قيد المعالجة'),
+
+            NotificationsPage._notificationItem(
+              context,
+              id: '#2025-010',
+              category: 'مكافحة الآفات',
+              priority: 'متوسط',
+              days: 'منذ 20 يوم',
+              status: 'قيد المعالجة',
+            ),
+
+            const SizedBox(height: 32),
+
+            // البلاغات المحلولة
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: const [
+                Text(
+                  'البلاغات المحلولة (2)',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                ),
+                Icon(Icons.check_circle, color: Colors.green),
+              ],
+            ),
+
+            const SizedBox(height: 16),
+
+            NotificationsPage._solvedNotificationItem(
+              context,
+              id: '#2025-004',
+              category: 'أعطال الحدائق',
+              tag: 'كنس',
+              days: 'منذ 58 يوم',
+            ),
+            NotificationsPage._solvedNotificationItem(
+              context,
+              id: '#2025-006',
+              category: 'تركيب المخلفات',
+              tag: 'رفع',
+              days: 'منذ 59 يوم',
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

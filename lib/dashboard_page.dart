@@ -3,6 +3,8 @@ import 'sidebar.dart';//عشان موضوع التنقل بين الصفحات
 import 'stat_card.dart';
 import 'chart_box.dart';
 import 'notifications_page.dart';
+import 'ContentPage.dart';
+
 
 
 class DashboardPage extends StatefulWidget {
@@ -54,7 +56,8 @@ class _DashboardPageState extends State<DashboardPage> {
         return const Center(child: Text('إدارة المشرفين'));
 
       case AppPage.news:
-        return const Center(child: Text('الأخبار والنصائح'));
+        return const ContentPage();
+
 
       case AppPage.uploadSites:
         return const Center(child: Text('مواقع الرفع'));
