@@ -1,6 +1,6 @@
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../models/content_model.dart';
+import '../view/content_model.dart';
 
 class ContentService {
 

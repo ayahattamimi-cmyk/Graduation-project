@@ -33,6 +33,10 @@ dependencies:
   flutter_screenutil:
   image_picker:
   shared_preferences:
+  provider: ^6.1.2
+  firebase_core:
+  firebase_auth:
+
 
 
 

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import '../models/content_model.dart';
-import '../widgets/content_card.dart';
-import '../add_content_dialog.dart';
-import '../content_service.dart';
+import 'content_model.dart';
+import 'content_card.dart';
+import 'add_content_dialog.dart';
+import '../data/content_service.dart';
 
 class ContentPage extends StatefulWidget {
   const ContentPage({super.key});
@@ -80,11 +80,9 @@ class _ContentPageState extends State<ContentPage> {
           const SizedBox(height: 24),
 
           /// زر الإضافة
+          ///
+
           ElevatedButton.icon(
-            style: ElevatedButton.styleFrom(
-              padding: const EdgeInsets.symmetric(
-                  horizontal: 20, vertical: 14),
-            ),
             onPressed: () async {
               final result = await showDialog<ContentModel>(
                 context: context,
@@ -95,8 +93,19 @@ class _ContentPageState extends State<ContentPage> {
                 _addContent(result);
               }
             },
-            icon: const Icon(Icons.add),
-            label: const Text('إضافة محتوى جديد'),
+            icon: const Icon(Icons.person_add,color: Colors.white,),
+            label: const Text("إضافة محتوى جديد",style: TextStyle(color: Colors.white),),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xff2563EB),
+              padding: const EdgeInsets.symmetric(
+                horizontal: 20,
+                vertical: 14,
+              ),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              elevation: 0,
+            ),
           ),
 
           const SizedBox(height: 30),

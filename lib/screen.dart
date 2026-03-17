@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'dashboard_page.dart';
+import 'package:web2/dashboard/view/dashboard_view.dart';
+import 'dashboard/view/dashboard_page.dart';
 
 class AppScreen extends StatelessWidget {
   const AppScreen({super.key});
@@ -23,7 +24,7 @@ class AppScreen extends StatelessWidget {
                       minWidth: constraints.maxWidth,
                       minHeight: constraints.maxHeight,
                     ),
-                    child: const DashboardPage(),
+                    child: const DashboardView(),
                   ),
                 ),
               );

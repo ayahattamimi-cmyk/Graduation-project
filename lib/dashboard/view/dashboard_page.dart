@@ -1,9 +1,10 @@
+/*
 import 'package:flutter/material.dart';
 import 'sidebar.dart';//عشان موضوع التنقل بين الصفحات
 import 'stat_card.dart';
 import 'chart_box.dart';
-import 'notifications_page.dart';
-import 'ContentPage.dart';
+import '../../notification/view/notifications_page.dart';
+import '../../content/view/ContentPage.dart';
 
 
 
@@ -155,3 +156,5 @@ class _DashboardPageState extends State<DashboardPage> {
     );
   }
 }
+
+ */

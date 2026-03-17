@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../models/content_model.dart';
+import 'content_model.dart';
 
 class ContentCard extends StatefulWidget {
   final ContentModel content;
