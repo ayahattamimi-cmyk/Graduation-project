@@ -7,6 +7,7 @@ import 'chart_box.dart';
 import '../../notification/view/notifications_page.dart';
 import '../../content/view/ContentPage.dart';
 import '../../supervisors/view/supervisor_page.dart';
+import 'package:web2/drop_locations/view/drop_locations_page.dart';
 
 class DashboardView extends StatefulWidget {
   const DashboardView({super.key});
@@ -78,7 +79,7 @@ class _DashboardViewState extends State<DashboardView> {
         return const ContentPage();
 
       case AppPage.uploadSites:
-        return const Center(child: Text('مواقع الرفع'));
+        return const DropLocationsPage();
 
       case AppPage.reports:
         return const Center(child: Text('التقارير'));

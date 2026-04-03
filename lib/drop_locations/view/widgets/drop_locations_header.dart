@@ -1,0 +1,161 @@
+import 'package:flutter/material.dart';
+
+import '../add_location_dialog.dart';
+
+class DropLocationsHeader extends StatelessWidget {
+  final Function(Map data) onAdd;
+  const DropLocationsHeader({super.key, required this.onAdd});
+
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+
+        /// title + button
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: const [
+                Text(
+                  "إدارة مواقع الرفع",
+                  style: TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                SizedBox(height: 4),
+                Text(
+                  "إضافة وتحديث مواقع الحاويات والرفع",
+                  style: TextStyle(
+                    color: Colors.grey,
+                  ),
+                ),
+              ],
+            ),
+
+            ElevatedButton.icon(
+              onPressed: () async {
+                final result = await showDialog(
+                  context: context,
+                  builder: (_) => const AddLocationDialog(),
+                );
+
+                if (result != null) {
+                  onAdd(result);
+                }
+              },
+              icon: const Icon(Icons.add,color:Colors.white ,),
+              label: const Text("إضافة موقع جديد",style: TextStyle(color: Colors.white),),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.blueAccent,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 14,
+                ),
+              ),
+            ),
+          ],
+        ),
+
+        const SizedBox(height: 20),
+
+        /// cards
+        Row(
+          children: const [
+            Expanded(
+              child: _StatCard(
+                title: "مواقع مستحدثة",
+                number: "2",
+                color: Colors.orange,
+                icon: Icons.location_on_outlined,
+              ),
+            ),
+            SizedBox(width: 12),
+            Expanded(
+              child: _StatCard(
+                title: "مواقع ثابتة",
+                number: "4",
+                color: Colors.purple,
+                icon: Icons.place_outlined,
+              ),
+            ),
+            SizedBox(width: 12),
+            Expanded(
+              child: _StatCard(
+                title: "مواقع نشطة",
+                number: "5",
+                color: Colors.green,
+                icon: Icons.inventory_2_outlined,
+              ),
+            ),
+            SizedBox(width: 12),
+            Expanded(
+              child: _StatCard(
+                title: "إجمالي المواقع",
+                number: "6",
+                color: Colors.blue,
+                icon: Icons.widgets_outlined,
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+}
+
+class _StatCard extends StatelessWidget {
+  final String title;
+  final String number;
+  final Color color;
+  final IconData icon;
+
+  const _StatCard({
+    required this.title,
+    required this.number,
+    required this.color,
+    required this.icon,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      height: 110,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: Colors.grey.shade300),
+      ),
+      child: Row(
+        children: [
+
+          Icon(icon, color: color, size: 28),
+
+          const Spacer(),
+
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(title),
+              const SizedBox(height: 6),
+              Text(
+                number,
+                style: TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.bold,
+                  color: color,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
