@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../../report_assignment/view/report_assignment_page.dart';
+import '../../reports/view/reports_page.dart';
 import '../viewmodel/dashboard_viewmodel.dart';
 import 'sidebar.dart';
 import 'stat_card.dart';
@@ -67,7 +69,7 @@ class _DashboardViewState extends State<DashboardView> {
         return const NotificationsPage();
 
       case AppPage.assignReports:
-        return const Center(child: Text('توجيه البلاغات'));
+        return const ReportAssignmentPage();
 
       case AppPage.map:
         return const Center(child: Text('الخريطة'));
@@ -82,7 +84,7 @@ class _DashboardViewState extends State<DashboardView> {
         return const DropLocationsPage();
 
       case AppPage.reports:
-        return const Center(child: Text('التقارير'));
+        return const ReportPage();
     }
   }
 

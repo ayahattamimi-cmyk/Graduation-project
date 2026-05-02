@@ -2,52 +2,47 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 class LoginViewModel extends ChangeNotifier {
-
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
   bool isLoading = false;
 
-  Future<void> signUp(String email, String password) async {
-
+  Future<User?> signUp(String email, String password) async {
     try {
-
       isLoading = true;
       notifyListeners();
 
-      await _auth.createUserWithEmailAndPassword(
+      final result = await _auth.createUserWithEmailAndPassword(
         email: email,
         password: password,
       );
 
+      return result.user;
     } catch (e) {
-
-      debugPrint(e.toString());
-
+      print(" SIGN UP ERROR: $e");
+      return null;
+    } finally {
+      isLoading = false;
+      notifyListeners();
     }
-
-    isLoading = false;
-    notifyListeners();
   }
 
-  Future<void> signIn(String email, String password) async {
-
+  Future<User?> signIn(String email, String password) async {
     try {
-
       isLoading = true;
       notifyListeners();
 
-      await _auth.signInWithEmailAndPassword(
+      final result = await _auth.signInWithEmailAndPassword(
         email: email,
         password: password,
       );
 
+      return result.user;
     } catch (e) {
-
-      debugPrint(e.toString());
-
+      print(" SIGN IN ERROR: $e");
+      return null;
+    } finally {
+      isLoading = false;
+      notifyListeners();
     }
-
-    isLoading = false;
-    notifyListeners();
   }
 }
