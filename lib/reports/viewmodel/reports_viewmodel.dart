@@ -3,13 +3,9 @@ import '../data/report_data.dart';
 
 class ReportViewModel extends ChangeNotifier {
 
-  /// كل البيانات (من API مستقبلاً)
   List<ReportData> reports = [];
-
-  /// بعد الفلترة
   List<ReportData> filteredReports = [];
 
-  /// الفلاتر
   String selectedArea = "جميع المناطق";
   String selectedType = "جميع الأنواع";
   String selectedStatus = "جميع الحالات";
@@ -26,8 +22,34 @@ class ReportViewModel extends ChangeNotifier {
   List<String> status = ["جميع الحالات", "محلول", "قيد التنفيذ", "قيد الانتظار"];
   List<String> periods = ["آخر أسبوع", "آخر شهر", "آخر 3 أشهر", "آخر سنة"];
 
-  /// تحميل بيانات (Mock الآن - API لاحقاً)
+  ///  فلترة المشرفين
+  String selectedSupervisorArea = "جميع المناطق";
+  String selectedSupervisorType = "جميع الأنواع";
+  String selectedSupervisor = "جميع المشرفين";
+
+  List<String> supervisors = ["جميع المشرفين"];
+  List<String> supervisorAreas = ["جميع المناطق", "مربع 1", "مربع 2", "مربع 3"];
+  List<String> supervisorTypes = ["جميع الأنواع", "كنس", "رفع"];
+
+  void setSupervisorArea(String v) {
+    selectedSupervisorArea = v;
+    notifyListeners();
+  }
+
+  void setSupervisorType(String v) {
+    selectedSupervisorType = v;
+    notifyListeners();
+  }
+  void setSupervisor(String v) {
+    selectedSupervisor = v;
+    notifyListeners();
+  }
+
   void loadData() {
+    //supervisors = [
+     // "جميع المشرفين",
+    //  ...reports.map((e) => e.supervisor).toSet()
+   // ];
     reports = [
       ReportData(
         id: "#2025-001",
@@ -47,12 +69,16 @@ class ReportViewModel extends ChangeNotifier {
         supervisor: "فهد سليمان",
         duration: 1.8,
       ),
+
+    ];
+    supervisors = [
+      "جميع المشرفين",
+      ...reports.map((e) => e.supervisor).toSet()
     ];
 
     applyFilters();
   }
 
-  /// الفلترة
   void applyFilters() {
     filteredReports = reports.where((r) {
       final matchArea =
@@ -70,7 +96,6 @@ class ReportViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// setters
   void setArea(String v) {
     selectedArea = v;
     applyFilters();
@@ -91,12 +116,10 @@ class ReportViewModel extends ChangeNotifier {
     applyFilters();
   }
 
-  /// إحصائيات
   int get total => filteredReports.length;
   int get solved => filteredReports.where((e) => e.status == "محلول").length;
   int get pending => filteredReports.where((e) => e.status != "محلول").length;
 
-  /// أفضل 3 مشرفين
   List<String> get topSupervisors {
     final map = <String, int>{};
 
@@ -110,12 +133,55 @@ class ReportViewModel extends ChangeNotifier {
     return sorted.take(3).map((e) => e.key).toList();
   }
 
-  /// تصدير (لاحقاً)
-  void exportPDF() {
-    print("Export PDF");
-  }
+  ///  إحصائيات المشرفين
+  List<Map<String, dynamic>> get supervisorStats {
+    final map = <String, List<ReportData>>{};
 
-  void exportExcel() {
-    print("Export Excel");
+
+    for (var r in reports) {
+      map.putIfAbsent(r.supervisor, () => []);
+      map[r.supervisor]!.add(r);
+    }
+
+    return map.entries.map((entry) {
+
+
+      final filtered = entry.value.where((r) {
+
+        final matchArea = selectedSupervisorArea == "جميع المناطق" ||
+            r.area.contains(selectedSupervisorArea);
+
+        final matchType = selectedSupervisorType == "جميع الأنواع" ||
+            r.type == selectedSupervisorType;
+
+        return matchArea && matchType;
+
+      }).toList();
+
+      final total = filtered.length;
+      final done = filtered.where((e) => e.status == "محلول").length;
+      final notDone = total - done;
+
+
+      if (selectedSupervisor != "جميع المشرفين" &&
+          entry.key != selectedSupervisor) {
+        return {
+          "name": entry.key,
+          "total": 0,
+          "done": 0,
+          "notDone": 0,
+          "rate": 0.0,
+        };
+      }
+
+      return {
+        "name": entry.key,
+        "total": total,
+        "done": done,
+        "notDone": notDone,
+        "rate": total == 0 ? 0 : (done / total) * 100
+      };
+
+    }).toList();
   }
 }

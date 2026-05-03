@@ -6,6 +6,7 @@ import 'widgets/stat_card.dart';
 import 'widgets/report_table.dart';
 import 'widgets/top_supervisors_widget.dart';
 import 'package:flutter/services.dart';
+import 'widgets/supervisor_filter_widget.dart';
 
 /// 🔹 التصدير
 import 'package:pdf/widgets.dart' as pw;
@@ -26,76 +27,86 @@ class ReportPage extends StatelessWidget {
     final ttf = pw.Font.ttf(fontData);
 
     pdf.addPage(
-      pw.MultiPage(
-        textDirection: pw.TextDirection.rtl, // 👈 دعم العربي
-        build: (context) => [
+        pw.MultiPage(
+          textDirection: pw.TextDirection.rtl,
+          build: (context) => [
 
-          pw.Text(
-            "التقارير والتحليلات",
-            style: pw.TextStyle(font: ttf, fontSize: 20),
-          ),
+        /// العنوان
+        pw.Text(
+          "التقارير والتحليلات",
+          style: pw.TextStyle(font: ttf, fontSize: 20),
+        ),
 
-          pw.SizedBox(height: 10),
+        pw.SizedBox(height: 10),
 
-          pw.Text(
-            "إجمالي البلاغات: ${vm.total}",
-            style: pw.TextStyle(font: ttf),
-          ),
-          pw.Text(
-            "البلاغات المحلولة: ${vm.solved}",
-            style: pw.TextStyle(font: ttf),
-          ),
-          pw.Text(
-            "قيد المعالجة: ${vm.pending}",
-            style: pw.TextStyle(font: ttf),
-          ),
+        /// الإحصائيات
+        pw.Text("إجمالي البلاغات: ${vm.total}",
+            style: pw.TextStyle(font: ttf)),
+        pw.Text("البلاغات المحلولة: ${vm.solved}",
+            style: pw.TextStyle(font: ttf)),
+        pw.Text("قيد المعالجة: ${vm.pending}",
+            style: pw.TextStyle(font: ttf)),
 
-          pw.SizedBox(height: 20),
+        pw.SizedBox(height: 20),
 
-          pw.Table.fromTextArray(
-            headerStyle: pw.TextStyle(font: ttf),
-            cellStyle: pw.TextStyle(font: ttf),
-            headers: [
-              "رقم البلاغ",
-              "التاريخ",
-              "المنطقة",
-              "النوع",
-              "الحالة",
-              "المشرف"
-            ],
-            data: vm.filteredReports.map<List<dynamic>>((r) => [
-              r.id,
-              r.date,
-              r.area,
-              r.type,
-              r.status,
-              r.supervisor
-            ]).toList(),
-          ),
+        /// جدول البلاغات
+        pw.Table.fromTextArray(
+          headerStyle: pw.TextStyle(font: ttf),
+          cellStyle: pw.TextStyle(font: ttf),
+          headers: [
+            "رقم البلاغ",
+            "التاريخ",
+            "المنطقة",
+            "النوع",
+            "الحالة",
+            "المشرف"
+          ],
+          data: vm.filteredReports.map<List<dynamic>>((r) => [
+            r.id,
+            r.date,
+            r.area,
+            r.type,
+            r.status,
+            r.supervisor
+          ]).toList(),
+        ),
 
-          pw.SizedBox(height: 20),
+        /// 👇 هنا تضيف الجديد
+        pw.SizedBox(height: 20),
 
-          pw.Text(
-            "أفضل المشرفين",
-            style: pw.TextStyle(font: ttf),
-          ),
+        pw.Text("تقارير المشرفين",
+            style: pw.TextStyle(font: ttf)),
 
-          ...vm.topSupervisors.map(
-                (s) => pw.Text(
-              s,
-              style: pw.TextStyle(font: ttf),
-            ),
-          ),
-        ],
-      ),
-    );
+        pw.Table.fromTextArray(
+          headerStyle: pw.TextStyle(font: ttf),
+          cellStyle: pw.TextStyle(font: ttf),
+          headers: ["المشرف", " البلاغ منجز", "البلاغ الغير منجز", "الإجمالي", "النسبة"],
+          data: vm.supervisorStats.map<List<dynamic>>((s) => [
+            s["name"],
+            s["done"],
+            s["notDone"],
+            s["total"],
+            "${(s["rate"] ?? 0).toDouble().toStringAsFixed(1)}%"
+          ]).toList(),
+        ),
 
+        pw.SizedBox(height: 20),
+
+        /// أفضل المشرفين
+        pw.Text("أفضل المشرفين",
+            style: pw.TextStyle(font: ttf)),
+
+        ...vm.topSupervisors.map(
+              (s) => pw.Text(s, style: pw.TextStyle(font: ttf)),
+        ),
+      ],
+    ));
     final Uint8List bytes = await pdf.save();
 
     final blob = html.Blob([bytes], 'application/pdf');
     final url = html.Url.createObjectUrlFromBlob(blob);
 
-    /// 🔥 فتح الملف (حل مضمون)
+    ///فتح الملف)
     html.window.open(url, "_blank");
   }
 
@@ -132,6 +143,25 @@ class ReportPage extends StatelessWidget {
         r.type,
         r.status,
         r.supervisor
+      ]);
+    }
+    final supStats = excel['Supervisor Stats'];
+
+    supStats.appendRow([
+      "المشرف",
+      "منجز",
+      "غير منجز",
+      "الإجمالي",
+      "النسبة"
+    ]);
+
+    for (var s in vm.supervisorStats) {
+      supStats.appendRow([
+        s["name"],
+        s["done"],
+        s["notDone"],
+        s["total"],
+        "${(s["rate"] as double).toStringAsFixed(1)}%"
       ]);
     }
 
@@ -201,8 +231,10 @@ class ReportPage extends StatelessWidget {
                         height: 45,
                         child: ElevatedButton(
                           onPressed: () async {
+                            print("CLICK PDF");
                             if (vm.filteredReports.isEmpty) return;
                             await exportToPDF(vm);
+                            print("DONE PDF");
                           },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.blue,
@@ -233,7 +265,7 @@ class ReportPage extends StatelessWidget {
                             "تصدير Excel",
                             style: TextStyle(color: Colors.white),
                           ),
-                        ), 
+                        ),
                       )
 
                     ],
@@ -260,6 +292,7 @@ class ReportPage extends StatelessWidget {
               ),
 
               const SizedBox(height: 20),
+              const SupervisorFilterWidget(),
 
               /// STATS
               Row(
