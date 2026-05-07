@@ -11,6 +11,7 @@ enum AppPage {
   reports,
 }
 
+
 class Sidebar extends StatelessWidget {
   final AppPage currentPage;
   final Function(AppPage) onPageSelected;

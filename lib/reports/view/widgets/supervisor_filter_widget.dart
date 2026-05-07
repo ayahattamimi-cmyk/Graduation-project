@@ -66,11 +66,22 @@ class SupervisorFilterWidget extends StatelessWidget {
           /// 🔹 labels
           Row(
             children: const [
-              Expanded(child: Text("المنطقة")),
+
+              Expanded(
+                child: Align(
+                  alignment: Alignment.centerRight,
+                  child: Text("نوع العمل"),
+                ),
+              ),
+
               SizedBox(width: 10),
-              Expanded(child: Text("نوع العمل")),
-              SizedBox(width: 10),
-              Expanded(child: Text("المشرف")),
+
+              Expanded(
+                child: Align(
+                  alignment: Alignment.centerRight,
+                  child: Text("المشرف"),
+                ),
+              ),
             ],
           ),
 
@@ -79,14 +90,7 @@ class SupervisorFilterWidget extends StatelessWidget {
           /// 🔹 dropdowns
           Row(
             children: [
-              Expanded(
-                child: _dropdown(
-                  vm.selectedSupervisorArea,
-                  vm.supervisorAreas,
-                  vm.setSupervisorArea,
-                ),
-              ),
-              const SizedBox(width: 10),
+
               Expanded(
                 child: _dropdown(
                   vm.selectedSupervisorType,
@@ -94,7 +98,9 @@ class SupervisorFilterWidget extends StatelessWidget {
                   vm.setSupervisorType,
                 ),
               ),
+
               const SizedBox(width: 10),
+
               Expanded(
                 child: _dropdown(
                   vm.selectedSupervisor,

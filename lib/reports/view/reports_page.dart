@@ -292,22 +292,16 @@ class ReportPage extends StatelessWidget {
               ),
 
               const SizedBox(height: 20),
-              const SupervisorFilterWidget(),
+              ReportTable(reports: vm.filteredReports),
+
 
               /// STATS
-              Row(
-                children: [
-                  StatCard(title: "إجمالي البلاغات", value: vm.total.toString(), color: Colors.blue, icon: Icons.trending_up),
-                  StatCard(title: "البلاغات المحلولة", value: vm.solved.toString(), color: Colors.green, icon: Icons.trending_up),
-                  StatCard(title: "قيد المعالجة", value: vm.pending.toString(), color: Colors.orange, icon: Icons.trending_up),
-                  StatCard(title: "معدل الانجاز", value: vm.pending.toString(), color: Colors.orange, icon: Icons.trending_up),
-                ],
-              ),
+
 
               const SizedBox(height: 20),
 
               /// TABLE
-              ReportTable(reports: vm.filteredReports),
+              const SupervisorFilterWidget(),
 
               const SizedBox(height: 20),
 

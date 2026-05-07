@@ -18,7 +18,7 @@ class _AreaCardState extends State<AreaCard> {
   @override
   Widget build(BuildContext context) {
     return Card(
-      color: Colors.blueGrey,
+      color: Colors.grey,
       margin: const EdgeInsets.all(12),
       child: Column(
         children: [

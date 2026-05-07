@@ -12,6 +12,7 @@ import '../../supervisors/view/supervisor_page.dart';
 import 'package:web2/drop_locations/view/drop_locations_page.dart';
 
 class DashboardView extends StatefulWidget {
+
   const DashboardView({super.key});
 
   @override
@@ -66,7 +67,13 @@ class _DashboardViewState extends State<DashboardView> {
         return _dashboardContent(vm);
 
       case AppPage.notifications:
-        return const NotificationsPage();
+        return NotificationsPage(
+          onPageSelected: (page) {
+            setState(() {
+              currentPage = page;
+            });
+          },
+        );
 
       case AppPage.assignReports:
         return const ReportAssignmentPage();
