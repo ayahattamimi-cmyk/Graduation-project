@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
+import '../../../dashboard/view/sidebar.dart';
 import '../../data/area_data.dart';
 import '../add_location_dialog.dart';
 import 'container_tile.dart';
 
 class AreaCard extends StatefulWidget {
   final AreaData area;
+  final Function(AppPage) onPageSelected;
 
-  const AreaCard({super.key, required this.area});
+  const AreaCard({super.key, required this.area,required this.onPageSelected,});
 
   @override
   State<AreaCard> createState() => _AreaCardState();
@@ -59,6 +61,7 @@ class _AreaCardState extends State<AreaCard> {
                       final result = await showDialog(
                         context: context,
                         builder: (_) => AddLocationDialog(
+                          onPageSelected: widget.onPageSelected,
                           initialName: c.nameContainer,
                           initialType: c.type,
                           initialPeriod: c.period,

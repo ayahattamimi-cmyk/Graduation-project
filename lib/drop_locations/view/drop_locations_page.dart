@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
+import '../../dashboard/view/sidebar.dart';
 import '../data/area_data.dart';
 import '../data/container_data.dart';
 import 'widgets/area_card.dart';
 import 'widgets/drop_locations_header.dart';
 
 class DropLocationsPage extends StatefulWidget {
-  const DropLocationsPage({super.key});
+  final Function(AppPage) onPageSelected;
+  const DropLocationsPage({super.key,required this.onPageSelected,});
 
   @override
   State<DropLocationsPage> createState() => _DropLocationsPageState();
@@ -45,6 +47,7 @@ class _DropLocationsPageState extends State<DropLocationsPage> {
 
         /// زر الإضافة
         DropLocationsHeader(
+          onPageSelected: widget.onPageSelected,
           onAdd: (data) {
             setState(() {
 
@@ -75,7 +78,7 @@ class _DropLocationsPageState extends State<DropLocationsPage> {
         const SizedBox(height: 20),
 
         /// عرض المربعات
-        ...areas.map((area) => AreaCard(area: area)),
+        ...areas.map((area) => AreaCard(area: area,onPageSelected:widget.onPageSelected,)),
 
       ],
     );

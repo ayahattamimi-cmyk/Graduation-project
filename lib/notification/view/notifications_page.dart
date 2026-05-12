@@ -44,7 +44,7 @@ class NotificationsPage extends StatefulWidget {
 
       decoration: BoxDecoration(
         color: status == 'ملغي'
-            ? const Color(0xffFEE2E2)
+            ? const Color(0xffFDECEC)
             : Colors.white,
         borderRadius: BorderRadius.circular(14),
         border: Border.all(

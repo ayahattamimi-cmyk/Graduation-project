@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../dashboard/view/sidebar.dart';
 
-class NotificationDetailsPage extends StatelessWidget {
+class NotificationDetailsPage extends StatefulWidget {
   final String id;
   final String category;
   final String priority;
@@ -23,30 +23,49 @@ class NotificationDetailsPage extends StatelessWidget {
   });
 
   @override
+  State<NotificationDetailsPage> createState() =>
+      _NotificationDetailsPageState();
+}
+
+class _NotificationDetailsPageState
+    extends State<NotificationDetailsPage> {
+
+  late String status;
+
+  @override
+  void initState() {
+    super.initState();
+    status = widget.status;
+  }
+
+  @override
   Widget build(BuildContext context) {
+
     return Directionality(
       textDirection: TextDirection.rtl,
+
       child: Scaffold(
         backgroundColor: const Color(0xfff6f8fb),
+
         body: SingleChildScrollView(
           padding: const EdgeInsets.all(24),
+
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
+
             children: [
 
-              /// العنوان والزر
+              /// العنوان
               Row(
                 textDirection: TextDirection.ltr,
                 crossAxisAlignment: CrossAxisAlignment.center,
+
                 children: [
 
                   /// زر الرجوع
-                  OutlinedButton.icon(
+                  OutlinedButton(
                     onPressed: () => Navigator.pop(context),
-                    icon: const Icon(Icons.arrow_back,color: Colors.white,),
-                    label: const Text('رجوع',style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                    ),),
+
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xff2563EB),
                       foregroundColor: Colors.white,
@@ -54,7 +73,24 @@ class NotificationDetailsPage extends StatelessWidget {
                         horizontal: 18,
                         vertical: 14,
                       ),
-                  ),
+                    ),
+
+                    child: const Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+
+                        Text(
+                          'رجوع',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+
+                        SizedBox(width: 8),
+
+                        Icon(Icons.arrow_forward,color: Colors.white,),
+                      ],
+                    ),
                   ),
 
                   const SizedBox(width: 16),
@@ -63,13 +99,16 @@ class NotificationDetailsPage extends StatelessWidget {
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.end,
+
                       children: [
 
                         Align(
                           alignment: Alignment.centerRight,
+
                           child: Text(
-                            'تفاصيل البلاغ $id',
+                            'تفاصيل البلاغ ${widget.id}',
                             textAlign: TextAlign.right,
+
                             style: const TextStyle(
                               fontSize: 24,
                               fontWeight: FontWeight.bold,
@@ -81,20 +120,19 @@ class NotificationDetailsPage extends StatelessWidget {
 
                         const Align(
                           alignment: Alignment.centerRight,
+
                           child: Text(
                             'تجمع نفايات في جولة البخاري',
                             textAlign: TextAlign.right,
-                            style: TextStyle(color: Colors.grey),
+
+                            style: TextStyle(
+                              color: Colors.grey,
+                            ),
                           ),
                         ),
                       ],
                     ),
                   ),
-
-                  const SizedBox(width: 16),
-
-
-
                 ],
               ),
 
@@ -103,11 +141,15 @@ class NotificationDetailsPage extends StatelessWidget {
               /// تقسيم الصفحة
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
+
                 children: [
 
+                  /// اليسار
                   Expanded(
                     child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      crossAxisAlignment:
+                      CrossAxisAlignment.stretch,
+
                       children: [
 
                         _reportInfoCard(),
@@ -125,11 +167,14 @@ class NotificationDetailsPage extends StatelessWidget {
 
                   const SizedBox(width: 24),
 
+                  /// اليمين
                   SizedBox(
                     width: 320,
 
                     child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      crossAxisAlignment:
+                      CrossAxisAlignment.stretch,
+
                       children: [
 
                         _quickSummaryCard(),
@@ -138,248 +183,233 @@ class NotificationDetailsPage extends StatelessWidget {
 
                         _reporterInfoCard(),
 
-                        if (status == 'قيد المعالجة' || status == 'مكتمل') ...[
+                        if (status == 'قيد المعالجة' ||
+                            status == 'مكتمل') ...[
                           const SizedBox(height: 16),
+
                           _assignedSupervisorCard(context),
                         ],
 
                         const SizedBox(height: 16),
 
                         _timeCard(),
-                        if (status == 'جديد')
+
+                        /// زر توجيه البلاغ
+                        if (status == 'جديد' || status == 'ملغي') ...[
+
                           const SizedBox(height: 16),
+
                           ElevatedButton.icon(
 
                             onPressed: () {
-                              onGoToAssignment?.call(AppPage.assignReports);
+                              widget.onGoToAssignment
+                                  ?.call(AppPage.assignReports);
                             },
 
-                            icon: const Icon(Icons.swap_horiz,color: Colors.white,),
+                            icon: const Icon(
+                              Icons.swap_horiz,
+                              color: Colors.white,
+                            ),
 
                             label: const Text(
-                              'توجيه البلاغ',style: TextStyle(
-                              fontSize: 17,
-                              fontWeight: FontWeight.bold,
-                            ),
-                            ),
+                              'توجيه البلاغ',
 
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xff2563EB),
-                              foregroundColor: Colors.white,
-
-                              padding: const EdgeInsets.symmetric(
-                                vertical: 18,
-                              ),
-
-
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(14),
-                              ),
-                            ),
-                          ),
-                        //زر الالغاء
-                        const SizedBox(height: 12),
-
-                        SizedBox(
-                          width: double.infinity,
-
-                          child: ElevatedButton.icon(
-
-                            onPressed: () {
-
-                              final reasonController = TextEditingController();
-
-                              showDialog(
-                                context: context,
-
-                                builder: (_) {
-
-                                  return Dialog(
-
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(20),
-                                    ),
-
-                                    child: Container(
-                                      width: 450,
-                                      padding: const EdgeInsets.all(24),
-
-                                      child: Column(
-                                        mainAxisSize: MainAxisSize.min,
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-
-                                        children: [
-
-                                          const Row(
-                                            children: [
-
-                                              Icon(
-                                                Icons.cancel_outlined,
-                                                color: Colors.red,
-                                              ),
-
-                                              SizedBox(width: 10),
-
-                                              Text(
-                                                'إلغاء البلاغ',
-                                                style: TextStyle(
-                                                  fontSize: 20,
-                                                  fontWeight: FontWeight.bold,
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-
-                                          const SizedBox(height: 10),
-
-                                          const Text(
-                                            'قم بكتابة سبب إلغاء البلاغ ليتم إرساله للمواطن',
-                                            style: TextStyle(
-                                              color: Colors.grey,
-                                            ),
-                                          ),
-
-                                          const SizedBox(height: 20),
-
-                                          TextField(
-                                            controller: reasonController,
-                                            maxLines: 4,
-
-                                            decoration: InputDecoration(
-                                              hintText: 'اكتب سبب الإلغاء هنا...',
-
-                                              filled: true,
-                                              fillColor: const Color(0xfff5f7fb),
-
-                                              border: OutlineInputBorder(
-                                                borderRadius: BorderRadius.circular(14),
-                                                borderSide: BorderSide.none,
-                                              ),
-
-                                              focusedBorder: OutlineInputBorder(
-                                                borderRadius: BorderRadius.circular(14),
-                                                borderSide: const BorderSide(
-                                                  color: Color(0xff2563EB),
-                                                  width: 2,
-                                                ),
-                                              ),
-                                            ),
-                                          ),
-
-                                          const SizedBox(height: 24),
-
-                                          Row(
-                                            children: [
-
-                                              Expanded(
-                                                child: OutlinedButton(
-                                                  onPressed: () {
-                                                    Navigator.pop(context);
-                                                  },
-
-                                                  style: OutlinedButton.styleFrom(
-                                                    padding: const EdgeInsets.symmetric(
-                                                      vertical: 15,
-                                                    ),
-
-                                                    shape: RoundedRectangleBorder(
-                                                      borderRadius: BorderRadius.circular(12),
-                                                    ),
-                                                  ),
-
-                                                  child: const Text('إلغاء'),
-                                                ),
-                                              ),
-
-                                              const SizedBox(width: 12),
-
-                                              Expanded(
-                                                child: ElevatedButton(
-
-                                                  onPressed: () {
-
-                                                    if (reasonController.text.trim().isEmpty) {
-
-                                                      ScaffoldMessenger.of(context).showSnackBar(
-                                                        const SnackBar(
-                                                          content: Text(
-                                                            'يجب كتابة سبب الإلغاء',
-                                                          ),
-                                                        ),
-                                                      );
-
-                                                      return;
-                                                    }
-
-                                                    Navigator.pop(context);
-
-                                                    ScaffoldMessenger.of(context).showSnackBar(
-                                                      const SnackBar(
-                                                        content: Text(
-                                                          'تم إرسال الرسالة للمواطن بنجاح',
-                                                        ),
-                                                      ),
-                                                    );
-
-                                                    /// هنا مستقبلاً:
-                                                    /// غيّر حالة البلاغ إلى "ملغي"
-                                                    /// وارسل السبب لتطبيق الجوال
-                                                  },
-
-                                                  style: ElevatedButton.styleFrom(
-                                                    backgroundColor: Colors.red,
-                                                    foregroundColor: Colors.white,
-
-                                                    padding: const EdgeInsets.symmetric(
-                                                      vertical: 15,
-                                                    ),
-
-                                                    shape: RoundedRectangleBorder(
-                                                      borderRadius: BorderRadius.circular(12),
-                                                    ),
-                                                  ),
-
-                                                  child: const Text(
-                                                    'إرسال السبب',
-                                                  ),
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  );
-                                },
-                              );
-                            },
-
-                            icon: const Icon(Icons.cancel_outlined),
-
-                            label: const Text(
-                              'إلغاء البلاغ',
                               style: TextStyle(
-                                fontSize: 16,
+                                fontSize: 17,
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
 
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xffFEE2E2),
-                              foregroundColor: Colors.red,
+                              backgroundColor:
+                              const Color(0xff2563EB),
 
-                              padding: const EdgeInsets.symmetric(
-                                vertical: 17,
+                              foregroundColor: Colors.white,
+
+                              padding:
+                              const EdgeInsets.symmetric(
+                                vertical: 18,
                               ),
 
-                              elevation: 0,
-
                               shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(14),
+                                borderRadius:
+                                BorderRadius.circular(14),
                               ),
                             ),
                           ),
-                        ),
+
+                          /// زر الإلغاء
+                          const SizedBox(height: 12),
+
+                          SizedBox(
+                            width: double.infinity,
+
+                            child: ElevatedButton.icon(
+
+                              onPressed: status == 'ملغي'
+                                  ? null
+                                  : () {
+
+                                final reasonController = TextEditingController();
+
+                                showDialog(
+                                  context: context,
+
+                                  builder: (_) {
+
+                                    return Dialog(
+
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(20),
+                                      ),
+
+                                      child: Container(
+                                        width: 450,
+                                        padding: const EdgeInsets.all(24),
+
+                                        child: Column(
+                                          mainAxisSize: MainAxisSize.min,
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+
+                                          children: [
+
+                                            const Row(
+                                              children: [
+
+                                                Icon(
+                                                  Icons.cancel_outlined,
+                                                  color: Colors.red,
+                                                ),
+
+                                                SizedBox(width: 10),
+
+                                                Text(
+                                                  'إلغاء البلاغ',
+                                                  style: TextStyle(
+                                                    fontSize: 20,
+                                                    fontWeight: FontWeight.bold,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+
+                                            const SizedBox(height: 10),
+
+                                            const Text(
+                                              'قم بكتابة سبب إلغاء البلاغ ليتم إرساله للمواطن',
+                                              style: TextStyle(
+                                                color: Colors.grey,
+                                              ),
+                                            ),
+
+                                            const SizedBox(height: 20),
+
+                                            TextField(
+                                              controller: reasonController,
+                                              maxLines: 4,
+
+                                              decoration: InputDecoration(
+                                                hintText: 'اكتب سبب الإلغاء هنا...',
+
+                                                filled: true,
+                                                fillColor: const Color(0xfff5f7fb),
+
+                                                border: OutlineInputBorder(
+                                                  borderRadius: BorderRadius.circular(14),
+                                                  borderSide: BorderSide.none,
+                                                ),
+                                              ),
+                                            ),
+
+                                            const SizedBox(height: 24),
+
+                                            SizedBox(
+                                              width: double.infinity,
+
+                                              child: ElevatedButton(
+
+                                                onPressed: () {
+
+                                                  if (reasonController.text.trim().isEmpty) {
+                                                    return;
+                                                  }
+
+                                                  Navigator.pop(context);
+
+                                                  setState(() {
+                                                    status = 'ملغي';
+                                                  });
+
+                                                  ScaffoldMessenger.of(context).showSnackBar(
+                                                    const SnackBar(
+                                                      content: Text(
+                                                        'تم إلغاء البلاغ وإرسال السبب',
+                                                      ),
+                                                    ),
+                                                  );
+                                                },
+
+                                                style: ElevatedButton.styleFrom(
+                                                  backgroundColor: Colors.red,
+                                                  foregroundColor: Colors.white,
+                                                  padding: const EdgeInsets.symmetric(
+                                                    vertical: 15,
+                                                  ),
+                                                ),
+
+                                                child: const Text('إرسال السبب'),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                );
+                              },
+
+                              icon: Icon(
+                                status == 'ملغي'
+                                    ? Icons.block
+                                    : Icons.cancel_outlined,
+                              ),
+
+                              label: Text(
+                                status == 'ملغي'
+                                    ? 'تم الغاء البلاغ'
+                                    : 'إلغاء البلاغ',
+
+                                style: const TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+
+                              style: ElevatedButton.styleFrom(
+
+                                backgroundColor:
+                                status == 'ملغي'
+                                    ? Colors.red.shade700
+                                    : const Color(0xffFEE2E2),
+
+                                foregroundColor:
+                                status == 'ملغي'
+                                    ? Colors.white
+                                    : Colors.red,
+
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 17,
+                                ),
+
+                                elevation: 0,
+
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(14),
+                                ),
+                              ),
+                            ),
+                          )
+                        ],
                       ],
                     ),
                   ),
@@ -392,26 +422,35 @@ class NotificationDetailsPage extends StatelessWidget {
     );
   }
 
-  /// الكروت الجانبية
-
+  /// ملخص سريع
   Widget _quickSummaryCard() {
+
     return _card(
       title: 'ملخص سريع',
+
       child: Column(
         children: [
-          _rowItem('النوع', category),
-          _rowItem('الأولوية', priority),
+
+          _rowItem('النوع', widget.category),
+
+          _rowItem('الأولوية', widget.priority),
+
           _rowItem('الحالة', status),
         ],
       ),
     );
   }
 
+  /// بيانات المبلغ
   Widget _reporterInfoCard() {
+
     return _card(
       title: 'بيانات المبلّغ',
+
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
+        crossAxisAlignment:
+        CrossAxisAlignment.stretch,
+
         children: const [
 
           Text(
@@ -423,7 +462,10 @@ class NotificationDetailsPage extends StatelessWidget {
 
           Text(
             'فهد سليمان المطيري',
-            style: TextStyle(fontWeight: FontWeight.bold),
+
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+            ),
           ),
 
           SizedBox(height: 12),
@@ -437,25 +479,34 @@ class NotificationDetailsPage extends StatelessWidget {
 
           Text(
             '0551234567',
-            style: TextStyle(fontWeight: FontWeight.bold),
+
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+            ),
           ),
         ],
       ),
     );
   }
 
+  /// المشرف
   Widget _assignedSupervisorCard(BuildContext context) {
-    return _card(
 
+    return _card(
       title: status == 'مكتمل'
           ? 'المشرف الذي عالج البلاغ'
           : 'المشرف المعيَّن',
 
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment:
+        CrossAxisAlignment.start,
+
         children: [
 
-          _rowItem('اسم المشرف', 'محمد عبدالله'),
+          _rowItem(
+            'اسم المشرف',
+            'محمد عبدالله',
+          ),
 
           _rowItem(
             'المنطقة',
@@ -472,23 +523,34 @@ class NotificationDetailsPage extends StatelessWidget {
               child: ElevatedButton.icon(
 
                 onPressed: () {
-                  onGoToAssignment?.call(AppPage.assignReports);
+                  widget.onGoToAssignment
+                      ?.call(AppPage.assignReports);
                 },
 
                 icon: const Icon(Icons.swap_horiz),
 
                 label: const Text(
                   'إعادة توجيه لمشرف آخر',
-                  style: TextStyle(color: Colors.white),
+
+                  style: TextStyle(
+                    color: Colors.white,
+                  ),
                 ),
 
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xff2563EB),
+                  backgroundColor:
+                  const Color(0xff2563EB),
+
                   foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(vertical: 14),
+
+                  padding:
+                  const EdgeInsets.symmetric(
+                    vertical: 14,
+                  ),
 
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius:
+                    BorderRadius.circular(12),
                   ),
                 ),
               ),
@@ -499,7 +561,9 @@ class NotificationDetailsPage extends StatelessWidget {
     );
   }
 
+  /// الوقت
   Widget _timeCard() {
+
     return _card(
       title: 'توقيت البلاغ',
 
@@ -522,26 +586,41 @@ class NotificationDetailsPage extends StatelessWidget {
     );
   }
 
+  /// معلومات البلاغ
   Widget _reportInfoCard() {
+
     return _card(
       title: 'معلومات البلاغ',
 
       child: Column(
         children: [
 
-          _rowItem('رقم البلاغ', id),
+          _rowItem(
+            'رقم البلاغ',
+            widget.id,
+          ),
 
-          _rowItem('نوع العمل', 'كنس'),
+          _rowItem(
+            'نوع العمل',
+            'كنس',
+          ),
 
-          _rowItem('الحالة', status),
+          _rowItem(
+            'الحالة',
+            status,
+          ),
 
           const Divider(),
 
           const Align(
             alignment: Alignment.centerRight,
+
             child: Text(
               'الوصف',
-              style: TextStyle(fontWeight: FontWeight.bold),
+
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+              ),
             ),
           ),
 
@@ -549,6 +628,7 @@ class NotificationDetailsPage extends StatelessWidget {
 
           const Align(
             alignment: Alignment.centerRight,
+
             child: Text(
               'تجمع نفايات في جولة البخاري بالقرب من محطة السوق العام، يحتاج إلى تدخل عاجل.',
             ),
@@ -558,53 +638,73 @@ class NotificationDetailsPage extends StatelessWidget {
     );
   }
 
+  /// الموقع
   Widget _locationCard() {
+
     return _card(
       title: 'موقع البلاغ',
 
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment:
+        CrossAxisAlignment.start,
+
         children: const [
 
           Text(
             'المربع الجغرافي',
-            style: TextStyle(color: Colors.grey),
+
+            style: TextStyle(
+              color: Colors.grey,
+            ),
           ),
 
           SizedBox(height: 4),
 
           Text(
             'مربع 1 – السوق العام',
-            style: TextStyle(fontWeight: FontWeight.bold),
+
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+            ),
           ),
 
           SizedBox(height: 12),
 
           Text(
             'العنوان التفصيلي',
-            style: TextStyle(color: Colors.grey),
+
+            style: TextStyle(
+              color: Colors.grey,
+            ),
           ),
 
           SizedBox(height: 6),
 
           Text(
             'جولة البخاري بالقرب من محطة السوق العام',
-            style: TextStyle(fontWeight: FontWeight.bold),
+
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+            ),
           ),
         ],
       ),
     );
   }
 
+  /// الصورة
   Widget _imageCard() {
+
     return _card(
       title: 'صورة البلاغ من المواطن',
 
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius:
+        BorderRadius.circular(12),
 
         child: Image.network(
-          imageUrl,
+          widget.imageUrl,
+
           height: 260,
           width: double.infinity,
           fit: BoxFit.cover,
@@ -613,8 +713,7 @@ class NotificationDetailsPage extends StatelessWidget {
     );
   }
 
-  /// أدوات جاهزة
-
+  /// كرت جاهز
   Widget _card({
     required String title,
     required Widget child,
@@ -626,18 +725,24 @@ class NotificationDetailsPage extends StatelessWidget {
 
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(14),
+
+        borderRadius:
+        BorderRadius.circular(14),
+
         border: Border.all(
           color: Colors.grey.shade200,
         ),
       ),
 
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment:
+        CrossAxisAlignment.start,
+
         children: [
 
           Text(
             title,
+
             style: const TextStyle(
               fontWeight: FontWeight.bold,
             ),
@@ -651,22 +756,34 @@ class NotificationDetailsPage extends StatelessWidget {
     );
   }
 
-  Widget _rowItem(String label, String value) {
+  /// عنصر صف
+  Widget _rowItem(
+      String label,
+      String value,
+      ) {
 
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 6),
+      padding: const EdgeInsets.symmetric(
+        vertical: 6,
+      ),
 
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        mainAxisAlignment:
+        MainAxisAlignment.spaceBetween,
+
         children: [
 
           Text(
             label,
-            style: const TextStyle(color: Colors.grey),
+
+            style: const TextStyle(
+              color: Colors.grey,
+            ),
           ),
 
           Text(
             value,
+
             style: const TextStyle(
               fontWeight: FontWeight.bold,
             ),

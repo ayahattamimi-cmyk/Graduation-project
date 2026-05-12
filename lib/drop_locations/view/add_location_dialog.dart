@@ -1,6 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_map/flutter_map.dart';
+import 'package:latlong2/latlong.dart';
+
+import '../../dashboard/view/sidebar.dart';
 
 class AddLocationDialog extends StatefulWidget {
+  final Function(AppPage) onPageSelected;
   final String? initialName;
   final String? initialType;
   final String? initialPeriod;
@@ -8,6 +13,7 @@ class AddLocationDialog extends StatefulWidget {
 
   const AddLocationDialog({
     super.key,
+    required this.onPageSelected,
     this.initialName,
     this.initialType,
     this.initialPeriod,
@@ -207,15 +213,112 @@ class _AddLocationDialogState extends State<AddLocationDialog> {
                 const SizedBox(height: 8),
 
                 OutlinedButton.icon(
-                  onPressed: () {},
+                  onPressed: () async {
+
+                    LatLng? pickedLocation;
+
+                    await showDialog(
+                      context: context,
+
+                      builder: (_) {
+
+                        return Dialog(
+                          child: SizedBox(
+                            width: 700,
+                            height: 500,
+
+                            child: StatefulBuilder(
+                              builder: (context, setMapState) {
+
+                                return Stack(
+                                  children: [
+
+                                    FlutterMap(
+
+                                      options: MapOptions(
+                                        initialCenter:
+                                        const LatLng(15.943, 48.786),
+
+                                        initialZoom: 13,
+
+                                        onTap: (tapPosition, point) {
+
+                                          setMapState(() {
+                                            pickedLocation = point;
+                                          });
+                                        },
+                                      ),
+
+                                      children: [
+
+                                        TileLayer(
+                                          urlTemplate:
+                                          'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                                        ),
+
+                                        /// marker
+                                        if (pickedLocation != null)
+                                          MarkerLayer(
+                                            markers: [
+                                              Marker(
+                                                point: pickedLocation!,
+                                                width: 50,
+                                                height: 50,
+
+                                                child: const Icon(
+                                                  Icons.location_on,
+                                                  color: Colors.red,
+                                                  size: 40,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                      ],
+                                    ),
+
+                                    Positioned(
+                                      bottom: 20,
+                                      right: 20,
+
+                                      child: ElevatedButton(
+                                        onPressed: () {
+
+                                          if (pickedLocation != null) {
+
+                                            setState(() {
+
+                                              location =
+                                              "(${pickedLocation!.latitude.toStringAsFixed(5)}, "
+                                                  "${pickedLocation!.longitude.toStringAsFixed(5)})";
+                                            });
+
+                                            Navigator.pop(context);
+                                          }
+                                        },
+
+                                        child: const Text("تأكيد الموقع"),
+                                      ),
+                                    ),
+                                  ],
+                                );
+                              },
+                            ),
+                          ),
+                        );
+                      },
+                    );
+                  },
+
                   icon: const Icon(
                     Icons.map_outlined,
                     color: Colors.white,
                   ),
+
                   label: const Text(
                     "اختيار الموقع من الخريطة",
                     style: TextStyle(color: Colors.white),
                   ),
+
                   style: OutlinedButton.styleFrom(
                     backgroundColor: Colors.blue,
                     minimumSize: const Size(double.infinity, 50),

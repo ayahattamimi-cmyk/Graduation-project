@@ -1,9 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../../dashboard/view/sidebar.dart';
+import '../../dashboard/viewmodel/dashboard_viewmodel.dart';
 import '../viewmodel/assignment_viewmodel.dart';
 
+
 class ReportAssignmentPage extends StatelessWidget {
-  const ReportAssignmentPage({super.key});
+  final Function(AppPage) onPageSelected;
+
+  const ReportAssignmentPage({super.key,required this.onPageSelected,});
+
 
   @override
   Widget build(BuildContext context) {
@@ -39,17 +45,28 @@ class ReportAssignmentPage extends StatelessWidget {
                   ),
 
                   OutlinedButton.icon(
-                    onPressed: (){
-                      Navigator.pushNamed(context,"/mapPage");
+                    onPressed: () {
+                      onPageSelected(AppPage.map);
                     },
-                    icon: const Icon(Icons.map_outlined,color: Colors.white,),
-                    label: const Text("عرض الخريطة",style: TextStyle(color: Colors.white),),
+
+                    icon: const Icon(
+                      Icons.map_outlined,
+                      color: Colors.white,
+                    ),
+
+                    label: const Text(
+                      "عرض الخريطة",
+                      style: TextStyle(color: Colors.white),
+                    ),
+
                     style: OutlinedButton.styleFrom(
                       backgroundColor: Colors.blue,
+
                       padding: const EdgeInsets.symmetric(
                         horizontal: 16,
                         vertical: 14,
                       ),
+
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),

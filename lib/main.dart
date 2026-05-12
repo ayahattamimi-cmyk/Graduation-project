@@ -11,6 +11,7 @@ import 'login screen/view/login_view.dart';
 import 'login screen/viewmodel/login_viewmodel.dart';
 
 import 'dashboard/viewmodel/dashboard_viewmodel.dart';
+import 'map/view/map_screen.dart';
 import 'notification/viewmodel/notification_viewmodel.dart';
 
 
@@ -66,6 +67,7 @@ class MyApp extends StatelessWidget {
           child: child!,
         );
       },
+
 
       home: const LoginScreen(),
     );

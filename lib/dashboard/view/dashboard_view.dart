@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../../map/view/map_screen.dart';
 import '../../report_assignment/view/report_assignment_page.dart';
 import '../../reports/view/reports_page.dart';
 import '../viewmodel/dashboard_viewmodel.dart';
@@ -76,10 +77,16 @@ class _DashboardViewState extends State<DashboardView> {
         );
 
       case AppPage.assignReports:
-        return const ReportAssignmentPage();
+        return ReportAssignmentPage(
+          onPageSelected: (page) {
+            setState(() {
+              currentPage = page;
+            });
+          },
+        );
 
       case AppPage.map:
-        return const Center(child: Text('الخريطة'));
+        return const MapScreen();
 
       case AppPage.admins:
         return const SupervisorPage();
@@ -88,7 +95,13 @@ class _DashboardViewState extends State<DashboardView> {
         return const ContentPage();
 
       case AppPage.uploadSites:
-        return const DropLocationsPage();
+        return DropLocationsPage(
+          onPageSelected: (page) {
+            setState(() {
+              currentPage = page;
+            });
+          },
+        );
 
       case AppPage.reports:
         return const ReportPage();

@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 
+import '../../../dashboard/view/sidebar.dart';
 import '../add_location_dialog.dart';
 
 class DropLocationsHeader extends StatelessWidget {
   final Function(Map data) onAdd;
-  const DropLocationsHeader({super.key, required this.onAdd});
+  final Function(AppPage) onPageSelected;
+  const DropLocationsHeader({super.key,required this.onPageSelected, required this.onAdd, });
 
 
   @override
@@ -42,7 +44,9 @@ class DropLocationsHeader extends StatelessWidget {
               onPressed: () async {
                 final result = await showDialog(
                   context: context,
-                  builder: (_) => const AddLocationDialog(),
+                  builder: (_) => AddLocationDialog(
+                    onPageSelected:onPageSelected,
+                  ),
                 );
 
                 if (result != null) {
