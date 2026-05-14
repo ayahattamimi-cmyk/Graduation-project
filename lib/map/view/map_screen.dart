@@ -1,43 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_map/flutter_map.dart';
-import 'package:latlong2/latlong.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:provider/provider.dart';
-import 'package:web2/map/view/widgets/map_filters.dart';
 
 import '../viewmodel/map_viewmodel.dart';
-import 'widgets/map_layers_toggle.dart';
+import 'widgets/map_filter_chip.dart';
+import 'widgets/map_info_bottom_sheet.dart';
 import 'widgets/map_legend.dart';
-
+import 'widgets/map_layers_toggle.dart';
 
 class MapScreen extends StatelessWidget {
   const MapScreen({super.key});
-
-  Color reportColor(String status) {
-
-    switch (status) {
-
-      case "عاجل":
-        return Colors.red;
-
-      case "تم التنفيذ":
-        return Colors.green;
-
-      default:
-        return Colors.orange;
-    }
-  }
-
-  Color containerColor(String type) {
-
-    switch (type) {
-
-      case "ثابت":
-        return Colors.blue;
-
-      default:
-        return Colors.orange;
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -53,129 +25,107 @@ class MapScreen extends StatelessWidget {
             body: Stack(
               children: [
 
-                FlutterMap(
+                GoogleMap(
 
-                  options: MapOptions(
-                    initialCenter: const LatLng(15.943, 48.786),
-                    initialZoom: 13,
-
-                    onTap: (tapPosition, point) {
-
-                      vm.selectedLocation = point;
-                      vm.notifyListeners();
-
-                      print(point.latitude);
-                      print(point.longitude);
-                    },
+                  initialCameraPosition: CameraPosition(
+                    target: MapViewModel.seiyunCenter,
+                    zoom: 13,
                   ),
 
+                  mapType:
+                  vm.isSatellite
+                      ? MapType.satellite
+                      : MapType.normal,
 
-                  children: [
+                  polygons: vm.polygons,
 
-                    TileLayer(
-                      urlTemplate:
-                      'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-                    ),
+                  markers: vm.markers,
 
-                    /// المناطق
-                    if (vm.showAreas)
-                      PolygonLayer(
+                  myLocationEnabled: true,
 
-                        polygons: vm.polygons.map((p) {
+                  zoomControlsEnabled: false,
 
-                          return Polygon(
+                  onMapCreated: vm.onMapCreated,
 
-                            points: p.points.map((e) {
-                              return LatLng(e[0], e[1]);
-                            }).toList(),
-
-                            color: Colors.blue.withOpacity(0.2),
-
-                            borderColor: Colors.blue,
-
-                            borderStrokeWidth: 2,
-                          );
-
-                        }).toList(),
-                      ),
-
-                    /// البلاغات
-                    if (vm.showReports)
-                      MarkerLayer(
-
-                        markers: vm.reports.map((r) {
-
-                          return Marker(
-
-                            point: LatLng(r.lat, r.lng),
-
-                            width: 40,
-                            height: 40,
-
-                            child: Icon(
-                              Icons.location_on,
-                              color: reportColor(r.status),
-                              size: 35,
-                            ),
-                          );
-
-                        }).toList(),
-                      ),
-
-                    /// الحاويات
-                    if (vm.showContainers)
-                      MarkerLayer(
-                        markers: vm.containers.map((c) {
-
-                          return Marker(
-                            point: LatLng(c.lat, c.lng),
-                            width: 40,
-                            height: 40,
-
-                            child: Icon(
-                              Icons.delete,
-                              color: containerColor(c.type),
-                              size: 30,
-                            ),
-                          );
-
-                        }).toList(),
-                      ),
-
-                    /// الموقع المختار
-                    if (vm.selectedLocation != null)
-                      MarkerLayer(
-                        markers: [
-                          Marker(
-                            point: vm.selectedLocation!,
-                            width: 50,
-                            height: 50,
-
-                            child: const Icon(
-                              Icons.location_pin,
-                              color: Colors.red,
-                              size: 40,
-                            ),
-                          ),
-                        ],
-                      ),
-                  ],
+                  onTap: vm.selectLocation,
                 ),
 
-                /// الفلاتر
+                /// TOP BAR
                 Positioned(
                   top: 20,
+                  left: 20,
+                  right: 20,
+
+                  child: Row(
+                    children: [
+
+                      Expanded(
+                        child: SingleChildScrollView(
+                          scrollDirection: Axis.horizontal,
+
+                          child: Row(
+                            children: [
+
+                              MapFilterChip(
+                                label: "البلاغات",
+                                color: Colors.red,
+                                icon: Icons.report,
+                                isSelected: vm.showReports,
+                                onTap: vm.toggleReports,
+                              ),
+
+                              const SizedBox(width: 8),
+
+                              MapFilterChip(
+                                label: "الحاويات",
+                                color: Colors.blue,
+                                icon: Icons.delete,
+                                isSelected: vm.showContainers,
+                                onTap: vm.toggleContainers,
+                              ),
+
+                              const SizedBox(width: 8),
+
+                              MapFilterChip(
+                                label: "المناطق",
+                                color: Colors.green,
+                                icon: Icons.map,
+                                isSelected: vm.showAreas,
+                                onTap: vm.toggleAreas,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+
+                      const SizedBox(width: 12),
+
+                      FloatingActionButton.small(
+                        heroTag: "satellite",
+
+                        backgroundColor: Colors.white,
+
+                        onPressed: vm.toggleSatellite,
+
+                        child: Icon(
+                          vm.isSatellite
+                              ? Icons.map
+                              : Icons.satellite_alt,
+                          color: Colors.black,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+                /// LAYERS
+                Positioned(
+                  top: 90,
                   right: 20,
                   child: const MapLayersToggle(),
                 ),
 
-                Positioned(
-                  top: 20,
-                  left: 20,
-                  child: const MapFilterWidget(),
-                ),
-
-                /// الليجند
+                /// LEGEND
                 Positioned(
                   bottom: 20,
                   left: 20,

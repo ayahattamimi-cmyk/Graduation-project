@@ -41,6 +41,7 @@ dependencies:
   excel: ^2.1.0
   flutter_map: ^6.1.0
   latlong2: ^0.9.0
+  google_maps_flutter: ^2.6.1
 
 
 
@@ -70,6 +71,7 @@ dev_dependencies:
 flutter:
   assets:
     - assets/fonts/Tajawal-Regular.ttf
+    - assets/json/
 
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in

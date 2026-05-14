@@ -30,6 +30,7 @@ class _AddSupervisorDialogState extends State<AddSupervisorDialog> {
   Widget build(BuildContext context) {
 
     return Dialog(
+      backgroundColor: const Color(0xffffffff),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(20),
       ),
@@ -189,6 +190,7 @@ class _AddSupervisorDialogState extends State<AddSupervisorDialog> {
           builder: (context, setState) {
 
             return Dialog(
+              backgroundColor: const Color(0xffffffff),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(20),
               ),

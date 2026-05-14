@@ -34,7 +34,7 @@ class MapLayersToggle extends StatelessWidget {
             value: vm.showReports,
             title: const Text("البلاغات"),
             onChanged: (v) {
-              vm.toggleReports(v!);
+              vm.toggleReports();
             },
           ),
 
@@ -42,7 +42,7 @@ class MapLayersToggle extends StatelessWidget {
             value: vm.showContainers,
             title: const Text("الحاويات"),
             onChanged: (v) {
-              vm.toggleContainers(v!);
+              vm.toggleContainers();
             },
           ),
 
@@ -50,7 +50,7 @@ class MapLayersToggle extends StatelessWidget {
             value: vm.showAreas,
             title: const Text("المناطق"),
             onChanged: (v) {
-              vm.toggleAreas(v!);
+              vm.toggleAreas();
             },
           ),
         ],

@@ -36,6 +36,7 @@ class _AddContentDialogState extends State<AddContentDialog> {
   @override
   Widget build(BuildContext context) {
     return Dialog(
+      backgroundColor: const Color(0xffffffff),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(20),
       ),

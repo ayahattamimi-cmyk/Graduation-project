@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_map/flutter_map.dart';
-import 'package:latlong2/latlong.dart';
-
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import '../../dashboard/view/sidebar.dart';
 
 class AddLocationDialog extends StatefulWidget {
@@ -213,74 +211,85 @@ class _AddLocationDialogState extends State<AddLocationDialog> {
                 const SizedBox(height: 8),
 
                 OutlinedButton.icon(
+
                   onPressed: () async {
 
                     LatLng? pickedLocation;
 
                     await showDialog(
+
                       context: context,
 
                       builder: (_) {
 
                         return Dialog(
+
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+
                           child: SizedBox(
-                            width: 700,
-                            height: 500,
+                            width: 800,
+                            height: 550,
 
                             child: StatefulBuilder(
+
                               builder: (context, setMapState) {
 
                                 return Stack(
                                   children: [
 
-                                    FlutterMap(
+                                    /// الخريطة
+                                    GoogleMap(
 
-                                      options: MapOptions(
-                                        initialCenter:
-                                        const LatLng(15.943, 48.786),
+                                      initialCameraPosition:
+                                      const CameraPosition(
 
-                                        initialZoom: 13,
-
-                                        onTap: (tapPosition, point) {
-
-                                          setMapState(() {
-                                            pickedLocation = point;
-                                          });
-                                        },
+                                        target: LatLng(15.943, 48.786),
+                                        zoom: 13,
                                       ),
 
-                                      children: [
+                                      mapType: MapType.normal,
 
-                                        TileLayer(
-                                          urlTemplate:
-                                          'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-                                        ),
+                                      onTap: (point) {
 
-                                        /// marker
+                                        setMapState(() {
+
+                                          pickedLocation = point;
+                                        });
+                                      },
+
+                                      markers: {
+
                                         if (pickedLocation != null)
-                                          MarkerLayer(
-                                            markers: [
-                                              Marker(
-                                                point: pickedLocation!,
-                                                width: 50,
-                                                height: 50,
 
-                                                child: const Icon(
-                                                  Icons.location_on,
-                                                  color: Colors.red,
-                                                  size: 40,
-                                                ),
-                                              ),
-                                            ],
+                                          Marker(
+                                            markerId:
+                                            const MarkerId("selected_location"),
+
+                                            position: pickedLocation!,
                                           ),
-                                      ],
+                                      },
                                     ),
 
+                                    /// زر التأكيد
                                     Positioned(
+
                                       bottom: 20,
                                       right: 20,
 
-                                      child: ElevatedButton(
+                                      child: ElevatedButton.icon(
+
+                                        style: ElevatedButton.styleFrom(
+                                          backgroundColor: Colors.blue,
+
+                                          padding:
+                                          const EdgeInsets.symmetric(
+                                            horizontal: 20,
+                                            vertical: 14,
+                                          ),
+                                        ),
+
                                         onPressed: () {
 
                                           if (pickedLocation != null) {
@@ -296,7 +305,17 @@ class _AddLocationDialogState extends State<AddLocationDialog> {
                                           }
                                         },
 
-                                        child: const Text("تأكيد الموقع"),
+                                        icon: const Icon(
+                                          Icons.check,
+                                          color: Colors.white,
+                                        ),
+
+                                        label: const Text(
+                                          "تأكيد الموقع",
+                                          style: TextStyle(
+                                            color: Colors.white,
+                                          ),
+                                        ),
                                       ),
                                     ),
                                   ],
@@ -322,6 +341,15 @@ class _AddLocationDialogState extends State<AddLocationDialog> {
                   style: OutlinedButton.styleFrom(
                     backgroundColor: Colors.blue,
                     minimumSize: const Size(double.infinity, 50),
+                  ),
+                ),
+
+                const SizedBox(height: 8),
+
+                Text(
+                  "الإحداثيات: $location",
+                  style: const TextStyle(
+                    color: Colors.grey,
                   ),
                 ),
 
