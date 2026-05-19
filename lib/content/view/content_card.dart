@@ -145,7 +145,7 @@ class _ContentCardState extends State<ContentCard> {
           /// الصورة
           /// الصورة
           /// الصورة
-          if (widget.content.image != null) ...[
+          if (widget.content.imageBase64 != null) ...[
             const SizedBox(height: 14),
 
             Align(
@@ -153,7 +153,7 @@ class _ContentCardState extends State<ContentCard> {
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(14),
                 child: Image.memory(
-                  base64Decode(widget.content.image!),
+                  base64Decode(widget.content.imageBase64!),
                   height: 180,
                   width: 180,
                   fit: BoxFit.cover,

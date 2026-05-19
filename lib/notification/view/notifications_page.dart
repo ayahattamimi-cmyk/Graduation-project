@@ -204,7 +204,7 @@ class NotificationsPage extends StatefulWidget {
                     Colors.green.shade100,
                     Colors.green,
                   ),
-                ),
+                ],
               ),
 
               const SizedBox(height: 6),

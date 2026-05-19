@@ -28,7 +28,6 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   void initState() {
     super.initState();
-    isSignupMode = widget.isSignup;
   }
 
   @override
