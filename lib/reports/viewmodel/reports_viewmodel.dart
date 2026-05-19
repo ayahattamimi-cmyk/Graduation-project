@@ -32,7 +32,12 @@ class ReportViewModel extends ChangeNotifier {
   // قوائم الاختيارات
   List<String> areas = ["جميع المناطق"]; // سيتم ملؤها من السيرفر
   List<String> types = ["جميع الأنواع", "رفع", "كنس"];
-  List<String> status = ["جميع الحالات", "تم الحل", "قيد الانتظار", "قيد التنفيذ"];
+  List<String> status = [
+    "جميع الحالات",
+    "تم الحل",
+    "قيد الانتظار",
+    "قيد التنفيذ",
+  ];
   List<String> periods = ["آخر أسبوع", "آخر شهر", "آخر سنة"];
   List<String> supervisors = ["جميع المشرفين"];
 
@@ -50,7 +55,10 @@ class ReportViewModel extends ChangeNotifier {
       // نطلب مناطق الرفع مثلاً أو حسب الحاجة
       final result = await _supervisorRepository.fetchAreas("lifting");
       areaObjects = result;
-      areas = ["جميع المناطق", ...result.map((e) => e.label ?? e.name ?? e.id.toString())];
+      areas = [
+        "جميع المناطق",
+        ...result.map((e) => e.label ?? e.name ?? e.id.toString()),
+      ];
       notifyListeners();
     } catch (e) {
       debugPrint("❌ خطأ جلب المناطق: $e");
@@ -72,7 +80,9 @@ class ReportViewModel extends ChangeNotifier {
     isLoading = true;
     notifyListeners();
     try {
-      debugPrint("📡 [Reports] Fetching with: Area:$selectedArea, Type:$selectedType, Status:$selectedStatus");
+      debugPrint(
+        "📡 [Reports] Fetching with: Area:$selectedArea, Type:$selectedType, Status:$selectedStatus",
+      );
       reports = await _reportRepository.getFilteredReports(
         areaId: selectedArea == "جميع المناطق" ? null : selectedArea,
         status: selectedStatus == "جميع الحالات" ? null : selectedStatus,
@@ -114,9 +124,8 @@ class ReportViewModel extends ChangeNotifier {
         selectedSupervisor,
         selectedSupType,
       );
-      supervisorsPerformance = result
-          .map((e) => SupervisorPerformanceModel.fromJson(e))
-          .toList();
+      supervisorsPerformance =
+          result.map((e) => SupervisorPerformanceModel.fromJson(e)).toList();
     } catch (e) {
       debugPrint("❌ خطأ جلب أداء المشرف: $e");
     } finally {
@@ -159,11 +168,22 @@ class ReportViewModel extends ChangeNotifier {
       notifyListeners();
     }
   }
-  
-  void setType(String v) { selectedType = v; fetchReports(); }
-  void setStatus(String v) { selectedStatus = v; fetchReports(); }
-  void setPeriod(String v) { selectedPeriod = v; fetchReports(); }
-  
+
+  void setType(String v) {
+    selectedType = v;
+    fetchReports();
+  }
+
+  void setStatus(String v) {
+    selectedStatus = v;
+    fetchReports();
+  }
+
+  void setPeriod(String v) {
+    selectedPeriod = v;
+    fetchReports();
+  }
+
   void setSupervisor(String v) {
     selectedSupervisor = v;
     fetchSupervisorStats();
@@ -176,7 +196,8 @@ class ReportViewModel extends ChangeNotifier {
 
   // الإحصائيات (تدعم مسميات السيرفر المختلفة)
   int get total => reports.length;
-  int get solved => reports.where((e) => e.status == "تم الحل" || e.status == "محلول").length;
+  int get solved =>
+      reports.where((e) => e.status == "تم الحل" || e.status == "محلول").length;
   int get pending => total - solved;
 
   String _mapPeriodToApi(String p) {

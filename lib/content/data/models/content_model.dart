@@ -57,7 +57,8 @@ class ContentModel {
       category: json['category'],
       publishDate: json['publish_date'],
       adminName: json['admin_name'],
-      isPublished: json['is_active'].toString() == "1" || json['is_active'] == true,
+      isPublished:
+          json['is_active'].toString() == "1" || json['is_active'] == true,
     );
   }
 
