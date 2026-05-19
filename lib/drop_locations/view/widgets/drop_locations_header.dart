@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../add_location_dialog.dart';
 import '../../viewmodel/drop_locations_viewmodel.dart';
+import 'package:web2/dashboard/view/sidebar.dart';
 
 class DropLocationsHeader extends StatelessWidget {
   final Function(Map data) onAdd;

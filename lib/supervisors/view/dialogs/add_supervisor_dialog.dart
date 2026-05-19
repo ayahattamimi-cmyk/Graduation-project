@@ -2,7 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../../model/supervisor_model.dart';
+import '../../data/model/supervisor_model.dart';
 import '../../viewmodel/supervisor_viewmodel.dart';
 
 class AddSupervisorDialog extends StatefulWidget {
@@ -299,7 +299,7 @@ class _AddSupervisorDialogState extends State<AddSupervisorDialog> {
                                 name: nameController.text,
                                 type: workType,
                                 area: selectedSquare,
-                                squareName: selectedSquare,
+                                areaDetails: [],
                               ),
                             );
 

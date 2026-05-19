@@ -71,7 +71,13 @@ class _DashboardViewState extends State<DashboardView> {
       case AppPage.dashboard:
         return _dashboardLayout(vm);
       case AppPage.notifications:
-        return const NotificationsPage();
+        return NotificationsPage(
+          onPageSelected: (page) {
+            setState(() {
+              currentPage = page;
+            });
+          },
+        );
       case AppPage.assignReports:
         return const ReportAssignmentPage();
       case AppPage.map:
@@ -81,7 +87,13 @@ class _DashboardViewState extends State<DashboardView> {
       case AppPage.news:
         return const ContentPage();
       case AppPage.uploadSites:
-        return const DropLocationsPage();
+        return DropLocationsPage(
+          onPageSelected: (page) {
+            setState(() {
+              currentPage = page;
+            });
+          },
+        );
       case AppPage.reports:
         return const ReportPage();
       default:

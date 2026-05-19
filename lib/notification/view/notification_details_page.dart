@@ -3,11 +3,19 @@ import 'package:provider/provider.dart';
 import '../data/models/report_details_model.dart';
 import '../data/notification_repository.dart';
 import 'package:web2/report_assignment/view/report_assignment_page.dart';
+import 'package:web2/dashboard/view/sidebar.dart';
 
 class NotificationDetailsPage extends StatefulWidget {
   final int reportId;
+  final String? status;
+  final Function(AppPage)? onGoToAssignment;
 
-  const NotificationDetailsPage({super.key, required this.reportId});
+  const NotificationDetailsPage({
+    super.key,
+    required this.reportId,
+    this.status,
+    this.onGoToAssignment,
+  });
 
   @override
   State<NotificationDetailsPage> createState() =>
@@ -37,22 +45,6 @@ class _NotificationDetailsPageState extends State<NotificationDetailsPage> {
       debugPrint("Error loading report details: $e");
       setState(() => isLoading = false);
     }
-  }
-
-  @override
-  State<NotificationDetailsPage> createState() =>
-      _NotificationDetailsPageState();
-}
-
-class _NotificationDetailsPageState
-    extends State<NotificationDetailsPage> {
-
-  late String status;
-
-  @override
-  void initState() {
-    super.initState();
-    status = widget.status;
   }
 
   @override
@@ -185,6 +177,7 @@ class _NotificationDetailsPageState
 
   /// بيانات المبلغ
   Widget _reporterInfoCard() {
+    final currentStatus = widget.status ?? report?.status;
 
     return _card(
       title: 'بيانات المبلّغ',
@@ -206,7 +199,7 @@ class _NotificationDetailsPageState
             style: const TextStyle(fontWeight: FontWeight.bold),
           ),
 
-          if (status == 'قيد المعالجة') ...[
+          if (currentStatus == 'قيد المعالجة') ...[
 
             const SizedBox(height: 12),
 

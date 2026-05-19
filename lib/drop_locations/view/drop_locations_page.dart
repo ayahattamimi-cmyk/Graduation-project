@@ -4,6 +4,7 @@ import 'package:web2/drop_locations/data/container_model.dart';
 import 'package:web2/drop_locations/viewmodel/drop_locations_viewmodel.dart';
 import 'widgets/area_card.dart';
 import 'widgets/drop_locations_header.dart';
+import 'package:web2/dashboard/view/sidebar.dart';
 
 class DropLocationsPage extends StatefulWidget {
   final Function(AppPage) onPageSelected;
@@ -37,6 +38,7 @@ class _DropLocationsPageState extends State<DropLocationsPage> {
                 children: [
                   /// زر الإضافة
                   DropLocationsHeader(
+                    onPageSelected: widget.onPageSelected,
                     onAdd: (data) {
                       final newContainer = ContainerModel(
                         nameContainer: data["name"],

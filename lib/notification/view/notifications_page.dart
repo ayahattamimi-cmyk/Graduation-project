@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:web2/notification/viewmodel/notification_viewmodel.dart';
 import 'notification_details_page.dart';
 import 'package:provider/provider.dart';
+import 'package:web2/dashboard/view/sidebar.dart';
 
 class NotificationsPage extends StatefulWidget {
 
@@ -163,16 +164,6 @@ class NotificationsPage extends StatefulWidget {
                       ),
                     ],
                   ),
-                ],
-              ),
-
-              const SizedBox(height: 10),
-
-              Text(
-                id,
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 18,
                 ),
               ),
             ],

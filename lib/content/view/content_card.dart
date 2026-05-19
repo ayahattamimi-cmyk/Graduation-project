@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:web2/content/data/models/content_model.dart';
 
@@ -130,7 +131,7 @@ class _ContentCardState extends State<ContentCard> {
           /// الصورة
           /// الصورة
           /// الصورة
-          if (widget.content.imageBase64 != null) ...[
+          if (widget.content.image != null) ...[
             const SizedBox(height: 14),
 
             Align(
@@ -138,7 +139,7 @@ class _ContentCardState extends State<ContentCard> {
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(14),
                 child: Image.memory(
-                  base64Decode(widget.content.imageBase64!),
+                  base64Decode(widget.content.image!),
                   height: 180,
                   width: 180,
                   fit: BoxFit.cover,
