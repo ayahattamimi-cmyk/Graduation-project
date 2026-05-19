@@ -4,6 +4,7 @@ import '../data/area_data.dart';
 import '../data/container_data.dart';
 import 'widgets/area_card.dart';
 import 'widgets/drop_locations_header.dart';
+import 'package:web2/dashboard/view/sidebar.dart';
 
 class DropLocationsPage extends StatefulWidget {
   final Function(AppPage) onPageSelected;

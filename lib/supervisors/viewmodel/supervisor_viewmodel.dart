@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
 import '../data/supervisor_repository.dart';
+import '../data/supervisor_service.dart';
 import '../model/supervisor_model.dart';
-import '../data/supervisor_repository.dart';
 
 class SupervisorViewModel extends ChangeNotifier {
 
   final SupervisorRepository _repository;
 
-  SupervisorViewModel(this._repository);
+  SupervisorViewModel([SupervisorRepository? repository])
+      : _repository = repository ?? SupervisorRepository(SupervisorService());
 
   List<SupervisorModel> supervisors = [];
 

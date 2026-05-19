@@ -1,6 +1,6 @@
 import 'package:dio/dio.dart';
 
-import 'model/supervisor_model.dart';
+import '../model/supervisor_model.dart';
 import 'model/area_detail_model.dart';
 import 'model/statistics_model.dart';
 import '../data/supervisor_service.dart';

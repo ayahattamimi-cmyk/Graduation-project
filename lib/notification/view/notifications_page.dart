@@ -207,16 +207,6 @@ class NotificationsPage extends StatefulWidget {
                 ],
               ),
 
-              const SizedBox(height: 10),
-
-              Text(
-                id,
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 18,
-                ),
-              ),
-
               const SizedBox(height: 6),
 
               Text(

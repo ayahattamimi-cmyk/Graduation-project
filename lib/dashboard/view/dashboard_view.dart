@@ -75,7 +75,6 @@ class _DashboardViewState extends State<DashboardView> {
             });
           },
         );
-
       case AppPage.assignReports:
         return ReportAssignmentPage(
           onPageSelected: (page) {
@@ -102,7 +101,6 @@ class _DashboardViewState extends State<DashboardView> {
             });
           },
         );
-
       case AppPage.reports:
         return const ReportPage();
     }

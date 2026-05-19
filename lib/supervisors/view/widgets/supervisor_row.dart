@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
-import '../../data/model/supervisor_model.dart';
+import '../../model/supervisor_model.dart';
 import '../dialogs/edit_supervisor_dialog.dart';
 
 class SupervisorRow extends StatelessWidget {
+
   final SupervisorModel supervisor;
   final int index;
 
@@ -14,29 +15,45 @@ class SupervisorRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+
     final bool isSweeping = supervisor.type == "sweeping";
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
+      padding: const EdgeInsets.symmetric(
+        horizontal: 20,
+        vertical: 18,
+      ),
 
       decoration: const BoxDecoration(
-        border: Border(bottom: BorderSide(color: Color(0xffE5E7EB))),
+        border: Border(
+          bottom: BorderSide(
+            color: Color(0xffE5E7EB),
+          ),
+        ),
       ),
 
       child: Row(
         children: [
+
           /// الاسم
           Expanded(
             flex: 4,
             child: Row(
               children: [
-                const Icon(Icons.person_outline, size: 18, color: Colors.grey),
+
+                const Icon(
+                  Icons.person_outline,
+                  size: 18,
+                  color: Colors.grey,
+                ),
 
                 const SizedBox(width: 8),
 
                 Text(
                   supervisor.name,
-                  style: const TextStyle(fontWeight: FontWeight.w600),
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
               ],
             ),
@@ -55,10 +72,9 @@ class SupervisorRow extends StatelessWidget {
                 ),
 
                 decoration: BoxDecoration(
-                  color:
-                      isSweeping
-                          ? const Color(0xffDBEAFE)
-                          : const Color(0xffDCFCE7),
+                  color: isSweeping
+                      ? const Color(0xffDBEAFE)
+                      : const Color(0xffDCFCE7),
 
                   borderRadius: BorderRadius.circular(20),
                 ),
@@ -69,10 +85,9 @@ class SupervisorRow extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.w600,
-                    color:
-                        isSweeping
-                            ? const Color(0xff2563EB)
-                            : const Color(0xff16A34A),
+                    color: isSweeping
+                        ? const Color(0xff2563EB)
+                        : const Color(0xff16A34A),
                   ),
                 ),
               ),
@@ -84,6 +99,7 @@ class SupervisorRow extends StatelessWidget {
             flex: 4,
             child: Row(
               children: [
+
                 const Icon(
                   Icons.location_on_outlined,
                   size: 18,
@@ -93,10 +109,10 @@ class SupervisorRow extends StatelessWidget {
                 const SizedBox(width: 6),
 
                 Text(
-                  supervisor.areaDetails.isNotEmpty
-                      ? (supervisor.areaDetails[0].squareName ?? "غير محدد")
-                      : "لا يوجد مربع",
-                  style: const TextStyle(color: Colors.black87),
+                  supervisor.squareName,
+                  style: const TextStyle(
+                    color: Colors.black87,
+                  ),
                 ),
               ],
             ),
@@ -107,17 +123,23 @@ class SupervisorRow extends StatelessWidget {
             flex: 3,
             child: Row(
               children: [
-                const Icon(Icons.access_time, size: 18, color: Colors.grey),
+
+                const Icon(
+                  Icons.access_time,
+                  size: 18,
+                  color: Colors.grey,
+                ),
 
                 const SizedBox(width: 6),
 
                 Text(
-                  supervisor.areaDetails.isNotEmpty &&
-                          supervisor.areaDetails[0].period != null
-                      ? "${supervisor.areaDetails[0].period} (${supervisor.areaDetails[0].startTime})"
-                      : "-",
-                  style: const TextStyle(color: Colors.grey),
-                ),
+                  supervisor.schedule == null || supervisor.schedule!.isEmpty
+                      ? "-"
+                      : supervisor.schedule!,
+                  style: const TextStyle(
+                    color: Colors.grey,
+                  ),
+                )
               ],
             ),
           ),
@@ -127,24 +149,35 @@ class SupervisorRow extends StatelessWidget {
             width: 70,
 
             child: InkWell(
+
               onTap: () {
+
                 showDialog(
                   context: context,
-                  builder:
-                      (_) => EditSupervisorDialog(
-                        supervisor: supervisor,
-                        index: index,
-                      ),
+                  builder: (_) => EditSupervisorDialog(
+                    supervisor: supervisor,
+                    index: index,
+                  ),
                 );
+
               },
 
               child: const Row(
                 children: [
-                  Icon(Icons.edit_outlined, size: 18),
+
+                  Icon(
+                    Icons.edit_outlined,
+                    size: 18,
+                  ),
 
                   SizedBox(width: 6),
 
-                  Text("تعديل", style: TextStyle(fontWeight: FontWeight.w600)),
+                  Text(
+                    "تعديل",
+                    style: TextStyle(
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
                 ],
               ),
             ),

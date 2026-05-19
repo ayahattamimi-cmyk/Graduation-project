@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import ' widgets/supervisor_row.dart';
+import 'widgets/supervisor_row.dart';
 import '../viewmodel/supervisor_viewmodel.dart';
 import 'dialogs/add_supervisor_dialog.dart';
 
