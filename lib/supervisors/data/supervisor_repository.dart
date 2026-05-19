@@ -5,6 +5,7 @@ import 'model/area_detail_model.dart';
 import 'model/statistics_model.dart';
 import '../data/supervisor_service.dart';
 
+
 class SupervisorRepository {
   final SupervisorService _service;
 
