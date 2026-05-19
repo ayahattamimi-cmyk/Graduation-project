@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
+import '../../dashboard/view/sidebar.dart';
 
 // ... نفس الـ imports
 class AddLocationDialog extends StatefulWidget {
+  final Function(AppPage) onPageSelected;
   final String? initialName;
   final String? initialType;
   final String? initialPeriod;
@@ -9,6 +12,7 @@ class AddLocationDialog extends StatefulWidget {
 
   const AddLocationDialog({
     super.key,
+    required this.onPageSelected,
     this.initialName,
     this.initialType,
     this.initialPeriod,

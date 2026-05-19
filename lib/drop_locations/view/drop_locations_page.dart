@@ -6,7 +6,8 @@ import 'widgets/area_card.dart';
 import 'widgets/drop_locations_header.dart';
 
 class DropLocationsPage extends StatefulWidget {
-  const DropLocationsPage({super.key});
+  final Function(AppPage) onPageSelected;
+  const DropLocationsPage({super.key,required this.onPageSelected,});
 
   @override
   State<DropLocationsPage> createState() => _DropLocationsPageState();

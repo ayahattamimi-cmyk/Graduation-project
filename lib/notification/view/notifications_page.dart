@@ -4,7 +4,13 @@ import 'notification_details_page.dart';
 import 'package:provider/provider.dart';
 
 class NotificationsPage extends StatefulWidget {
-  const NotificationsPage({super.key});
+
+  final Function(AppPage) onPageSelected;
+
+  const NotificationsPage({
+    super.key,
+    required this.onPageSelected,
+  });
 
   @override
   State<NotificationsPage> createState() => _NotificationsPageState();
@@ -14,7 +20,10 @@ class NotificationsPage extends StatefulWidget {
       padding: const EdgeInsets.only(bottom: 16),
       child: Text(
         title,
-        style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        style: const TextStyle(
+          fontSize: 18,
+          fontWeight: FontWeight.bold,
+        ),
       ),
     );
   }
@@ -154,6 +163,16 @@ class NotificationsPage extends StatefulWidget {
                       ),
                     ],
                   ),
+                ],
+              ),
+
+              const SizedBox(height: 10),
+
+              Text(
+                id,
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 18,
                 ),
               ),
             ],
@@ -165,17 +184,29 @@ class NotificationsPage extends StatefulWidget {
 
   static Widget _tagChip(String text, Color bg, Color color) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      padding: const EdgeInsets.symmetric(
+        horizontal: 10,
+        vertical: 4,
+      ),
+
       decoration: BoxDecoration(
         color: bg,
         borderRadius: BorderRadius.circular(20),
       ),
-      child: Text(text, style: TextStyle(fontSize: 12, color: color)),
+
+      child: Text(
+        text,
+        style: TextStyle(
+          fontSize: 12,
+          color: color,
+        ),
+      ),
     );
   }
 }
 
 class _NotificationsPageState extends State<NotificationsPage> {
+
   @override
   void initState() {
     super.initState();
@@ -285,6 +316,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
 }
 
 class _NotificationStat extends StatelessWidget {
+
   final String title;
   final String value;
   final IconData icon;
@@ -299,22 +331,34 @@ class _NotificationStat extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+
     return Expanded(
       child: Container(
         padding: const EdgeInsets.all(20),
+
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(14),
         ),
+
         child: Row(
           children: [
-            Icon(icon, color: color, size: 28),
+
+            Icon(
+              icon,
+              color: color,
+              size: 28,
+            ),
+
             const SizedBox(width: 12),
+
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
+
               children: [
                 Text(title, style: const TextStyle(color: Colors.black54)),
                 const SizedBox(height: 6),
+
                 Text(
                   value,
                   style: TextStyle(

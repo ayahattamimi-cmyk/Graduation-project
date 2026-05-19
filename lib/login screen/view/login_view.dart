@@ -27,17 +27,9 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
   bool _isObscure = true;
-  late bool isSignupMode;
 
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
-  final nameController = TextEditingController();
-
-  @override
-  void initState() {
-    super.initState();
-    isSignupMode = widget.isSignup;
-  }
 
   @override
   Widget build(BuildContext context) {

@@ -5,7 +5,8 @@ import '../../viewmodel/drop_locations_viewmodel.dart';
 
 class DropLocationsHeader extends StatelessWidget {
   final Function(Map data) onAdd;
-  const DropLocationsHeader({super.key, required this.onAdd});
+  final Function(AppPage) onPageSelected;
+  const DropLocationsHeader({super.key,required this.onPageSelected, required this.onAdd, });
 
   @override
   Widget build(BuildContext context) {
@@ -41,7 +42,9 @@ class DropLocationsHeader extends StatelessWidget {
               onPressed: () async {
                 final result = await showDialog(
                   context: context,
-                  builder: (_) => const AddLocationDialog(),
+                  builder: (_) => AddLocationDialog(
+                    onPageSelected:onPageSelected,
+                  ),
                 );
 
                 if (result != null) {

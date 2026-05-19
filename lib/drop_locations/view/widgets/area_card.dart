@@ -22,7 +22,7 @@ class _AreaCardState extends State<AreaCard> {
     final viewModel = context.read<DropLocationsViewModel>();
 
     return Card(
-      color: Colors.blueGrey,
+      color: Colors.grey,
       margin: const EdgeInsets.all(12),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
       child: Column(

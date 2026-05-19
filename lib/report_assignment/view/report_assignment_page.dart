@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../../dashboard/view/sidebar.dart';
+import '../../dashboard/viewmodel/dashboard_viewmodel.dart';
 import '../viewmodel/assignment_viewmodel.dart';
 
 class ReportAssignmentPage extends StatefulWidget {
