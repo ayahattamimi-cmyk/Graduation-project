@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import '../../data/container_data.dart';
+import '../../data/container_model.dart';
 
 class ContainerTile extends StatelessWidget {
-  final ContainerData container;
+  final ContainerModel container;
   final VoidCallback onDelete;
   final VoidCallback onEdit;
 
