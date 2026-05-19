@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
-import 'content_model.dart';
+import 'package:provider/provider.dart';
+import '../data/models/content_model.dart';
+import '../viewmodel/content_viewmodel.dart';
 import 'content_card.dart';
 import 'add_content_dialog.dart';
-import '../data/content_service.dart';
 
 class ContentPage extends StatefulWidget {
   const ContentPage({super.key});
@@ -12,95 +13,62 @@ class ContentPage extends StatefulWidget {
 }
 
 class _ContentPageState extends State<ContentPage> {
-  final ContentService _service = ContentService();
-  List<ContentModel> contents = [];
-
   @override
   void initState() {
     super.initState();
-    _loadContents();
-  }
-
-  Future<void> _loadContents() async {
-    final data = await _service.fetchContents();
-    setState(() {
-      contents = data;
+    Future.microtask(() {
+      if (mounted) {
+        context.read<NewsTipsViewModel>().loadData();
+      }
     });
   }
 
-  Future<void> _addContent(ContentModel newContent) async {
-    await _service.addContent(newContent);
-    _loadContents();
-  }
-
-  Future<void> _deleteContent(String id) async {
-    await _service.deleteContent(id);
-    _loadContents();
-  }
-
-  Future<void> _editContent(ContentModel updated) async {
-    await _service.updateContent(updated);
-    _loadContents();
-  }
-
-  Future<void> _togglePublish(ContentModel content) async {
-    await _service.togglePublish(content);
-    _loadContents();
+  // دالة مساعدة لإظهار رسالة
+  void _showMessage(String msg) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
   }
 
   @override
   Widget build(BuildContext context) {
-    final tipsCount =
-        contents.where((e) => e.type == ContentType.tip).length;
-    final newsCount =
-        contents.where((e) => e.type == ContentType.news).length;
-    final publishedCount =
-        contents.where((e) => e.isPublished).length;
+    final vm = context.watch<NewsTipsViewModel>();
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(24),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-
-          /// العنوان
           const Text(
             'إدارة الأخبار والنصائح',
-            style:
-            TextStyle(fontSize: 26, fontWeight: FontWeight.bold),
+            style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold),
           ),
-
           const SizedBox(height: 8),
-
           const Text(
             'نشر محتوى توعوي للمواطنين',
             style: TextStyle(color: Colors.grey),
           ),
-
           const SizedBox(height: 24),
 
           /// زر الإضافة
-          ///
-
           ElevatedButton.icon(
             onPressed: () async {
               final result = await showDialog<ContentModel>(
                 context: context,
                 builder: (_) => const AddContentDialog(),
               );
-
-              if (result != null) {
-                _addContent(result);
+              if (result != null && mounted) {
+                await vm.addContent(result);
+                _showMessage("تمت الإضافة بنجاح");
               }
             },
-            icon: const Icon(Icons.person_add,color: Colors.white,),
-            label: const Text("إضافة محتوى جديد",style: TextStyle(color: Colors.white),),
+            icon: const Icon(Icons.person_add, color: Colors.white),
+            label: const Text(
+              "إضافة محتوى جديد",
+              style: TextStyle(color: Colors.white),
+            ),
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xff2563EB),
-              padding: const EdgeInsets.symmetric(
-                horizontal: 20,
-                vertical: 14,
-              ),
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
               ),
@@ -115,28 +83,21 @@ class _ContentPageState extends State<ContentPage> {
             children: [
               _statCard(
                 'النصائح',
-                tipsCount.toString(),
+                vm.tipsCount.toString(),
                 Icons.lightbulb_outline,
                 Colors.orange,
               ),
               const SizedBox(width: 16),
               _statCard(
                 'الأخبار',
-                newsCount.toString(),
+                vm.newsCount.toString(),
                 Icons.article_outlined,
                 Colors.purple,
               ),
               const SizedBox(width: 16),
               _statCard(
-                'منشور',
-                publishedCount.toString(),
-                Icons.remove_red_eye_outlined,
-                Colors.green,
-              ),
-              const SizedBox(width: 16),
-              _statCard(
                 'إجمالي المحتوى',
-                contents.length.toString(),
+                vm.totalCount.toString(),
                 Icons.library_books_outlined,
                 Colors.blue,
               ),
@@ -147,27 +108,39 @@ class _ContentPageState extends State<ContentPage> {
 
           const Text(
             'المحتوى المنشور والمسودات',
-            style:
-            TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
 
           const SizedBox(height: 20),
 
-          ...contents.map(
-                (item) => ContentCard(
-              content: item,
-              onDelete: () => _deleteContent(item.id),
-              onEdit: (updated) => _editContent(updated),
-              onTogglePublish: () => _togglePublish(item),
+          if (vm.isLoading)
+            const Center(child: CircularProgressIndicator())
+          else if (vm.contents.isEmpty)
+            const Center(child: Text("لا يوجد محتوى حالياً"))
+          else
+            ...vm.contents.map(
+              (item) => ContentCard(
+                content: item,
+                onDelete: () async {
+                  await vm.deleteContent(item.id!);
+                  _showMessage("تم الحذف بنجاح");
+                },
+                onEdit: (updated) async {
+                  await vm.editContent(updated);
+                  _showMessage("تم التعديل بنجاح");
+                },
+                onTogglePublish: () async {
+                  await vm.togglePublish(item.id!);
+                  _showMessage("تم تغيير حالة النشر");
+                },
+              ),
             ),
-          ),
         ],
       ),
     );
   }
 
-  Widget _statCard(
-      String title, String value, IconData icon, Color color) {
+  Widget _statCard(String title, String value, IconData icon, Color color) {
     return Expanded(
       child: Container(
         padding: const EdgeInsets.all(20),
@@ -181,8 +154,7 @@ class _ContentPageState extends State<ContentPage> {
             Icon(icon, color: color, size: 28),
             const SizedBox(width: 12),
             Column(
-              crossAxisAlignment:
-              CrossAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(title),
                 const SizedBox(height: 6),

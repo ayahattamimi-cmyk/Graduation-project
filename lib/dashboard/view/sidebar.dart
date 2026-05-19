@@ -17,7 +17,7 @@ class Sidebar extends StatelessWidget {
 
   const Sidebar({
     super.key,
-    required this.currentPage,//required يعني لازم امرر قيمتها
+    required this.currentPage, //required يعني لازم امرر قيمتها
     required this.onPageSelected,
   });
 
@@ -42,7 +42,7 @@ class Sidebar extends StatelessWidget {
           _item('الخريطة', Icons.map, AppPage.map),
           _item('إدارة المشرفين', Icons.people, AppPage.admins),
 
-          const Divider(height: 32),//خط فاصل بين أقسام القائمة.
+          const Divider(height: 32), //خط فاصل بين أقسام القائمة.
 
           _item('الأخبار والنصائح', Icons.article, AppPage.news),
           _item('مواقع الرفع', Icons.cloud_upload, AppPage.uploadSites),
@@ -55,7 +55,8 @@ class Sidebar extends StatelessWidget {
   Widget _item(String title, IconData icon, AppPage page) {
     final bool active = currentPage == page;
 
-    return InkWell(//العنصر الموجود يكون قابل للضغط عليه
+    return InkWell(
+      //العنصر الموجود يكون قابل للضغط عليه
       onTap: () => onPageSelected(page),
       child: Container(
         margin: const EdgeInsets.only(bottom: 8),

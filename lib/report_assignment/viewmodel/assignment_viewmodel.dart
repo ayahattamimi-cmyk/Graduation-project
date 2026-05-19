@@ -1,76 +1,77 @@
 import 'package:flutter/material.dart';
-import '../data/assignment_data.dart';
+import '../data/assignment_repository.dart'; // استيراد الريبوزيتوري الجديد
+import '../data/assignment_model.dart'; // استيراد موديل التوجيه
 
 class AssignmentViewModel extends ChangeNotifier {
+  // 1. التعديل: تمرير الريبوزيتوري عبر الـ Constructor للاتصال بالسيرفر
+  final AssignmentRepository _repository;
+  AssignmentViewModel(this._repository);
 
-  AssignmentViewModel(){
-    fetchReportsCount();
-    _updateSupervisor();
-  }
+  // --- البيانات الديناميكية القادمة من السيرفر ---
+  AssignmentSuggestionModel? suggestion;
+  bool isLoading = false;
 
-  String selectedArea = "مربع 1 - السوق العام";
-  String selectedWorkType = "كنس";
-
+  // المتغيرات التي تقرأها الواجهة مباشرة
+  String selectedArea = "";
   String supervisorName = "";
   int reportsCount = 0;
 
-  final Map<String,String> supervisors = {
-    "مربع 1 - السوق العام": "أحمد محمد الحربي",
-    "مربع 2 - الحي الشمالي": "سعود القحطاني",
-    "مربع 3 - المنطقة الصناعية": "خالد عبدالله القحطاني",
-    "مربع 4 - الكورنيش": "عبدالعزيز العتيبي",
-    "مربع 5 - المركز": "محمد الزهراني",
-  };
+  // القيم الافتراضية المعتمدة في السيرفر (sweeping للكنس، lifting للرفع)
+  String selectedWorkType = "sweeping";
+  final List<String> workTypes = ["sweeping", "lifting"];
 
-  final List<String> areas = [
-    "مربع 1 - السوق العام",
-    "مربع 2 - الحي الشمالي",
-    "مربع 3 - المنطقة الصناعية",
-    "مربع 4 - الكورنيش",
-    "مربع 5 - المركز",
-  ];
+  // 2. التعديل: دالة جلب الاقتراح التلقائي بناءً على إحداثيات وموقع البلاغ (GET)
+  // يتم استدعاؤها في صفحة التفاصيل عند الضغط على زر التوجيه (قبل الانتقال)
+  Future<void> loadAssignmentSuggestion(int reportId) async {
+    isLoading = true;
+    notifyListeners(); // إشعار الواجهة بالتحميل
 
-  final List<String> workTypes = ["كنس","رفع"];
+    try {
+      // جلب البيانات من قاعدة البيانات عبر Laravel API
+      suggestion = await _repository.fetchSuggestion(reportId);
 
-  void setArea(String value){
-    selectedArea = value;
-    _updateSupervisor();
-    fetchReportsCount();
-    notifyListeners();
+      if (suggestion != null) {
+        // تعبئة البيانات المقترحة تلقائياً "على الجاهز" للمدير
+        selectedArea = suggestion!.squareLabel; // مثل: "مربع 8 - السحيل وشحوح2"
+        supervisorName = suggestion!.supervisorName; // مثل: "أمين علي بن سالم"
+        reportsCount = suggestion!.reportsCount; // عدد البلاغات الحالية بالمربع
+      }
+    } catch (e) {
+      debugPrint("❌ فشل جلب اقتراح التوجيه من السيرفر: $e");
+    } finally {
+      isLoading = false;
+      notifyListeners(); // إشعار الواجهة بانتهاء التحميل وعرض البيانات
+    }
   }
 
-  void setWorkType(String value){
+  // 3. التعديل: دالة تحديث نوع العمل (كنس / رفع) من القائمة المنسدلة
+  void setWorkType(String value) {
     selectedWorkType = value;
     notifyListeners();
   }
 
-  void _updateSupervisor(){
-    supervisorName = supervisors[selectedArea] ?? "";
-  }
+  // 4. التعديل: إرسال طلب التعيين الفعلي والنهائي للسيرفر (POST)
+  // تأخذ رقم البلاغ لتوثيق العملية في قاعدة البيانات
+  Future<bool> sendAssignment(int reportId) async {
+    if (suggestion == null) return false;
 
-  /// mock API
-  Future<void> fetchReportsCount() async {
-
-    await Future.delayed(const Duration(milliseconds: 300));
-
-    final fakeApi = {
-      "مربع 1 - السوق العام": 12,
-      "مربع 2 - الحي الشمالي": 8,
-      "مربع 3 - المنطقة الصناعية": 52,
-      "مربع 4 - الكورنيش": 4,
-      "مربع 5 - المركز": 17,
-    };
-
-    reportsCount = fakeApi[selectedArea] ?? 0;
+    isLoading = true;
     notifyListeners();
-  }
 
-  AssignmentData assignReport(){
-    return AssignmentData(
-      area: selectedArea,
-      workType: selectedWorkType,
-      supervisorName: supervisorName,
-      reportsCount: reportsCount,
-    );
+    try {
+      // إرسال البيانات للريبوزيتوري لتجهيز الـ FormData والـ POST
+      final success = await _repository.sendAssignment(
+        reportId: reportId,
+        supervisorId: suggestion!.supervisorId, // نرسل الـ ID الرقمي للمشرف كما يطلبه السيرفر
+        workType: selectedWorkType, // نرسل نوع العمل المختار (sweeping / lifting)
+      );
+      return success;
+    } catch (e) {
+      debugPrint("❌ فشل عملية التعيين النهائية: $e");
+      return false;
+    } finally {
+      isLoading = false;
+      notifyListeners();
+    }
   }
 }

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:web2/notification/viewmodel/notification_viewmodel.dart';
 import 'notification_details_page.dart';
+import 'package:provider/provider.dart';
 
 class NotificationsPage extends StatefulWidget {
   const NotificationsPage({super.key});
@@ -8,7 +10,7 @@ class NotificationsPage extends StatefulWidget {
   State<NotificationsPage> createState() => _NotificationsPageState();
 
   static Widget _sectionTitle(String title) {
-    return Padding(//مسافة اسفل العنوان
+    return Padding(
       padding: const EdgeInsets.only(bottom: 16),
       child: Text(
         title,
@@ -17,147 +19,149 @@ class NotificationsPage extends StatefulWidget {
     );
   }
 
-  //  بلاغ (جديد / قيد المعالجة
   static Widget _notificationItem(
-      BuildContext context, {
-        required String id,
-        required String category,
-        required String priority,
-        required String days,
-        required String status,
-      }) {
-    return Container(//الشكل الكامل حق كرت البلاغ
-      margin: const EdgeInsets.only(bottom: 16),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: Colors.grey.shade200),
-      ),
-      child: Row(//قسيم المحتوى حقت البلاغ
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
+    BuildContext context, {
+    required String id,
+    required int reportId,
+    required String category,
+    required String priority,
+    required String days,
+    required String status,
+    required String notificationId,
+    required bool isRead,
+  }) {
+    // تحديد الألوان بناء على الحالة والتقدم
+    final bool isResolved = status == "تم الحل" ||
+        status == "محلول" ||
+        status == "تم إنجازه" ||
+        status == "solved" ||
+        status == "resolved";
 
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              Text(id, style: const TextStyle(fontWeight: FontWeight.bold)),
-              const SizedBox(height: 6),
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  _tagChip(category, Colors.blue.shade100, Colors.blue),
-                  const SizedBox(width: 6),
-                  _tagChip(
-                    priority,
-                    priority == 'عاجل'
-                        ? Colors.red.shade100
-                        : Colors.orange.shade100,
-                    priority == 'عاجل' ? Colors.red : Colors.orange,
-                  ),
-                ],
-              ),
-              const SizedBox(height: 6),
-              Text(days, style: const TextStyle(color: Colors.grey)),
-            ],
-          ),
+    Color backgroundColor;
+    Color borderColor;
+    Color indicatorColor;
 
-     //الزر حق عرض التفاصيل
-          OutlinedButton.icon(
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => NotificationDetailsPage(
-                    id: id,
-                    category: category,
-                    priority: priority,
-                    days: days,
-                    status: status,
-                    imageUrl: 'https://picsum.photos/800/400',
-                  ),
-                ),
-              );
-            },
-            icon: const Icon(Icons.visibility),
-            label: const Text('عرض التفاصيل'),
-          ),
-        ],
-      ),
-    );
+    if (isResolved) {
+      backgroundColor = const Color(0xffE8F5E9); // أخضر خفيف جداً للبلاغات المنجزة
+      borderColor = const Color(0xffC8E6C9);
+      indicatorColor = Colors.green.shade600;
+    } else if (!isRead) {
+      backgroundColor = const Color(0xffE3F2FD); // أزرق خفيف جداً لغير المقروء
+      borderColor = const Color(0xffBBDEFB);
+      indicatorColor = Colors.blue.shade600;
+    } else {
+      backgroundColor = const Color(0xffF5F5F5); // رمادي خفيف جداً للمقروء
+      borderColor = const Color(0xffE0E0E0);
+      indicatorColor = Colors.grey.shade400;
+    }
 
-  }
-
-
-  static Widget _solvedNotificationItem(
-      BuildContext context, {
-        required String id,
-        required String category,
-        required String tag,
-        required String days,
-      }) {
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
-      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: const Color(0xffeefcf3),
+        color: backgroundColor,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: Colors.green.shade200),
+        border: Border.all(color: borderColor),
       ),
-      child: Row(
-        children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    _tagChip(category, Colors.red.shade100, Colors.red),
-                    const SizedBox(width: 6),
-                    _tagChip(tag, Colors.purple.shade100, Colors.purple),
-                    const SizedBox(width: 6),
-                    _tagChip('مكتمل', Colors.green.shade100, Colors.green),
-                  ],
-                ),
-                const SizedBox(height: 6),
-                Text(id, style: const TextStyle(fontWeight: FontWeight.bold)),
-                const SizedBox(height: 4),
-                Text(days, style: const TextStyle(color: Colors.grey)),
-              ],
-            ),
-          ),
-
-          const SizedBox(width: 16),
-
-          OutlinedButton.icon(
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => NotificationDetailsPage(
-                    id: id,
-                    category: category,
-                    priority: 'مكتمل',
-                    days: days,
-                    status: 'مكتمل',
-                    imageUrl: 'https://picsum.photos/800/400',
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(13),
+        child: IntrinsicHeight(
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              // الشريط الجانبي الملون لجمالية فائقة
+              Container(
+                width: 6,
+                color: indicatorColor,
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              id, 
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: isRead && !isResolved ? Colors.black54 : Colors.black87,
+                              )
+                            ),
+                            const SizedBox(height: 8),
+                            Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                _tagChip(category, Colors.blue.shade100, Colors.blue),
+                                const SizedBox(width: 6),
+                                _tagChip(
+                                  priority,
+                                  priority == 'عاجل'
+                                      ? Colors.red.shade100
+                                      : Colors.orange.shade100,
+                                  priority == 'عاجل' ? Colors.red : Colors.orange,
+                                ),
+                                if (isResolved) ...[
+                                  const SizedBox(width: 6),
+                                  _tagChip(
+                                    "تم الإنجاز ✓",
+                                    Colors.green.shade100,
+                                    Colors.green.shade700,
+                                  ),
+                                ] else if (!isRead) ...[
+                                  const SizedBox(width: 6),
+                                  _tagChip(
+                                    "جديد",
+                                    Colors.blue.shade100,
+                                    Colors.blue.shade700,
+                                  ),
+                                ]
+                              ],
+                            ),
+                            const SizedBox(height: 6),
+                            Text(days, style: const TextStyle(color: Colors.grey, fontSize: 12)),
+                          ],
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.only(left: 16),
+                        child: OutlinedButton.icon(
+                          onPressed: () {
+                            context.read<NotificationsViewModel>().markRead(notificationId);
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => NotificationDetailsPage(reportId: reportId),
+                              ),
+                            );
+                          },
+                          icon: const Icon(Icons.visibility),
+                          label: const Text('عرض التفاصيل'),
+                          style: OutlinedButton.styleFrom(
+                            backgroundColor: Colors.white,
+                            side: BorderSide(color: isResolved ? Colors.green.shade300 : (isRead ? Colors.grey.shade400 : Colors.blue.shade300)),
+                            foregroundColor: isResolved ? Colors.green.shade700 : (isRead ? Colors.black87 : Colors.blue.shade700),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-              );
-            },
-            icon: const Icon(Icons.visibility),
-            label: const Text('عرض التفاصيل'),
+              ),
+            ],
           ),
-
-          const SizedBox(width: 8),
-          const Icon(Icons.check_circle, color: Colors.green),
-        ],
+        ),
       ),
     );
   }
-
 
   static Widget _tagChip(String text, Color bg, Color color) {
     return Container(
@@ -173,126 +177,112 @@ class NotificationsPage extends StatefulWidget {
 
 class _NotificationsPageState extends State<NotificationsPage> {
   @override
+  void initState() {
+    super.initState();
+    // استخدام الدالة الشاملة لجلب الإحصائيات والبلاغات معاً
+    Future.microtask(
+      () => context.read<NotificationsViewModel>().loadDashboardData(),
+    );
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return Directionality(//ذا عشان الاتجاه حق النص من اليمين الى اليسار
+    final viewModel = context.watch<NotificationsViewModel>();
+
+    return Directionality(
       textDirection: TextDirection.rtl,
-      child: SingleChildScrollView(
-        padding: const EdgeInsets.all(24),//مسافة حول المحتوى كله
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            //العنوان
-            const Text(
-              'الإشعارات',
-              style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 4),
-            const Text(
-              'جميع التحديثات والبلاغات الواردة',
-              style: TextStyle(color: Colors.grey),
-            ),
+      child: Scaffold(
+        backgroundColor: const Color(0xfff6f8fb),
+        body:
+            viewModel.isLoading
+                ? const Center(child: CircularProgressIndicator())
+                : SingleChildScrollView(
+                  padding: const EdgeInsets.all(24),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'الإشعارات',
+                        style: TextStyle(
+                          fontSize: 26,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const Text(
+                        'جميع التحديثات والبلاغات الواردة',
+                        style: TextStyle(color: Colors.grey),
+                      ),
+                      const SizedBox(height: 32),
 
-            const SizedBox(height: 32),
+                      // [تعديل] ربط المربعات بالإحصائيات الحقيقية من البوست مان
+                      Row(
+                        children: [
+                          _NotificationStat(
+                            title: 'إجمالي الإشعارات',
+                            value:
+                                viewModel.stats?.total.toString() ??
+                                '0', // من البوست مان total
+                            icon: Icons.notifications,
+                            color: Colors.blue,
+                          ),
+                          const SizedBox(width: 16),
+                          _NotificationStat(
+                            title: 'البلاغات المحلولة',
+                            value:
+                                viewModel.stats?.resolved.toString() ??
+                                '0', // من البوست مان resolved
+                            icon: Icons.check_circle,
+                            color: Colors.green,
+                          ),
+                          const SizedBox(width: 16),
+                          _NotificationStat(
+                            title: 'البلاغات النشطة',
+                            value:
+                                viewModel.stats?.active.toString() ??
+                                '0', // من البوست مان active
+                            icon: Icons.error,
+                            color: Colors.orange,
+                          ),
+                        ],
+                      ),
 
-            //
-            Row(
-              children: const [
-                _NotificationStat(//الشرطة يعني انه خاص م نقدر نستدعية من ملف ثاني
-                  title: 'إجمالي الإشعارات',
-                  value: '6',
-                  icon: Icons.notifications,
-                  color: Colors.blue,
+                      const SizedBox(height: 32),
+
+                      // عرض قائمة البلاغات الجديدة ديناميكياً
+                      NotificationsPage._sectionTitle(
+                        'البلاغات الجديدة (${viewModel.notifications.length})',
+                      ),
+
+                      if (viewModel.notifications.isEmpty)
+                        const Center(
+                          child: Padding(
+                            padding: EdgeInsets.all(20.0),
+                            child: Text("لا توجد إشعارات جديدة حالياً"),
+                          ),
+                        )
+                      else
+                        ...viewModel.notifications
+                            .map(
+                              (notif) => NotificationsPage._notificationItem(
+                                context,
+                                id: notif.title,
+                                reportId: notif.reportId,
+                                category: notif.reportType,
+                                priority: notif.priority,
+                                days: notif.createdAt,
+                                status: notif.status,
+                                notificationId: notif.id,
+                                isRead: notif.isRead,
+                              ),
+                            )
+                            .toList(),
+                    ],
+                  ),
                 ),
-                SizedBox(width: 16),
-                _NotificationStat(
-                  title: 'البلاغات المحلولة',
-                  value: '2',
-                  icon: Icons.check_circle,
-                  color: Colors.green,
-                ),
-                SizedBox(width: 16),
-                _NotificationStat(
-                  title: 'البلاغات الجديدة',
-                  value: '4',
-                  icon: Icons.error,
-                  color: Colors.orange,
-                ),
-              ],
-            ),
-
-            const SizedBox(height: 32),
-
-            //   البلاغات الجديدة
-            NotificationsPage._sectionTitle('البلاغات الجديدة (2)'),
-
-            NotificationsPage._notificationItem(
-              context,
-              id: '#2025-001',
-              category: 'نظافة الشوارع',
-              priority: 'عاجل',
-              days: 'منذ 57 يوم',
-              status: 'جديد',
-            ),
-            NotificationsPage._notificationItem(
-              context,
-              id: '#2025-002',
-              category: 'تركيب المخلفات',
-              priority: 'متوسط',
-              days: 'منذ 57 يوم',
-              status: 'جديد',
-            ),
-
-            const SizedBox(height: 32),
-
-            // قيد المعالجة
-            NotificationsPage._sectionTitle('البلاغات قيد المعالجة'),
-
-            NotificationsPage._notificationItem(
-              context,
-              id: '#2025-010',
-              category: 'مكافحة الآفات',
-              priority: 'متوسط',
-              days: 'منذ 20 يوم',
-              status: 'قيد المعالجة',
-            ),
-
-            const SizedBox(height: 32),
-
-            // البلاغات المحلولة
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: const [
-                Text(
-                  'البلاغات المحلولة (2)',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                ),
-                Icon(Icons.check_circle, color: Colors.green),
-              ],
-            ),
-
-            const SizedBox(height: 16),
-
-            NotificationsPage._solvedNotificationItem(
-              context,
-              id: '#2025-004',
-              category: 'أعطال الحدائق',
-              tag: 'كنس',
-              days: 'منذ 58 يوم',
-            ),
-            NotificationsPage._solvedNotificationItem(
-              context,
-              id: '#2025-006',
-              category: 'تركيب المخلفات',
-              tag: 'رفع',
-              days: 'منذ 59 يوم',
-            ),
-          ],
-        ),
       ),
     );
   }
 }
-
 
 class _NotificationStat extends StatelessWidget {
   final String title;
@@ -323,7 +313,7 @@ class _NotificationStat extends StatelessWidget {
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(title),
+                Text(title, style: const TextStyle(color: Colors.black54)),
                 const SizedBox(height: 6),
                 Text(
                   value,

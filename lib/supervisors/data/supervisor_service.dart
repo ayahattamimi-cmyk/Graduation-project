@@ -1,26 +1,46 @@
-import 'dart:convert';
-import 'package:http/http.dart' as http;
-import '../model/supervisor_model.dart';
+import 'package:dio/dio.dart';
 
 class SupervisorService {
+  final Dio _dio;
 
-  Future<List<SupervisorModel>> getSupervisors() async {
+  // نمرر Dio هنا لضمان استخدام نفس الإعدادات والتوكن
+  SupervisorService(this._dio);
 
-    final response = await http.get(
-      Uri.parse("API_LINK_HERE"),
-    );
+  // جلب جميع المشرفين
+  Future<Response> getAllSupervisors() async {
+    return await _dio.get('showSupervisors');
+  }
 
-    if(response.statusCode == 200){
+  // جلب المربعات حسب النوع (كنس أو رفع)
+  Future<Response> getAreas(String type) async {
+    return await _dio.get('showAreas/$type');
+  }
 
-      final data = jsonDecode(response.body);
+  // تحديث بيانات مشرف معين
+  Future<Response> updateSupervisor(int id, Map<String, dynamic> data) async {
+    return await _dio.post('updateSupervisors/$id', data: data);
+  }
 
-      List list = data["supervisors"];
+  // جلب الإحصائيات (CountStatistics)
+  Future<Response> getStatistics() async {
+    return await _dio.get('CountStatistics');
+  }
 
-      return list
-          .map((e)=>SupervisorModel.fromJson(e))
-          .toList();
-    }
+  // جلب مشرفي الرفع فقط
+  Future<Response> getLiftingSupervisors() async {
+    return await _dio.get('getLiftingSupervisors');
+  }
 
-    throw Exception("Failed to load supervisors");
+  // جلب مشرفي الكنس فقط
+  Future<Response> getSweepingSupervisors() async {
+    return await _dio.get('getSweepingSupervisors');
+  }
+
+  Future<Response> addSupervisor(Map<String, dynamic> data) async {
+    return await _dio.post('addSupervisors', data: data);
+  }
+
+  Future<Response> getSupervisorPerformanceReport(FormData data) async {
+    return await _dio.post('supervisor-report', data: data);
   }
 }

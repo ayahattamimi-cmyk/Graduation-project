@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
-import 'content_model.dart';
+import 'package:web2/content/data/models/content_model.dart';
 
 class ContentCard extends StatefulWidget {
   final ContentModel content;
   final VoidCallback onDelete;
   final Function(ContentModel) onEdit;
   final VoidCallback onTogglePublish;
-
 
   const ContentCard({
     super.key,
@@ -21,7 +20,6 @@ class ContentCard extends StatefulWidget {
 }
 
 class _ContentCardState extends State<ContentCard> {
-
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -41,15 +39,12 @@ class _ContentCardState extends State<ContentCard> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-
           /// الصف العلوي
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-
               Row(
                 children: [
-
                   /// أيقونة حسب النوع
                   Icon(
                     widget.content.type == ContentType.news
@@ -59,14 +54,14 @@ class _ContentCardState extends State<ContentCard> {
                         ? Colors.purple
                         : Colors.orange,
                   ),
-
                   const SizedBox(width: 8),
-
 
                   /// حالة النشر
                   Container(
                     padding: const EdgeInsets.symmetric(
-                        horizontal: 12, vertical: 4),
+                      horizontal: 12,
+                      vertical: 4,
+                    ),
                     decoration: BoxDecoration(
                       color: widget.content.isPublished
                           ? Colors.green.shade100
@@ -85,7 +80,6 @@ class _ContentCardState extends State<ContentCard> {
                   ),
                 ],
               ),
-
               Row(
                 children: [
                   IconButton(
@@ -108,9 +102,7 @@ class _ContentCardState extends State<ContentCard> {
                       elevation: 0,
                     ),
                     child: Text(
-                      widget.content.isPublished
-                          ? 'إلغاء النشر'
-                          : 'نشر',
+                      widget.content.isPublished ? 'إلغاء النشر' : 'نشر',
                     ),
                   ),
                 ],
@@ -123,21 +115,15 @@ class _ContentCardState extends State<ContentCard> {
           /// العنوان
           Text(
             widget.content.title,
-            style: const TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-            ),
+            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
 
           const SizedBox(height: 8),
 
           /// النص
           Text(
-            widget.content.description,
-            style: const TextStyle(
-              color: Colors.black87,
-              height: 1.6,
-            ),
+            widget.content.content,
+            style: const TextStyle(color: Colors.black87, height: 1.6),
           ),
 
           const SizedBox(height: 12),
@@ -145,50 +131,36 @@ class _ContentCardState extends State<ContentCard> {
           /// التاريخ
           Row(
             children: [
-              const Icon(Icons.calendar_today,
-                  size: 14, color: Colors.grey),
+              const Icon(Icons.calendar_today, size: 14, color: Colors.grey),
               const SizedBox(width: 6),
               Text(
-                "${widget.content.date.year}-${widget.content.date.month}-${widget.content.date.day}",
-                style: const TextStyle(
-                  fontSize: 12,
-                  color: Colors.grey,
-                ),
+                widget.content.publishDate ?? "غير محدد",
+                style: const TextStyle(fontSize: 12, color: Colors.grey),
               ),
             ],
           ),
           const SizedBox(height: 12),
 
-
-
           /// اسم الناشر
           Row(
             children: [
-              const Icon(Icons.person_outline,
-                  size: 16, color: Colors.grey),
+              const Icon(Icons.person_outline, size: 16, color: Colors.grey),
               const SizedBox(width: 6),
               Text(
-                "كتب بواسطة: ${widget.content.authorName}",
-                style: const TextStyle(
-                  fontSize: 13,
-                  color: Colors.grey,
-                ),
+                "كتب بواسطة: ${widget.content.adminName ?? 'غير محدد'}",
+                style: const TextStyle(fontSize: 13, color: Colors.grey),
               ),
             ],
           ),
-
         ],
       ),
     );
   }
 
   /// ================= تعديل =================
-
   void _showEditDialog(BuildContext context) {
-    final titleController =
-    TextEditingController(text: widget.content.title);
-    final descController =
-    TextEditingController(text: widget.content.description);
+    final titleController = TextEditingController(text: widget.content.title);
+    final contentController = TextEditingController(text: widget.content.content);
 
     showDialog(
       context: context,
@@ -200,18 +172,16 @@ class _ContentCardState extends State<ContentCard> {
             children: [
               TextField(
                 controller: titleController,
-                decoration:
-                const InputDecoration(labelText: 'العنوان'),
+                decoration: const InputDecoration(labelText: 'العنوان'),
               ),
               const SizedBox(height: 12),
               TextField(
-                controller: descController,
-                decoration:
-                const InputDecoration(labelText: 'الوصف'),
+                controller: contentController,
+                maxLines: 3,
+                decoration: const InputDecoration(labelText: 'المحتوى'),
               ),
             ],
           ),
-
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
@@ -221,9 +191,8 @@ class _ContentCardState extends State<ContentCard> {
               onPressed: () {
                 final updated = widget.content.copyWith(
                   title: titleController.text,
-                  description: descController.text,
+                  content: contentController.text,
                 );
-
                 widget.onEdit(updated);
                 Navigator.pop(context);
               },
