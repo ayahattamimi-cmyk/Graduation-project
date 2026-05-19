@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import '../../dashboard/view/sidebar.dart';
 
-// ... نفس الـ imports
 class AddLocationDialog extends StatefulWidget {
   final Function(AppPage)? onPageSelected;
   final String? initialName;
@@ -24,6 +23,9 @@ class AddLocationDialog extends StatefulWidget {
 }
 
 class _AddLocationDialogState extends State<AddLocationDialog> {
+
+  final _formKey = GlobalKey<FormState>();
+
   late TextEditingController nameController;
 
   String type = "ثابت";
@@ -33,36 +35,17 @@ class _AddLocationDialogState extends State<AddLocationDialog> {
   String classification = "رئيسي";
   String location = "(29,69)";
 
-  // تعريف القوائم المتاحة للتأكد من مطابقة القيم
-  final List<String> typeOptions = ["ثابت", "مستحدث"];
-  final List<String> periodOptions = ["صباحي", "مسائي"];
-  final List<String> classificationOptions = ["رئيسي", "ثانوي"];
-
   @override
   void initState() {
     super.initState();
 
-    nameController = TextEditingController(text: widget.initialName ?? "");
+    nameController = TextEditingController(
+      text: widget.initialName ?? "",
+    );
 
-    // --- تعديل مهم: فحص الأمان للقيم القادمة من السيرفر ---
-    // نتأكد أن القيمة موجودة في القائمة، وإلا نختار القيمة الافتراضية
-    if (widget.initialType != null &&
-        typeOptions.contains(widget.initialType)) {
-      type = widget.initialType!;
-    } else if (widget.initialType == "مستحدثة") {
-      // حل مشكلة التاء المربوطة يدوياً إذا كانت تأتي هكذا من السيرفر
-      type = "مستحدث";
-    }
-
-    if (widget.initialPeriod != null &&
-        periodOptions.contains(widget.initialPeriod)) {
-      period = widget.initialPeriod!;
-    }
-
-    if (widget.initialClassification != null &&
-        classificationOptions.contains(widget.initialClassification)) {
-      classification = widget.initialClassification!;
-    }
+    type = widget.initialType ?? type;
+    period = widget.initialPeriod ?? period;
+    classification = widget.initialClassification ?? classification;
   }
 
   @override
@@ -72,100 +55,357 @@ class _AddLocationDialogState extends State<AddLocationDialog> {
       child: Container(
         width: 500,
         padding: const EdgeInsets.all(20),
-        child: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
-                "بيانات موقع الرفع",
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 20),
+        child: Form(
+          key: _formKey,
+          child: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
 
-              const Text("اسم الموقع"),
-              TextField(
-                controller: nameController,
-                decoration: const InputDecoration(hintText: "مثال: حاوية 1-أ"),
-              ),
-
-              const SizedBox(height: 12),
-
-              const Text("نوع الموقع"),
-              // استخدام DropdownButtonFormField مع التأكد من القيم
-              DropdownButtonFormField<String>(
-                value: type,
-                items:
-                    typeOptions.map((String value) {
-                      return DropdownMenuItem<String>(
-                        value: value,
-                        child: Text(value),
-                      );
-                    }).toList(),
-                onChanged: (v) => setState(() => type = v!),
-              ),
-
-              const SizedBox(height: 12),
-
-              // ... باقي الحقول (المنطقة، التكرار، إلخ) بنفس الطريقة
-              const Text("الفترة الزمنية"),
-              DropdownButtonFormField<String>(
-                value: period,
-                items:
-                    periodOptions.map((String value) {
-                      return DropdownMenuItem<String>(
-                        value: value,
-                        child: Text(value),
-                      );
-                    }).toList(),
-                onChanged: (v) => setState(() => period = v!),
-              ),
-
-              const SizedBox(height: 12),
-
-              const Text("التصنيف"),
-              DropdownButtonFormField<String>(
-                value: classification,
-                items:
-                    classificationOptions.map((String value) {
-                      return DropdownMenuItem<String>(
-                        value: value,
-                        child: Text(value),
-                      );
-                    }).toList(),
-                onChanged: (v) => setState(() => classification = v!),
-              ),
-
-              const SizedBox(height: 20),
-
-              Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  TextButton(
-                    onPressed: () => Navigator.pop(context),
-                    child: const Text("إلغاء"),
+                const Text(
+                  "أدخل بيانات موقع الرفع الجديد",
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
                   ),
-                  const SizedBox(width: 10),
-                  ElevatedButton(
-                    onPressed: () {
-                      Navigator.pop(context, {
-                        "name": nameController.text,
-                        "type": type,
-                        "period": period,
-                        "classification": classification,
-                        "area": area,
-                      });
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.blue,
-                    ),
-                    child: const Text(
-                      "حفظ",
-                      style: TextStyle(color: Colors.white),
-                    ),
+                ),
+
+                const SizedBox(height: 20),
+
+                const Text("اسم الموقع"),
+                const SizedBox(height: 6),
+
+                TextFormField(
+                  controller: nameController,
+                  validator: (value) {
+                    if (value == null || value.trim().isEmpty) {
+                      return "هذا الحقل مطلوب";
+                    }
+                    return null;
+                  },
+                  decoration: const InputDecoration(
+                    hintText: "مثال: حاوية 1-أ",
                   ),
-                ],
-              ),
-            ],
+                ),
+
+                const SizedBox(height: 12),
+
+                const Text("نوع الموقع"),
+
+                DropdownButtonFormField(
+                  value: type,
+                  validator: (value) {
+                    if (value == null || value.toString().isEmpty) {
+                      return "هذا الحقل مطلوب";
+                    }
+                    return null;
+                  },
+                  items: const [
+                    DropdownMenuItem(value: "ثابت", child: Text("ثابت")),
+                    DropdownMenuItem(value: "مستحدث", child: Text("مستحدث")),
+                  ],
+                  onChanged: (v) => setState(() => type = v!),
+                ),
+
+                const SizedBox(height: 12),
+
+                const Text("المنطقة"),
+
+                DropdownButtonFormField<String>(
+                  value: area,
+                  validator: (value) {
+                    if (value == null || value.toString().isEmpty) {
+                      return "هذا الحقل مطلوب";
+                    }
+                    return null;
+                  },
+                  items: const [
+                    DropdownMenuItem(
+                      value: "مربع 1 - السوق العام",
+                      child: Text("مربع 1 - السوق العام"),
+                    ),
+                    DropdownMenuItem(
+                      value: "مربع 2 - الحي الشمالي",
+                      child: Text("مربع 2 - الحي الشمالي"),
+                    ),
+                    DropdownMenuItem(
+                      value: "مربع 3 - المنطقة الصناعية",
+                      child: Text("مربع 3 - المنطقة الصناعية"),
+                    ),
+                    DropdownMenuItem(
+                      value: "مربع 4 - الكورنيش",
+                      child: Text("مربع 4 - الكورنيش"),
+                    ),
+                    DropdownMenuItem(
+                      value: "مربع 5 - المركز",
+                      child: Text("مربع 5 - المركز"),
+                    ),
+                  ],
+                  onChanged: (value) {
+                    setState(() => area = value!);
+                  },
+                ),
+
+                const SizedBox(height: 12),
+
+                const Text("عدد مرات الرفع في الأسبوع"),
+
+                DropdownButtonFormField(
+                  value: frequency,
+                  validator: (value) {
+                    if (value == null || value.toString().isEmpty) {
+                      return "هذا الحقل مطلوب";
+                    }
+                    return null;
+                  },
+                  items: const [
+                    DropdownMenuItem(value: "مرة", child: Text("مرة")),
+                    DropdownMenuItem(value: "مرتان", child: Text("مرتان")),
+                    DropdownMenuItem(value: "3 مرات", child: Text("3 مرات")),
+                  ],
+                  onChanged: (v) => setState(() => frequency = v!),
+                ),
+
+                const SizedBox(height: 12),
+
+                const Text("الفترة الزمنية"),
+
+                DropdownButtonFormField(
+                  value: period,
+                  validator: (value) {
+                    if (value == null || value.toString().isEmpty) {
+                      return "هذا الحقل مطلوب";
+                    }
+                    return null;
+                  },
+                  items: const [
+                    DropdownMenuItem(value: "صباحي", child: Text("صباحي")),
+                    DropdownMenuItem(value: "مسائي", child: Text("مسائي")),
+                  ],
+                  onChanged: (v) => setState(() => period = v!),
+                ),
+
+                const SizedBox(height: 12),
+
+                const Text("التصنيف"),
+
+                DropdownButtonFormField(
+                  value: classification,
+                  validator: (value) {
+                    if (value == null || value.toString().isEmpty) {
+                      return "هذا الحقل مطلوب";
+                    }
+                    return null;
+                  },
+                  items: const [
+                    DropdownMenuItem(value: "رئيسي", child: Text("رئيسي")),
+                    DropdownMenuItem(value: "فرعي", child: Text("فرعي")),
+                  ],
+                  onChanged: (v) => setState(() => classification = v!),
+                ),
+
+                const SizedBox(height: 16),
+
+                const Text("الموقع على الخريطة"),
+
+                const SizedBox(height: 8),
+
+                OutlinedButton.icon(
+
+                  onPressed: () async {
+
+                    LatLng? pickedLocation;
+
+                    await showDialog(
+
+                      context: context,
+
+                      builder: (_) {
+
+                        return Dialog(
+
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+
+                          child: SizedBox(
+                            width: 800,
+                            height: 550,
+
+                            child: StatefulBuilder(
+
+                              builder: (context, setMapState) {
+
+                                return Stack(
+                                  children: [
+
+                                    /// الخريطة
+                                    GoogleMap(
+
+                                      initialCameraPosition:
+                                      const CameraPosition(
+
+                                        target: LatLng(15.943, 48.786),
+                                        zoom: 13,
+                                      ),
+
+                                      mapType: MapType.normal,
+
+                                      onTap: (point) {
+
+                                        setMapState(() {
+
+                                          pickedLocation = point;
+                                        });
+                                      },
+
+                                      markers: {
+
+                                        if (pickedLocation != null)
+
+                                          Marker(
+                                            markerId:
+                                            const MarkerId("selected_location"),
+
+                                            position: pickedLocation!,
+                                          ),
+                                      },
+                                    ),
+
+                                    /// زر التأكيد
+                                    Positioned(
+
+                                      bottom: 20,
+                                      right: 20,
+
+                                      child: ElevatedButton.icon(
+
+                                        style: ElevatedButton.styleFrom(
+                                          backgroundColor: Colors.blue,
+
+                                          padding:
+                                          const EdgeInsets.symmetric(
+                                            horizontal: 20,
+                                            vertical: 14,
+                                          ),
+                                        ),
+
+                                        onPressed: () {
+
+                                          if (pickedLocation != null) {
+
+                                            setState(() {
+
+                                              location =
+                                              "(${pickedLocation!.latitude.toStringAsFixed(5)}, "
+                                                  "${pickedLocation!.longitude.toStringAsFixed(5)})";
+                                            });
+
+                                            Navigator.pop(context);
+                                          }
+                                        },
+
+                                        icon: const Icon(
+                                          Icons.check,
+                                          color: Colors.white,
+                                        ),
+
+                                        label: const Text(
+                                          "تأكيد الموقع",
+                                          style: TextStyle(
+                                            color: Colors.white,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                );
+                              },
+                            ),
+                          ),
+                        );
+                      },
+                    );
+                  },
+
+                  icon: const Icon(
+                    Icons.map_outlined,
+                    color: Colors.white,
+                  ),
+
+                  label: const Text(
+                    "اختيار الموقع من الخريطة",
+                    style: TextStyle(color: Colors.white),
+                  ),
+
+                  style: OutlinedButton.styleFrom(
+                    backgroundColor: Colors.blue,
+                    minimumSize: const Size(double.infinity, 50),
+                  ),
+                ),
+
+                const SizedBox(height: 8),
+
+                Text(
+                  "الإحداثيات: $location",
+                  style: const TextStyle(
+                    color: Colors.grey,
+                  ),
+                ),
+
+                const SizedBox(height: 8),
+
+                Text(
+                  "الإحداثيات: $location",
+                  style: const TextStyle(color: Colors.grey),
+                ),
+
+                const SizedBox(height: 20),
+
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+
+                    TextButton(
+                      onPressed: () => Navigator.pop(context),
+                      style: TextButton.styleFrom(
+                        backgroundColor: Colors.blue,
+                      ),
+                      child: const Text(
+                        "إلغاء",
+                        style: TextStyle(color: Colors.white),
+                      ),
+                    ),
+
+                    const SizedBox(width: 10),
+
+                    ElevatedButton(
+                      onPressed: () {
+
+                        if (!_formKey.currentState!.validate()) {
+                          return;
+                        }
+
+                        Navigator.pop(context, {
+                          "area": area,
+                          "name": nameController.text,
+                          "type": type,
+                          "period": period,
+                          "classification": classification,
+                        });
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.blue,
+                      ),
+                      child: const Text(
+                        "حفظ",
+                        style: TextStyle(color: Colors.white),
+                      ),
+                    ),
+                  ],
+                )
+              ],
+            ),
           ),
         ),
       ),

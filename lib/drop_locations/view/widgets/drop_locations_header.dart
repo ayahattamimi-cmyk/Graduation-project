@@ -1,25 +1,25 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+
+import '../../../dashboard/view/sidebar.dart';
 import '../add_location_dialog.dart';
-import '../../viewmodel/drop_locations_viewmodel.dart';
-import 'package:web2/dashboard/view/sidebar.dart';
 
 class DropLocationsHeader extends StatelessWidget {
   final Function(Map data) onAdd;
   final Function(AppPage) onPageSelected;
   const DropLocationsHeader({super.key,required this.onPageSelected, required this.onAdd, });
 
+
   @override
   Widget build(BuildContext context) {
-    final stats = context.watch<DropLocationsViewModel>().statistics;
-
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+
         /// title + button
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
+
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: const [
@@ -39,6 +39,7 @@ class DropLocationsHeader extends StatelessWidget {
                 ),
               ],
             ),
+
             ElevatedButton.icon(
               onPressed: () async {
                 final result = await showDialog(
@@ -52,11 +53,8 @@ class DropLocationsHeader extends StatelessWidget {
                   onAdd(result);
                 }
               },
-              icon: const Icon(Icons.add, color: Colors.white),
-              label: const Text(
-                "إضافة موقع جديد",
-                style: TextStyle(color: Colors.white),
-              ),
+              icon: const Icon(Icons.add,color:Colors.white ,),
+              label: const Text("إضافة موقع جديد",style: TextStyle(color: Colors.white),),
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.blueAccent,
                 padding: const EdgeInsets.symmetric(
@@ -72,29 +70,38 @@ class DropLocationsHeader extends StatelessWidget {
 
         /// cards
         Row(
-          children: [
+          children: const [
             Expanded(
               child: _StatCard(
-                title: "المحتوى التفاعلي",
-                number: "${stats?.dynamicCount ?? 0}",
+                title: "مواقع مستحدثة",
+                number: "2",
                 color: Colors.orange,
                 icon: Icons.location_on_outlined,
               ),
             ),
-            const SizedBox(width: 12),
+            SizedBox(width: 12),
             Expanded(
               child: _StatCard(
-                title: "المحتوى الثابت",
-                number: "${stats?.staticCount ?? 0}",
+                title: "مواقع ثابتة",
+                number: "4",
                 color: Colors.purple,
                 icon: Icons.place_outlined,
               ),
             ),
-            const SizedBox(width: 12),
+            SizedBox(width: 12),
+            Expanded(
+              child: _StatCard(
+                title: "مواقع نشطة",
+                number: "5",
+                color: Colors.green,
+                icon: Icons.inventory_2_outlined,
+              ),
+            ),
+            SizedBox(width: 12),
             Expanded(
               child: _StatCard(
                 title: "إجمالي المواقع",
-                number: "${stats?.totalContent ?? 0}",
+                number: "6",
                 color: Colors.blue,
                 icon: Icons.widgets_outlined,
               ),
@@ -125,19 +132,21 @@ class _StatCard extends StatelessWidget {
       padding: const EdgeInsets.all(16),
       height: 110,
       decoration: BoxDecoration(
-        color: Colors.white,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: Colors.grey.shade200),
+        border: Border.all(color: Colors.grey.shade300),
       ),
       child: Row(
         children: [
+
           Icon(icon, color: color, size: 28),
+
           const Spacer(),
+
           Column(
             crossAxisAlignment: CrossAxisAlignment.end,
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Text(title, style: const TextStyle(fontSize: 13)),
+              Text(title),
               const SizedBox(height: 6),
               Text(
                 number,

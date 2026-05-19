@@ -5,15 +5,14 @@ import '../../viewmodel/reports_viewmodel.dart';
 class SupervisorFilterWidget extends StatelessWidget {
   const SupervisorFilterWidget({super.key});
 
-  Widget _dropdown(
-    String value,
-    List<String> items,
-    Function(String) onChanged,
-  ) {
+  Widget _dropdown(String value,
+      List<String> items,
+      Function(String) onChanged,) {
     return DropdownButtonFormField<String>(
       value: value,
-      items:
-          items.map((e) => DropdownMenuItem(value: e, child: Text(e))).toList(),
+      items: items
+          .map((e) => DropdownMenuItem(value: e, child: Text(e)))
+          .toList(),
       onChanged: (v) => onChanged(v!),
       icon: const Icon(Icons.keyboard_arrow_down),
       decoration: InputDecoration(
@@ -45,6 +44,7 @@ class SupervisorFilterWidget extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+
           /// 🔹 العنوان
           Align(
             alignment: Alignment.centerRight,
@@ -90,10 +90,13 @@ class SupervisorFilterWidget extends StatelessWidget {
           /// 🔹 dropdowns
           Row(
             children: [
-              Expanded(child: _dropdown(vm.selectedArea, vm.areas, vm.setArea)),
-              const SizedBox(width: 10),
+
               Expanded(
-                child: _dropdown(vm.selectedSupType, vm.types, vm.setSupType),
+                child: _dropdown(
+                  vm.selectedSupervisorType,
+                  vm.supervisorTypes,
+                  vm.setSupervisorType,
+                ),
               ),
 
               const SizedBox(width: 10),
@@ -110,11 +113,14 @@ class SupervisorFilterWidget extends StatelessWidget {
 
           const SizedBox(height: 20),
 
+
           Row(
             children: const [
               Expanded(child: Text("المشرف")),
               SizedBox(width: 10),
               Expanded(child: Text(" البلاغ منجز")),
+              SizedBox(width: 10),
+              Expanded(child: Text("البلاغ الغير منجز")),
               SizedBox(width: 10),
               Expanded(child: Text("الإجمالي")),
               SizedBox(width: 10),
@@ -123,48 +129,38 @@ class SupervisorFilterWidget extends StatelessWidget {
           ),
 
           const SizedBox(height: 10),
-          if (vm.isLoading)
-            const Center(child: CircularProgressIndicator())
-          else if (vm.supervisorsPerformance.isEmpty)
-            const Center(
-              child: Padding(
-                padding: EdgeInsets.all(20.0),
-                child: Text("لا توجد بيانات لهذا المشرف حالياً"),
-              ),
-            )
-          else
-            Column(
-              children:
-                  vm.supervisorsPerformance.map((s) {
-                    return Container(
-                      margin: const EdgeInsets.only(bottom: 8),
-                      padding: const EdgeInsets.symmetric(
-                        vertical: 10,
-                        horizontal: 10,
+
+          Column(
+            children: vm.supervisorStats.map((s) {
+              return Container(
+                margin: const EdgeInsets.only(bottom: 8),
+                padding: const EdgeInsets.symmetric(
+                    vertical: 10, horizontal: 10),
+                decoration: BoxDecoration(
+                  color: const Color(0xffF9FAFB),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Row(
+                  children: [
+                    Expanded(child: Text(s["name"])),
+                    const SizedBox(width: 10),
+                    Expanded(child: Text("${s["done"]}")),
+                    const SizedBox(width: 10),
+                    Expanded(child: Text("${s["notDone"]}")),
+                    const SizedBox(width: 10),
+                    Expanded(child: Text("${s["total"]}")),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        "${(s["rate"] ?? 0).toDouble().toStringAsFixed(1)}%",
+                        style: const TextStyle(color: Colors.green),
                       ),
-                      decoration: BoxDecoration(
-                        color: const Color(0xffF9FAFB),
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Row(
-                        children: [
-                          Expanded(child: Text(s.name)),
-                          const SizedBox(width: 10),
-                          Expanded(child: Text("${s.completedCount}")),
-                          const SizedBox(width: 10),
-                          Expanded(child: Text("${s.receivedCount}")),
-                          const SizedBox(width: 10),
-                          Expanded(
-                            child: Text(
-                              s.completionRate,
-                              style: const TextStyle(color: Colors.green),
-                            ),
-                          ),
-                        ],
-                      ),
-                    );
-                  }).toList(),
-            ),
+                    ),
+                  ],
+                ),
+              );
+            }).toList(),
+          ),
         ],
       ),
     );

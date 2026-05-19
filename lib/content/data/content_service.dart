@@ -1,70 +1,59 @@
-import 'package:flutter/foundation.dart';
-import 'package:web2/content/data/models/content_stats_model.dart';
-import 'package:web2/core/network/api_service.dart';
-import 'models/content_model.dart';
+import 'dart:convert';
+import 'package:shared_preferences/shared_preferences.dart';
+import '../view/content_model.dart';
 
 class ContentService {
-  final ApiService _apiService;
 
-  ContentService(this._apiService);
-
-  /// جلب الأخبار والنصائح
   Future<List<ContentModel>> fetchContents() async {
-    try {
-      final response = await _apiService.get('ShowTip');
-      debugPrint(
-        "📚 [CountStatistics.fetchContents] Status: ${response.statusCode}, Data: ${response.data}",
-      );
+    final prefs = await SharedPreferences.getInstance();
+    final dataString = prefs.getString('contents');
 
-      if (response.statusCode == 200 && response.data != null) {
-        final List data = response.data['data'] ?? [];
-        return data.map((json) => ContentModel.fromJson(json)).toList();
-      }
-    } catch (e) {
-      debugPrint("❌ [ContentService.fetchContents] Error: $e");
+    if (dataString != null) {
+      final List decoded = jsonDecode(dataString);
+      return decoded.map((e) => ContentModel.fromJson(e)).toList();
     }
+
     return [];
   }
 
-  /// إضافة محتوى
   Future<void> addContent(ContentModel content) async {
-    await _apiService.post('addNewTip', data: content.toJson());
+    final contents = await fetchContents();
+    contents.add(content);
+    await _save(contents);
   }
 
-  /// حذف محتوى
-  Future<void> deleteContent(int id) async {
-    await _apiService.delete('DestroyTip/$id');
+  Future<void> deleteContent(String id) async {
+    final contents = await fetchContents();
+    contents.removeWhere((e) => e.id == id);
+    await _save(contents);
   }
 
-  /// تحديث محتوى
-  Future<void> updateContent(ContentModel content) async {
-    await _apiService.post('UpdateTip/${content.id}', data: content.toJson());
-  }
+  Future<void> updateContent(ContentModel updated) async {
+    final contents = await fetchContents();
+    final index = contents.indexWhere((e) => e.id == updated.id);
 
-  /// تغيير حالة النشر
-  Future<void> toggleStatus(int id) async {
-    await _apiService.put('TipStatusPublish/$id');
-  }
-
-  /// جلب الإحصائيات
-  Future<ContentStatsModel> fetchStats() async {
-    try {
-      final response = await _apiService.get('EnvironmentalStatistics');
-      debugPrint(
-        "📊 [ContentService.fetchStats] Status: ${response.statusCode}, Data: ${response.data}",
-      );
-
-      if (response.statusCode == 200 && response.data != null) {
-        final data = response.data;
-        if (data['status'] == 'success' && data['data'] != null) {
-          final Map<String, dynamic> statsData = data['data'];
-          return ContentStatsModel.fromJson(statsData);
-        }
-      }
-    } catch (e) {
-      debugPrint("❌ [ContentService.fetchStats] Error: $e");
+    if (index != -1) {
+      contents[index] = updated;
     }
 
-    return ContentStatsModel.empty();
+    await _save(contents);
+  }
+
+  Future<void> togglePublish(ContentModel content) async {
+    final contents = await fetchContents();
+    final index = contents.indexWhere((e) => e.id == content.id);
+
+    if (index != -1) {
+      contents[index] =
+          content.copyWith(isPublished: !content.isPublished);
+    }
+
+    await _save(contents);
+  }
+
+  Future<void> _save(List<ContentModel> contents) async {
+    final prefs = await SharedPreferences.getInstance();
+    final data = contents.map((e) => e.toJson()).toList();
+    await prefs.setString('contents', jsonEncode(data));
   }
 }

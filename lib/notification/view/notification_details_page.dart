@@ -1,51 +1,26 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import '../data/models/report_details_model.dart';
-import '../data/notification_repository.dart';
-import 'package:web2/report_assignment/view/report_assignment_page.dart';
-import 'package:web2/dashboard/view/sidebar.dart';
+
+import '../../dashboard/view/sidebar.dart';
 
 class NotificationDetailsPage extends StatefulWidget {
-  final int reportId;
-  final String? status;
+  final String id;
+  final String category;
+  final String priority;
+  final String days;
+  final String status;
+  final String imageUrl;
   final Function(AppPage)? onGoToAssignment;
 
   const NotificationDetailsPage({
     super.key,
-    required this.reportId,
-    this.status,
-    this.onGoToAssignment,
+    required this.id,
+    required this.category,
+    required this.priority,
+    required this.days,
+    required this.status,
+    required this.imageUrl,
+    required this.onGoToAssignment,
   });
-
-  @override
-  State<NotificationDetailsPage> createState() =>
-      _NotificationDetailsPageState();
-}
-
-class _NotificationDetailsPageState extends State<NotificationDetailsPage> {
-  ReportDetailsModel? report;
-  bool isLoading = true;
-
-  @override
-  void initState() {
-    super.initState();
-    _loadReportDetails();
-  }
-
-  // دالة جلب التفاصيل من السيرفر بمجرد فتح الصفحة
-  Future<void> _loadReportDetails() async {
-    try {
-      final repository = context.read<NotificationRepository>();
-      final data = await repository.fetchReportDetails(widget.reportId);
-      setState(() {
-        report = data;
-        isLoading = false;
-      });
-    } catch (e) {
-      debugPrint("Error loading report details: $e");
-      setState(() => isLoading = false);
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -55,111 +30,383 @@ class _NotificationDetailsPageState extends State<NotificationDetailsPage> {
 
       child: Scaffold(
         backgroundColor: const Color(0xfff6f8fb),
-        body:
-            isLoading
-                ? const Center(
-                  child: CircularProgressIndicator(),
-                ) // عرض تحميل أثناء جلب البيانات
-                : report == null
-                ? const Center(child: Text("تعذر تحميل بيانات البلاغ"))
-                : SingleChildScrollView(
-                  padding: const EdgeInsets.all(24),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // --- العنوان والزر ---
-                      Row(
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          OutlinedButton.icon(
-                            onPressed: () => Navigator.pop(context),
-                            icon: const Icon(Icons.arrow_back),
-                            label: const Text('رجوع'),
-                          ),
-                          const SizedBox(width: 16),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment:
-                                  CrossAxisAlignment
-                                      .start, // تعديل للاتجاه الصحيح
-                              children: [
-                                Text(
-                                  'تفاصيل البلاغ #${report!.reportNumber}',
-                                  style: const TextStyle(
-                                    fontSize: 24,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  report!.title, // العنوان من السيرفر
-                                  style: const TextStyle(color: Colors.grey),
-                                ),
-                              ],
-                            ),
-                          ),
-                          const SizedBox(width: 16),
-                          ElevatedButton.icon(
-                            onPressed: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (_) => ReportAssignmentPage(reportId: widget.reportId),
-                                ),
-                              );
-                            },
-                            icon: const Icon(Icons.swap_horiz),
-                            label: const Text('توجيه البلاغ'),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.blue,
-                              foregroundColor: Colors.white,
-                            ),
-                          ),
-                        ],
-                      ),
 
-                      const SizedBox(height: 24),
+        body: SingleChildScrollView(
+          padding: const EdgeInsets.all(24),
 
-                      Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          // العمود الأيمن (المعلومات الأساسية)
-                          Expanded(
-                            child: Column(
-                              children: [
-                                _reportInfoCard(),
-                                const SizedBox(height: 16),
-                                _locationCard(),
-                                const SizedBox(height: 16),
-                                _imageCard(),
-                              ],
-                            ),
-                          ),
-                          const SizedBox(width: 24),
-                          // العمود الأيسر (البيانات الجانبية)
-                          SizedBox(
-                            width: 320,
-                            child: Column(
-                              children: [
-                                _quickSummaryCard(),
-                                const SizedBox(height: 16),
-                                _reporterInfoCard(),
-                                const SizedBox(height: 16),
-                                _timeCard(),
-                              ],
-                            ),
-                          ),
-                        ],
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+
+            children: [
+
+              /// العنوان
+              Row(
+                textDirection: TextDirection.ltr,
+                crossAxisAlignment: CrossAxisAlignment.center,
+
+                children: [
+
+                  /// زر الرجوع
+                  OutlinedButton(
+                    onPressed: () => Navigator.pop(context),
+
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xff2563EB),
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 18,
+                        vertical: 14,
                       ),
-                    ],
+                    ),
+
+                    child: const Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+
+                        Text(
+                          'رجوع',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+
+                        SizedBox(width: 8),
+
+                        Icon(Icons.arrow_forward,color: Colors.white,),
+                      ],
+                    ),
                   ),
-                ),
+
+                  const SizedBox(width: 16),
+
+                  /// العنوان
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+
+                      children: [
+
+                        Align(
+                          alignment: Alignment.centerRight,
+
+                          child: Text(
+                            'تفاصيل البلاغ ${widget.id}',
+                            textAlign: TextAlign.right,
+
+                            style: const TextStyle(
+                              fontSize: 24,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+
+                        const SizedBox(height: 4),
+
+                        const Align(
+                          alignment: Alignment.centerRight,
+
+                          child: Text(
+                            'تجمع نفايات في جولة البخاري',
+                            textAlign: TextAlign.right,
+
+                            style: TextStyle(
+                              color: Colors.grey,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+
+              const SizedBox(height: 24),
+
+              /// تقسيم الصفحة
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+
+                children: [
+
+                  /// اليسار
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment:
+                      CrossAxisAlignment.stretch,
+
+                      children: [
+
+                        _reportInfoCard(),
+
+                        const SizedBox(height: 16),
+
+                        _locationCard(),
+
+                        const SizedBox(height: 16),
+
+                        _imageCard(),
+                      ],
+                    ),
+                  ),
+
+                  const SizedBox(width: 24),
+
+                  /// اليمين
+                  SizedBox(
+                    width: 320,
+
+                    child: Column(
+                      crossAxisAlignment:
+                      CrossAxisAlignment.stretch,
+
+                      children: [
+
+                        _quickSummaryCard(),
+
+                        const SizedBox(height: 16),
+
+                        _reporterInfoCard(),
+
+                        if (status == 'قيد المعالجة' ||
+                            status == 'مكتمل') ...[
+                          const SizedBox(height: 16),
+
+                          _assignedSupervisorCard(context),
+                        ],
+
+                        const SizedBox(height: 16),
+
+                        _timeCard(),
+
+                        /// زر توجيه البلاغ
+                        if (status == 'جديد' || status == 'ملغي') ...[
+
+                          const SizedBox(height: 16),
+
+                          ElevatedButton.icon(
+
+                            onPressed: () {
+                              widget.onGoToAssignment
+                                  ?.call(AppPage.assignReports);
+                            },
+
+                            icon: const Icon(
+                              Icons.swap_horiz,
+                              color: Colors.white,
+                            ),
+
+                            label: const Text(
+                              'توجيه البلاغ',
+
+                              style: TextStyle(
+                                fontSize: 17,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor:
+                              const Color(0xff2563EB),
+
+                              foregroundColor: Colors.white,
+
+                              padding:
+                              const EdgeInsets.symmetric(
+                                vertical: 18,
+                              ),
+
+                              shape: RoundedRectangleBorder(
+                                borderRadius:
+                                BorderRadius.circular(14),
+                              ),
+                            ),
+                          ),
+
+                          /// زر الإلغاء
+                          const SizedBox(height: 12),
+
+                          SizedBox(
+                            width: double.infinity,
+
+                            child: ElevatedButton.icon(
+
+                              onPressed: status == 'ملغي'
+                                  ? null
+                                  : () {
+
+                                final reasonController = TextEditingController();
+
+                                showDialog(
+                                  context: context,
+
+                                  builder: (_) {
+
+                                    return Dialog(
+
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(20),
+                                      ),
+
+                                      child: Container(
+                                        width: 450,
+                                        padding: const EdgeInsets.all(24),
+
+                                        child: Column(
+                                          mainAxisSize: MainAxisSize.min,
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+
+                                          children: [
+
+                                            const Row(
+                                              children: [
+
+                                                Icon(
+                                                  Icons.cancel_outlined,
+                                                  color: Colors.red,
+                                                ),
+
+                                                SizedBox(width: 10),
+
+                                                Text(
+                                                  'إلغاء البلاغ',
+                                                  style: TextStyle(
+                                                    fontSize: 20,
+                                                    fontWeight: FontWeight.bold,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+
+                                            const SizedBox(height: 10),
+
+                                            const Text(
+                                              'قم بكتابة سبب إلغاء البلاغ ليتم إرساله للمواطن',
+                                              style: TextStyle(
+                                                color: Colors.grey,
+                                              ),
+                                            ),
+
+                                            const SizedBox(height: 20),
+
+                                            TextField(
+                                              controller: reasonController,
+                                              maxLines: 4,
+
+                                              decoration: InputDecoration(
+                                                hintText: 'اكتب سبب الإلغاء هنا...',
+
+                                                filled: true,
+                                                fillColor: const Color(0xfff5f7fb),
+
+                                                border: OutlineInputBorder(
+                                                  borderRadius: BorderRadius.circular(14),
+                                                  borderSide: BorderSide.none,
+                                                ),
+                                              ),
+                                            ),
+
+                                            const SizedBox(height: 24),
+
+                                            SizedBox(
+                                              width: double.infinity,
+
+                                              child: ElevatedButton(
+
+                                                onPressed: () {
+
+                                                  if (reasonController.text.trim().isEmpty) {
+                                                    return;
+                                                  }
+
+                                                  Navigator.pop(context);
+
+                                                  setState(() {
+                                                    status = 'ملغي';
+                                                  });
+
+                                                  ScaffoldMessenger.of(context).showSnackBar(
+                                                    const SnackBar(
+                                                      content: Text(
+                                                        'تم إلغاء البلاغ وإرسال السبب',
+                                                      ),
+                                                    ),
+                                                  );
+                                                },
+
+                                                style: ElevatedButton.styleFrom(
+                                                  backgroundColor: Colors.red,
+                                                  foregroundColor: Colors.white,
+                                                  padding: const EdgeInsets.symmetric(
+                                                    vertical: 15,
+                                                  ),
+                                                ),
+
+                                                child: const Text('إرسال السبب'),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                );
+                              },
+
+                              icon: Icon(
+                                status == 'ملغي'
+                                    ? Icons.block
+                                    : Icons.cancel_outlined,
+                              ),
+
+                              label: Text(
+                                status == 'ملغي'
+                                    ? 'تم الغاء البلاغ'
+                                    : 'إلغاء البلاغ',
+
+                                style: const TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+
+                              style: ElevatedButton.styleFrom(
+
+                                backgroundColor:
+                                status == 'ملغي'
+                                    ? Colors.red.shade700
+                                    : const Color(0xffFEE2E2),
+
+                                foregroundColor:
+                                status == 'ملغي'
+                                    ? Colors.white
+                                    : Colors.red,
+
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 17,
+                                ),
+
+                                elevation: 0,
+
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(14),
+                                ),
+                              ),
+                            ),
+                          )
+                        ],
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
 
-  // --- الكروت المعدلة لتقرأ من مودل report ---
-
+  /// ملخص سريع
   Widget _quickSummaryCard() {
 
     return _card(
@@ -167,9 +414,12 @@ class _NotificationDetailsPageState extends State<NotificationDetailsPage> {
 
       child: Column(
         children: [
-          _rowItem('النوع', report!.type),
-          _rowItem('الأولوية', report!.priority),
-          _rowItem('الحالة', report!.status),
+
+          _rowItem('النوع', widget.category),
+
+          _rowItem('الأولوية', widget.priority),
+
+          _rowItem('الحالة', status),
         ],
       ),
     );
@@ -183,20 +433,69 @@ class _NotificationDetailsPageState extends State<NotificationDetailsPage> {
       title: 'بيانات المبلّغ',
 
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          const Text('الاسم', style: TextStyle(color: Colors.grey)),
-          const SizedBox(height: 4),
+        crossAxisAlignment:
+        CrossAxisAlignment.stretch,
+
+        children: const [
+
           Text(
-            report!.reporter.name, // من المودل المنفصل
-            style: const TextStyle(fontWeight: FontWeight.bold),
+            'الاسم',
+            style: TextStyle(color: Colors.grey),
           ),
-          const SizedBox(height: 12),
-          const Text('رقم الجوال', style: TextStyle(color: Colors.grey)),
-          const SizedBox(height: 4),
+
+          SizedBox(height: 4),
+
           Text(
-            report!.reporter.phone, // من المودل المنفصل
-            style: const TextStyle(fontWeight: FontWeight.bold),
+            'فهد سليمان المطيري',
+
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+
+          SizedBox(height: 12),
+
+          Text(
+            'رقم الجوال',
+            style: TextStyle(color: Colors.grey),
+          ),
+
+          SizedBox(height: 4),
+
+          Text(
+            '0551234567',
+
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// المشرف
+  Widget _assignedSupervisorCard(BuildContext context) {
+
+    return _card(
+      title: status == 'مكتمل'
+          ? 'المشرف الذي عالج البلاغ'
+          : 'المشرف المعيَّن',
+
+      child: Column(
+        crossAxisAlignment:
+        CrossAxisAlignment.start,
+
+        children: [
+
+          _rowItem(
+            'اسم المشرف',
+            'محمد عبدالله',
+          ),
+
+          _rowItem(
+            'المنطقة',
+            'مربع 2 – المنطقة الصناعية',
           ),
 
           if (currentStatus == 'قيد المعالجة') ...[
@@ -254,19 +553,18 @@ class _NotificationDetailsPageState extends State<NotificationDetailsPage> {
       title: 'توقيت البلاغ',
 
       child: Column(
-        children: [
+        children: const [
+
           ListTile(
-            contentPadding: EdgeInsets.zero,
-            leading: const Icon(Icons.calendar_today),
-            title: const Text('التاريخ'),
-            trailing: Text(report!.createdAt),
+            leading: Icon(Icons.calendar_today),
+            title: Text('التاريخ'),
+            trailing: Text('2025-12-01'),
           ),
 
           ListTile(
-            contentPadding: EdgeInsets.zero,
-            leading: const Icon(Icons.access_time),
-            title: const Text('الوقت'),
-            trailing: Text(report!.createdTime),
+            leading: Icon(Icons.access_time),
+            title: Text('الوقت'),
+            trailing: Text('10:30'),
           ),
         ],
       ),
@@ -281,9 +579,22 @@ class _NotificationDetailsPageState extends State<NotificationDetailsPage> {
 
       child: Column(
         children: [
-          _rowItem('رقم البلاغ', report!.reportNumber.toString()),
-          _rowItem('نوع العمل', report!.type),
-          _rowItem('الحالة', report!.status),
+
+          _rowItem(
+            'رقم البلاغ',
+            widget.id,
+          ),
+
+          _rowItem(
+            'نوع العمل',
+            'كنس',
+          ),
+
+          _rowItem(
+            'الحالة',
+            status,
+          ),
+
           const Divider(),
 
           const Align(
@@ -299,9 +610,13 @@ class _NotificationDetailsPageState extends State<NotificationDetailsPage> {
           ),
 
           const SizedBox(height: 6),
-          Align(
+
+          const Align(
             alignment: Alignment.centerRight,
-            child: Text(report!.description), // الوصف من السيرفر
+
+            child: Text(
+              'تجمع نفايات في جولة البخاري بالقرب من محطة السوق العام، يحتاج إلى تدخل عاجل.',
+            ),
           ),
         ],
       ),
@@ -315,20 +630,47 @@ class _NotificationDetailsPageState extends State<NotificationDetailsPage> {
       title: 'موقع البلاغ',
 
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text('المربع الجغرافي', style: TextStyle(color: Colors.grey)),
-          const SizedBox(height: 4),
+        crossAxisAlignment:
+        CrossAxisAlignment.start,
+
+        children: const [
+
           Text(
-            report!.square,
-            style: const TextStyle(fontWeight: FontWeight.bold),
+            'المربع الجغرافي',
+
+            style: TextStyle(
+              color: Colors.grey,
+            ),
           ),
-          const SizedBox(height: 12),
-          const Text('المنطقة', style: TextStyle(color: Colors.grey)),
-          const SizedBox(height: 6),
+
+          SizedBox(height: 4),
+
           Text(
-            report!.area,
-            style: const TextStyle(fontWeight: FontWeight.bold),
+            'مربع 1 – السوق العام',
+
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+
+          SizedBox(height: 12),
+
+          Text(
+            'العنوان التفصيلي',
+
+            style: TextStyle(
+              color: Colors.grey,
+            ),
+          ),
+
+          SizedBox(height: 6),
+
+          Text(
+            'جولة البخاري بالقرب من محطة السوق العام',
+
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+            ),
           ),
         ],
       ),
@@ -342,36 +684,26 @@ class _NotificationDetailsPageState extends State<NotificationDetailsPage> {
       title: 'صورة البلاغ من المواطن',
 
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(12),
-        child: report!.imageUrl.isNotEmpty
-            ? Image.network(
-                report!.imageUrl, // رابط الصورة الحقيقي
-                height: 400,
-                width: double.infinity,
-                fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) => const Center(
-                  child: Icon(Icons.broken_image, size: 50, color: Colors.grey),
-                ),
-              )
-            : const Center(
-                child: Padding(
-                  padding: EdgeInsets.all(40.0),
-                  child: Column(
-                    children: [
-                      Icon(Icons.image_not_supported_outlined, size: 50, color: Colors.grey),
-                      SizedBox(height: 10),
-                      Text("لا توجد صورة متوفرة لهذا البلاغ", style: TextStyle(color: Colors.grey)),
-                    ],
-                  ),
-                ),
-              ),
+        borderRadius:
+        BorderRadius.circular(12),
+
+        child: Image.network(
+          widget.imageUrl,
+
+          height: 260,
+          width: double.infinity,
+          fit: BoxFit.cover,
+        ),
       ),
     );
   }
 
-  // --- الأدوات المساعدة ---
+  /// كرت جاهز
+  Widget _card({
+    required String title,
+    required Widget child,
+  }) {
 
-  Widget _card({required String title, required Widget child}) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(16),
@@ -386,8 +718,11 @@ class _NotificationDetailsPageState extends State<NotificationDetailsPage> {
           color: Colors.grey.shade200,
         ),
       ),
+
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment:
+        CrossAxisAlignment.start,
+
         children: [
 
           Text(

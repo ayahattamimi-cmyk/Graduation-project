@@ -1,39 +1,32 @@
 import 'package:flutter/material.dart';
-import 'package:web2/dashboard/data/dashboard_model.dart';
-import 'package:web2/dashboard/data/dashboard_repository.dart';
+import '../data/dashboard_data.dart';
 
 class DashboardViewModel extends ChangeNotifier {
-  final DashboardRepository _repository;
 
-  DashboardViewModel(this._repository);
+  final DashboardData _data = DashboardData();
 
-  DashboardModel? _dashboardData;
-  bool _isLoading = false; // متغير خاص بالحالة
+  String totalReports = "--";
+  String resolvedReports = "--";
+  String processingReports = "--";
+  String activeAreas = "--";
 
-  // Getters
-  DashboardModel? get dashboardData => _dashboardData;
-  bool get isLoading => _isLoading; // Getter للوصول للحالة من الفيو
-
-  // اختصارات (Getters) للبيانات الأساسية
-  String get totalReports =>
-      _dashboardData?.statistics.totalReports.toString() ?? "--";
-  String get resolvedReports =>
-      _dashboardData?.statistics.resolved.count.toString() ?? "--";
-  String get processingReports =>
-      _dashboardData?.statistics.pending.count.toString() ?? "--";
-  String get activeAreas => _dashboardData?.topAreas.length.toString() ?? "--";
+  bool isLoading = false;
 
   Future<void> loadStats() async {
-    _isLoading = true; // بدء التحميل
+
+    isLoading = true;
     notifyListeners();
 
-    try {
-      _dashboardData = await _repository.fetchDashboardStats();
-    } catch (e) {
-      debugPrint("❌ DashboardViewModel Error: $e");
-    } finally {
-      _isLoading = false; // انتهاء التحميل (سواء نجح أو فشل)
-      notifyListeners();
-    }
+    final result = await _data.getStats();
+
+    totalReports = result["totalReports"] ?? "--";
+    resolvedReports = result["resolvedReports"] ?? "--";
+    processingReports = result["processingReports"] ?? "--";
+    activeAreas = result["activeAreas"] ?? "--";
+
+    isLoading = false;
+    notifyListeners();
+
   }
+
 }

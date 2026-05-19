@@ -1,216 +1,187 @@
 import 'package:flutter/material.dart';
-import 'package:web2/reports/data/models/report_model.dart';
-import 'package:web2/reports/data/models/SupervisorPerformanceModel.dart';
-import 'package:web2/reports/data/models/report_statistics_model.dart';
-import 'package:web2/supervisors/data/model/area_detail_model.dart';
-import '../data/report_repository.dart';
-import '../../supervisors/data/supervisor_repository.dart';
+import '../data/report_data.dart';
 
 class ReportViewModel extends ChangeNotifier {
-  final ReportRepository _reportRepository;
-  final SupervisorRepository _supervisorRepository;
 
-  ReportViewModel(this._reportRepository, this._supervisorRepository);
+  List<ReportData> reports = [];
+  List<ReportData> filteredReports = [];
 
-  // --- البيانات الحقيقية ---
-  List<ReportModel> reports = [];
-  List<SupervisorPerformanceModel> supervisorsPerformance = [];
-  List<AreaDetailModel> areaObjects = [];
-  ReportStatisticsModel? generalStats;
-  bool isLoading = false;
-
-  // --- فلاتر البلاغات ---
   String selectedArea = "جميع المناطق";
   String selectedType = "جميع الأنواع";
   String selectedStatus = "جميع الحالات";
   String selectedPeriod = "آخر أسبوع";
 
-  // --- فلاتر أداء المشرفين ---
-  String selectedSupervisor = "جميع المشرفين";
-  String selectedSupType = "جميع الأنواع";
-
-  // قوائم الاختيارات
-  List<String> areas = ["جميع المناطق"]; // سيتم ملؤها من السيرفر
-  List<String> types = ["جميع الأنواع", "رفع", "كنس"];
-  List<String> status = [
-    "جميع الحالات",
-    "تم الحل",
-    "قيد الانتظار",
-    "قيد التنفيذ",
+  List<String> areas = [
+    "جميع المناطق",
+    "مربع 1 - السوق العام",
+    "مربع 2 - الحي الشمالي",
+    "مربع 3 - الصناعية",
   ];
-  List<String> periods = ["آخر أسبوع", "آخر شهر", "آخر سنة"];
+
+  List<String> types = ["جميع الأنواع", "كنس", "رفع"];
+  List<String> status = ["جميع الحالات", "محلول", "قيد التنفيذ", "قيد الانتظار"];
+  List<String> periods = ["آخر أسبوع", "آخر شهر", "آخر 3 أشهر", "آخر سنة"];
+
+  ///  فلترة المشرفين
+  String selectedSupervisorArea = "جميع المناطق";
+  String selectedSupervisorType = "جميع الأنواع";
+  String selectedSupervisor = "جميع المشرفين";
+
   List<String> supervisors = ["جميع المشرفين"];
+  List<String> supervisorAreas = ["جميع المناطق", "مربع 1", "مربع 2", "مربع 3"];
+  List<String> supervisorTypes = ["جميع الأنواع", "كنس", "رفع"];
 
-  // دالة التهيئة الشاملة
-  void loadAllData() {
-    fetchReports();
-    fetchSupervisorsNames();
-    fetchAreas();
-    fetchGeneralStats();
-  }
-
-  // جلب المناطق من السيرفر (إعادة استخدام من قسم المشرفين)
-  Future<void> fetchAreas() async {
-    try {
-      // نطلب مناطق الرفع مثلاً أو حسب الحاجة
-      final result = await _supervisorRepository.fetchAreas("lifting");
-      areaObjects = result;
-      areas = [
-        "جميع المناطق",
-        ...result.map((e) => e.label ?? e.name ?? e.id.toString()),
-      ];
-      notifyListeners();
-    } catch (e) {
-      debugPrint("❌ خطأ جلب المناطق: $e");
-    }
-  }
-
-  // جلب الإحصائيات العامة
-  Future<void> fetchGeneralStats() async {
-    try {
-      generalStats = await _reportRepository.getGeneralStats();
-      notifyListeners();
-    } catch (e) {
-      debugPrint("❌ خطأ جلب الإحصائيات العامة: $e");
-    }
-  }
-
-  // 1. جلب بلاغات التقارير
-  Future<void> fetchReports() async {
-    isLoading = true;
+  void setSupervisorArea(String v) {
+    selectedSupervisorArea = v;
     notifyListeners();
-    try {
-      debugPrint(
-        "📡 [Reports] Fetching with: Area:$selectedArea, Type:$selectedType, Status:$selectedStatus",
-      );
-      reports = await _reportRepository.getFilteredReports(
-        areaId: selectedArea == "جميع المناطق" ? null : selectedArea,
-        status: selectedStatus == "جميع الحالات" ? null : selectedStatus,
-        reportType: selectedType == "جميع الأنواع" ? null : selectedType,
-        period: _mapPeriodToApi(selectedPeriod),
-      );
-      debugPrint("✅ [Reports] Found ${reports.length} reports");
-    } catch (e) {
-      debugPrint("❌ [Reports] Error: $e");
-    } finally {
-      isLoading = false;
-      notifyListeners();
-    }
   }
 
-  // 2. جلب أسماء المشرفين للقائمة المنسدلة
-  Future<void> fetchSupervisorsNames() async {
-    try {
-      final all = await _supervisorRepository.fetchAllSupervisors();
-      supervisors = ["جميع المشرفين", ...all.map((s) => s.name)];
-      notifyListeners();
-    } catch (e) {
-      debugPrint("❌ خطأ جلب أسماء المشرفين: $e");
-    }
-  }
-
-  // 3. جلب أداء مشرف معين
-  Future<void> fetchSupervisorStats() async {
-    if (selectedSupervisor == "جميع المشرفين") {
-      supervisorsPerformance = [];
-      notifyListeners();
-      return;
-    }
-
-    isLoading = true;
+  void setSupervisorType(String v) {
+    selectedSupervisorType = v;
     notifyListeners();
-    try {
-      final result = await _supervisorRepository.fetchSupervisorPerformance(
-        selectedSupervisor,
-        selectedSupType,
-      );
-      supervisorsPerformance =
-          result.map((e) => SupervisorPerformanceModel.fromJson(e)).toList();
-    } catch (e) {
-      debugPrint("❌ خطأ جلب أداء المشرف: $e");
-    } finally {
-      isLoading = false;
-      notifyListeners();
-    }
+  }
+  void setSupervisor(String v) {
+    selectedSupervisor = v;
+    notifyListeners();
   }
 
-  // الدوال المساعدة للتحديث من الواجهة
+  void loadData() {
+    //supervisors = [
+     // "جميع المشرفين",
+    //  ...reports.map((e) => e.supervisor).toSet()
+   // ];
+    reports = [
+      ReportData(
+        id: "#2025-001",
+        date: "2025-12-01",
+        area: "مربع 1",
+        type: "كنس",
+        status: "محلول",
+        supervisor: "زكي مبارك",
+        duration: 2.5,
+      ),
+      ReportData(
+        id: "#2025-002",
+        date: "2025-12-01",
+        area: "مربع 3",
+        type: "رفع",
+        status: "قيد التنفيذ",
+        supervisor: "فهد سليمان",
+        duration: 1.8,
+      ),
+
+    ];
+    supervisors = [
+      "جميع المشرفين",
+      ...reports.map((e) => e.supervisor).toSet()
+    ];
+
+    applyFilters();
+  }
+
+  void applyFilters() {
+    filteredReports = reports.where((r) {
+      final matchArea =
+          selectedArea == "جميع المناطق" || r.area.contains(selectedArea);
+
+      final matchType =
+          selectedType == "جميع الأنواع" || r.type == selectedType;
+
+      final matchStatus =
+          selectedStatus == "جميع الحالات" || r.status == selectedStatus;
+
+      return matchArea && matchType && matchStatus;
+    }).toList();
+
+    notifyListeners();
+  }
+
   void setArea(String v) {
     selectedArea = v;
-    // إذا كانت "جميع المناطق" نرسل null، وإلا نرسل الـ id الحقيقي
-    if (v == "جميع المناطق") {
-      fetchReports();
-    } else {
-      // البحث عن الـ id المقابل للاسم المختار
-      final areaObj = areaObjects.firstWhere(
-        (e) => (e.label ?? e.name ?? e.id.toString()) == v,
-        orElse: () => areaObjects[0],
-      );
-      // تحديث الفلترة بالـ ID الحقيقي
-      _fetchReportsWithId(areaObj.id.toString());
-    }
-  }
-
-  Future<void> _fetchReportsWithId(String id) async {
-    isLoading = true;
-    notifyListeners();
-    try {
-      reports = await _reportRepository.getFilteredReports(
-        areaId: id,
-        status: selectedStatus == "جميع الحالات" ? null : selectedStatus,
-        reportType: selectedType == "جميع الأنواع" ? null : selectedType,
-        period: _mapPeriodToApi(selectedPeriod),
-      );
-    } catch (e) {
-      debugPrint("❌ خطأ جلب البلاغات بالـ ID: $e");
-    } finally {
-      isLoading = false;
-      notifyListeners();
-    }
+    applyFilters();
   }
 
   void setType(String v) {
     selectedType = v;
-    fetchReports();
+    applyFilters();
   }
 
   void setStatus(String v) {
     selectedStatus = v;
-    fetchReports();
+    applyFilters();
   }
 
   void setPeriod(String v) {
     selectedPeriod = v;
-    fetchReports();
+    applyFilters();
   }
 
-  void setSupervisor(String v) {
-    selectedSupervisor = v;
-    fetchSupervisorStats();
-  }
+  int get total => filteredReports.length;
+  int get solved => filteredReports.where((e) => e.status == "محلول").length;
+  int get pending => filteredReports.where((e) => e.status != "محلول").length;
 
-  void setSupType(String v) {
-    selectedSupType = v;
-    fetchSupervisorStats();
-  }
-
-  // الإحصائيات (تدعم مسميات السيرفر المختلفة)
-  int get total => reports.length;
-  int get solved =>
-      reports.where((e) => e.status == "تم الحل" || e.status == "محلول").length;
-  int get pending => total - solved;
-
-  String _mapPeriodToApi(String p) {
-    if (p == "آخر أسبوع") return "last_week";
-    if (p == "آخر شهر") return "last_month";
-    return "last_year";
-  }
-
-  // أفضل 3 مشرفين بناءً على الإنجاز
   List<String> get topSupervisors {
-    if (supervisorsPerformance.isEmpty) return [];
-    List<SupervisorPerformanceModel> sorted = List.from(supervisorsPerformance);
-    sorted.sort((a, b) => b.completionRate.compareTo(a.completionRate));
-    return sorted.take(3).map((s) => s.name).toList();
+    final map = <String, int>{};
+
+    for (var r in reports) {
+      map[r.supervisor] = (map[r.supervisor] ?? 0) + 1;
+    }
+
+    final sorted = map.entries.toList()
+      ..sort((a, b) => b.value.compareTo(a.value));
+
+    return sorted.take(3).map((e) => e.key).toList();
+  }
+
+  ///  إحصائيات المشرفين
+  List<Map<String, dynamic>> get supervisorStats {
+    final map = <String, List<ReportData>>{};
+
+
+    for (var r in reports) {
+      map.putIfAbsent(r.supervisor, () => []);
+      map[r.supervisor]!.add(r);
+    }
+
+    return map.entries.map((entry) {
+
+
+      final filtered = entry.value.where((r) {
+
+        final matchArea = selectedSupervisorArea == "جميع المناطق" ||
+            r.area.contains(selectedSupervisorArea);
+
+        final matchType = selectedSupervisorType == "جميع الأنواع" ||
+            r.type == selectedSupervisorType;
+
+        return matchArea && matchType;
+
+      }).toList();
+
+      final total = filtered.length;
+      final done = filtered.where((e) => e.status == "محلول").length;
+      final notDone = total - done;
+
+
+      if (selectedSupervisor != "جميع المشرفين" &&
+          entry.key != selectedSupervisor) {
+        return {
+          "name": entry.key,
+          "total": 0,
+          "done": 0,
+          "notDone": 0,
+          "rate": 0.0,
+        };
+      }
+
+      return {
+        "name": entry.key,
+        "total": total,
+        "done": done,
+        "notDone": notDone,
+        "rate": total == 0 ? 0 : (done / total) * 100
+      };
+
+    }).toList();
   }
 }
