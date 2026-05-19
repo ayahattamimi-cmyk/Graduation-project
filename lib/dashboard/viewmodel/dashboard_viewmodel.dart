@@ -1,9 +1,21 @@
 import 'package:flutter/material.dart';
-import '../data/dashboard_data.dart';
-
+import '../../core/network/api_service.dart';
+import '../data/dashboard_repository.dart';
+import '../data/dashboard_service.dart';
+import '../data/dashboard_model.dart';
+import '../../core/network/api_service.dart';
+import '../../core/network/dio_client.dart';
+import '../../core/network/api_service.dart';
 class DashboardViewModel extends ChangeNotifier {
 
-  final DashboardData _data = DashboardData();
+  final DashboardRepository _repository =
+  DashboardRepository(
+    DashboardService(
+      DioClient().dio,
+    ),
+  );
+
+  DashboardModel? dashboardData;
 
   String totalReports = "--";
   String resolvedReports = "--";
@@ -17,16 +29,30 @@ class DashboardViewModel extends ChangeNotifier {
     isLoading = true;
     notifyListeners();
 
-    final result = await _data.getStats();
+    try {
 
-    totalReports = result["totalReports"] ?? "--";
-    resolvedReports = result["resolvedReports"] ?? "--";
-    processingReports = result["processingReports"] ?? "--";
-    activeAreas = result["activeAreas"] ?? "--";
+      totalReports =
+          dashboardData?.statistics.totalReports.toString() ?? "--";
+
+      resolvedReports =
+          dashboardData?.statistics.resolved.count.toString() ?? "--";
+
+      processingReports =
+          dashboardData?.statistics.inProgress.count.toString() ?? "--";
+
+      activeAreas =
+          dashboardData?.topAreas.length.toString() ?? "--";
+
+    }
+
+    catch (e) {
+
+      debugPrint(
+        "Dashboard Error: $e",
+      );
+    }
 
     isLoading = false;
     notifyListeners();
-
   }
-
 }

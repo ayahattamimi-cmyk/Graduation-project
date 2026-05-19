@@ -481,7 +481,7 @@ class _NotificationDetailsPageState extends State<NotificationDetailsPage> {
 
           _rowItem('المنطقة', 'مربع 2 – المنطقة الصناعية'),
 
-          if (currentStatus == 'قيد المعالجة') ...[
+          if (status == 'قيد المعالجة') ...[
             const SizedBox(height: 12),
 
             SizedBox(
