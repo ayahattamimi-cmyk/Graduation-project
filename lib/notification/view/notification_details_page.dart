@@ -40,9 +40,27 @@ class _NotificationDetailsPageState extends State<NotificationDetailsPage> {
   }
 
   @override
+  State<NotificationDetailsPage> createState() =>
+      _NotificationDetailsPageState();
+}
+
+class _NotificationDetailsPageState
+    extends State<NotificationDetailsPage> {
+
+  late String status;
+
+  @override
+  void initState() {
+    super.initState();
+    status = widget.status;
+  }
+
+  @override
   Widget build(BuildContext context) {
+
     return Directionality(
       textDirection: TextDirection.rtl,
+
       child: Scaffold(
         backgroundColor: const Color(0xfff6f8fb),
         body:
@@ -151,8 +169,10 @@ class _NotificationDetailsPageState extends State<NotificationDetailsPage> {
   // --- الكروت المعدلة لتقرأ من مودل report ---
 
   Widget _quickSummaryCard() {
+
     return _card(
       title: 'ملخص سريع',
+
       child: Column(
         children: [
           _rowItem('النوع', report!.type),
@@ -163,9 +183,12 @@ class _NotificationDetailsPageState extends State<NotificationDetailsPage> {
     );
   }
 
+  /// بيانات المبلغ
   Widget _reporterInfoCard() {
+
     return _card(
       title: 'بيانات المبلّغ',
+
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -182,14 +205,61 @@ class _NotificationDetailsPageState extends State<NotificationDetailsPage> {
             report!.reporter.phone, // من المودل المنفصل
             style: const TextStyle(fontWeight: FontWeight.bold),
           ),
+
+          if (status == 'قيد المعالجة') ...[
+
+            const SizedBox(height: 12),
+
+            SizedBox(
+              width: double.infinity,
+
+              child: ElevatedButton.icon(
+
+                onPressed: () {
+                  widget.onGoToAssignment
+                      ?.call(AppPage.assignReports);
+                },
+
+                icon: const Icon(Icons.swap_horiz),
+
+                label: const Text(
+                  'إعادة توجيه لمشرف آخر',
+
+                  style: TextStyle(
+                    color: Colors.white,
+                  ),
+                ),
+
+                style: ElevatedButton.styleFrom(
+                  backgroundColor:
+                  const Color(0xff2563EB),
+
+                  foregroundColor: Colors.white,
+
+                  padding:
+                  const EdgeInsets.symmetric(
+                    vertical: 14,
+                  ),
+
+                  shape: RoundedRectangleBorder(
+                    borderRadius:
+                    BorderRadius.circular(12),
+                  ),
+                ),
+              ),
+            ),
+          ],
         ],
       ),
     );
   }
 
+  /// الوقت
   Widget _timeCard() {
+
     return _card(
       title: 'توقيت البلاغ',
+
       child: Column(
         children: [
           ListTile(
@@ -198,6 +268,7 @@ class _NotificationDetailsPageState extends State<NotificationDetailsPage> {
             title: const Text('التاريخ'),
             trailing: Text(report!.createdAt),
           ),
+
           ListTile(
             contentPadding: EdgeInsets.zero,
             leading: const Icon(Icons.access_time),
@@ -209,32 +280,54 @@ class _NotificationDetailsPageState extends State<NotificationDetailsPage> {
     );
   }
 
+  /// معلومات البلاغ
   Widget _reportInfoCard() {
+
     return _card(
       title: 'معلومات البلاغ',
+
       child: Column(
         children: [
           _rowItem('رقم البلاغ', report!.reportNumber.toString()),
           _rowItem('نوع العمل', report!.type),
           _rowItem('الحالة', report!.status),
           const Divider(),
+
           const Align(
             alignment: Alignment.centerRight,
-            child: Text('الوصف', style: TextStyle(fontWeight: FontWeight.bold)),
+
+            child: Text(
+              'الوصف',
+
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+              ),
+            ),
           ),
+
           const SizedBox(height: 6),
           Align(
             alignment: Alignment.centerRight,
             child: Text(report!.description), // الوصف من السيرفر
+
+          const Align(
+            alignment: Alignment.centerRight,
+
+            child: Text(
+              'تجمع نفايات في جولة البخاري بالقرب من محطة السوق العام، يحتاج إلى تدخل عاجل.',
+            ),
           ),
         ],
       ),
     );
   }
 
+  /// الموقع
   Widget _locationCard() {
+
     return _card(
       title: 'موقع البلاغ',
+
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -256,9 +349,12 @@ class _NotificationDetailsPageState extends State<NotificationDetailsPage> {
     );
   }
 
+  /// الصورة
   Widget _imageCard() {
+
     return _card(
       title: 'صورة البلاغ من المواطن',
+
       child: ClipRRect(
         borderRadius: BorderRadius.circular(12),
         child: report!.imageUrl.isNotEmpty
@@ -290,33 +386,92 @@ class _NotificationDetailsPageState extends State<NotificationDetailsPage> {
   // --- الأدوات المساعدة ---
 
   Widget _card({required String title, required Widget child}) {
+        borderRadius:
+        BorderRadius.circular(12),
+
+        child: Image.network(
+          widget.imageUrl,
+
+          height: 260,
+          width: double.infinity,
+          fit: BoxFit.cover,
+        ),
+      ),
+    );
+  }
+
+  /// كرت جاهز
+  Widget _card({
+    required String title,
+    required Widget child,
+  }) {
+
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(16),
+
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: Colors.grey.shade200),
+
+        borderRadius:
+        BorderRadius.circular(14),
+
+        border: Border.all(
+          color: Colors.grey.shade200,
+        ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
+
+          Text(
+            title,
+
+            style: const TextStyle(
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+
           const SizedBox(height: 12),
+
           child,
         ],
       ),
     );
   }
 
-  Widget _rowItem(String label, String value) {
+  /// عنصر صف
+  Widget _rowItem(
+      String label,
+      String value,
+      ) {
+
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 6),
+      padding: const EdgeInsets.symmetric(
+        vertical: 6,
+      ),
+
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        mainAxisAlignment:
+        MainAxisAlignment.spaceBetween,
+
         children: [
-          Text(label, style: const TextStyle(color: Colors.grey)),
-          Text(value, style: const TextStyle(fontWeight: FontWeight.bold)),
+
+          Text(
+            label,
+
+            style: const TextStyle(
+              color: Colors.grey,
+            ),
+          ),
+
+          Text(
+            value,
+
+            style: const TextStyle(
+              fontWeight: FontWeight.bold,
+            ),
+          ),
         ],
       ),
     );

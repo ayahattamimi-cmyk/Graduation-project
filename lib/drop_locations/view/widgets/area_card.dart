@@ -2,12 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:web2/drop_locations/data/area_model.dart';
 import 'package:web2/drop_locations/viewmodel/drop_locations_viewmodel.dart';
+import '../../../dashboard/view/sidebar.dart';
+import '../../data/area_data.dart';
 import '../add_location_dialog.dart';
 import 'container_tile.dart';
 
 class AreaCard extends StatefulWidget {
-  final AreaModel area;
-  const AreaCard({super.key, required this.area});
+  final AreaData area;
+  final Function(AppPage) onPageSelected;
+
+  const AreaCard({super.key, required this.area,required this.onPageSelected,});
 
   @override
   State<AreaCard> createState() => _AreaCardState();
@@ -22,7 +26,7 @@ class _AreaCardState extends State<AreaCard> {
     final viewModel = context.read<DropLocationsViewModel>();
 
     return Card(
-      color: Colors.blueGrey,
+      color: Colors.grey,
       margin: const EdgeInsets.all(12),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
       child: Column(

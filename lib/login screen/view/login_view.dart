@@ -20,6 +20,12 @@ class LoginScreen extends StatefulWidget {
     this.supervisorArea,
   });
 
+const primaryGreen = Color(0xFF13A8CA);
+const primaryBrown = Color(0xFF497B93);
+
+class LoginScreen extends StatefulWidget {
+  const LoginScreen({super.key});
+
   @override
   State<LoginScreen> createState() => _LoginScreenState();
 }
@@ -27,17 +33,9 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
   bool _isObscure = true;
-  late bool isSignupMode;
 
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
-  final nameController = TextEditingController();
-
-  @override
-  void initState() {
-    super.initState();
-    isSignupMode = widget.isSignup;
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -58,6 +56,8 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
               ),
             ),
+
+            /// الحاوية
             Align(
               alignment: Alignment.bottomCenter,
               child: Container(
@@ -107,6 +107,8 @@ class _LoginScreenState extends State<LoginScreen> {
                           isEmail: true,
                         ),
                         const SizedBox(height: 20),
+
+                        /// Password
                         buildTextField(
                           controller: passwordController,
                           label: "Password",
@@ -119,11 +121,55 @@ class _LoginScreenState extends State<LoginScreen> {
                           width: double.infinity,
                           height: 55,
                           child: ElevatedButton(
-                            onPressed: authVM.isLoading ? null : _processAuth,
+
+                            onPressed: authVM.isLoading
+                                ? null
+                                : () async {
+
+                              if (!_formKey.currentState!.validate()) return;
+
+                              final user = await context
+                                  .read<LoginViewModel>()
+                                  .signIn(
+                                emailController.text.trim(),
+                                passwordController.text.trim(),
+                              );
+
+                              if (user != null && context.mounted) {
+
+                                Navigator.pushReplacement(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) => const DashboardView(),
+                                  ),
+                                );
+
+                              } else {
+
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text("فشل تسجيل الدخول"),
+                                  ),
+                                );
+                              }
+                            },
+
                             style: ElevatedButton.styleFrom(
                               backgroundColor: const Color(0xFF497B93),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(15),
+                              ),
+                            ),
+
+                            child: authVM.isLoading
+                                ? const CircularProgressIndicator(
+                              color: Colors.white,
+                            )
+                                : const Text(
+                              "Sign In",
+                              style: TextStyle(
+                                fontSize: 18,
+                                color: Colors.white,
                               ),
                             ),
                             child:
@@ -236,6 +282,49 @@ class _LoginScreenState extends State<LoginScreen> {
                       onPressed: () => setState(() => _isObscure = !_isObscure),
                     )
                     : null,
+
+          validator: (value) {
+
+            if (value == null || value.isEmpty) {
+              return "يجب تعبئة الحقل";
+            }
+
+            if (isEmail) {
+              final emailRegex =
+              RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w]{2,4}$');
+
+              if (!emailRegex.hasMatch(value)) {
+                return "اكتب ايميل صحيح";
+              }
+            }
+
+            if (isPassword && value.length < 6) {
+              return "كلمة المرور ضعيفة";
+            }
+
+            return null;
+          },
+
+          decoration: InputDecoration(
+            hintText: hint,
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(15),
+            ),
+
+            suffixIcon: isPassword
+                ? IconButton(
+              icon: Icon(
+                _isObscure
+                    ? Icons.visibility_off
+                    : Icons.visibility,
+              ),
+              onPressed: () {
+                setState(() {
+                  _isObscure = !_isObscure;
+                });
+              },
+            )
+                : null,
           ),
           validator:
               (value) =>

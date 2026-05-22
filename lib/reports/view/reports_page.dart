@@ -230,6 +230,73 @@ class _ReportPageState extends State<ReportPage> {
           ],
         );
       },
+
+                      const SizedBox(width: 10),
+
+                      /// Excel
+                      SizedBox(
+                        height: 45,
+                        child:ElevatedButton(
+
+                          onPressed: () {
+                            if (vm.filteredReports.isEmpty) return;
+                            exportToExcel(vm);
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.blue,
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 20, vertical: 12),
+                          ),
+                          child: const Text(
+                            "تصدير Excel",
+                            style: TextStyle(color: Colors.white),
+                          ),
+                        ),
+                      )
+
+                    ],
+                  )
+                ],
+              ),
+
+              const SizedBox(height: 20),
+
+              /// FILTER
+              ReportFilterWidget(
+                selectedArea: vm.selectedArea,
+                selectedType: vm.selectedType,
+                selectedStatus: vm.selectedStatus,
+                selectedPeriod: vm.selectedPeriod,
+                onAreaChanged: vm.setArea,
+                onTypeChanged: vm.setType,
+                onStatusChanged: vm.setStatus,
+                onPeriodChanged: vm.setPeriod,
+                areas: vm.areas,
+                types: vm.types,
+                statuses: vm.status,
+                periods: vm.periods,
+              ),
+
+              const SizedBox(height: 20),
+              ReportTable(reports: vm.filteredReports),
+
+
+              /// STATS
+
+
+              const SizedBox(height: 20),
+
+              /// TABLE
+              const SupervisorFilterWidget(),
+
+              const SizedBox(height: 20),
+
+              /// TOP SUPERVISORS
+              TopSupervisorsWidget(supervisors: vm.topSupervisors),
+            ],
+          );
+        },
+      ),
     );
   }
 }

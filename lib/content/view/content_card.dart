@@ -125,6 +125,27 @@ class _ContentCardState extends State<ContentCard> {
             widget.content.content,
             style: const TextStyle(color: Colors.black87, height: 1.6),
           ),
+          const SizedBox(height: 16),
+
+          /// الصورة
+          /// الصورة
+          /// الصورة
+          if (widget.content.imageBase64 != null) ...[
+            const SizedBox(height: 14),
+
+            Align(
+              alignment: Alignment.centerRight,
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(14),
+                child: Image.memory(
+                  base64Decode(widget.content.imageBase64!),
+                  height: 180,
+                  width: 180,
+                  fit: BoxFit.cover,
+                ),
+              ),
+            ),
+          ],
 
           const SizedBox(height: 12),
 

@@ -13,6 +13,7 @@ import 'package:web2/reports/view/reports_page.dart';
 import 'package:web2/supervisors/view/supervisor_page.dart';
 
 class DashboardView extends StatefulWidget {
+
   const DashboardView({super.key});
 
   @override
