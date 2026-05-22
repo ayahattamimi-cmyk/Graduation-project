@@ -3,6 +3,22 @@ import 'package:provider/provider.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:web2/dashboard/view/dashboard_view.dart';
 import '../viewmodel/login_viewmodel.dart';
+import '../../supervisors/viewmodel/supervisor_viewmodel.dart';
+import '../../supervisors/data/model/supervisor_model.dart';
+
+class LoginScreen extends StatefulWidget {
+  final bool isSignup; // نتحكم من خلالها هل الشاشة للدخول أم لإنشاء مشرف
+  final String? supervisorName;
+  final String? supervisorType;
+  final String? supervisorArea;
+
+  const LoginScreen({
+    super.key,
+    this.isSignup = false,
+    this.supervisorName,
+    this.supervisorType,
+    this.supervisorArea,
+  });
 
 const primaryGreen = Color(0xFF13A8CA);
 const primaryBrown = Color(0xFF497B93);
@@ -15,9 +31,7 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-
   final _formKey = GlobalKey<FormState>();
-
   bool _isObscure = true;
 
   final emailController = TextEditingController();
@@ -25,7 +39,6 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
-
     final authVM = context.watch<LoginViewModel>();
     final screenHeight = MediaQuery.of(context).size.height;
 
@@ -34,8 +47,6 @@ class _LoginScreenState extends State<LoginScreen> {
       child: Scaffold(
         body: Stack(
           children: [
-
-            /// الخلفية
             Container(
               decoration: const BoxDecoration(
                 gradient: LinearGradient(
@@ -59,51 +70,53 @@ class _LoginScreenState extends State<LoginScreen> {
                     topRight: Radius.circular(40),
                   ),
                 ),
-
                 child: SingleChildScrollView(
-                  padding: const EdgeInsets.all(25),
+                  padding: const EdgeInsets.all(30),
                   child: Form(
                     key: _formKey,
                     child: Column(
                       children: [
-
-                        const Icon(Icons.forest_rounded,
-                            size: 40, color: primaryGreen),
-
+                        const Icon(
+                          Icons.forest_rounded,
+                          size: 50,
+                          color: Color(0xFF13A8CA),
+                        ),
                         const SizedBox(height: 10),
-
-                        const Text(
-                          "Welcome ",
-                          style: TextStyle(
+                        Text(
+                          isSignupMode ? "Create Account" : "Welcome Back",
+                          style: const TextStyle(
                             fontSize: 28,
                             fontWeight: FontWeight.bold,
-                            color: primaryGreen,
+                            color: Color(0xFF13A8CA),
                           ),
                         ),
-
                         const SizedBox(height: 30),
 
-                        /// Email
+                        if (isSignupMode) ...[
+                          buildTextField(
+                            controller: nameController,
+                            label: "Full Name",
+                            hint: "Enter name",
+                          ),
+                          const SizedBox(height: 20),
+                        ],
                         buildTextField(
                           controller: emailController,
                           label: "Email",
-                          hint: "Enter Email",
+                          hint: "Enter email",
                           isEmail: true,
                         ),
-
                         const SizedBox(height: 20),
 
                         /// Password
                         buildTextField(
                           controller: passwordController,
                           label: "Password",
-                          hint: "Enter Password",
+                          hint: "Enter password",
                           isPassword: true,
                         ),
-
                         const SizedBox(height: 30),
 
-                        /// زر الدخول
                         SizedBox(
                           width: double.infinity,
                           height: 55,
@@ -142,7 +155,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             },
 
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: primaryBrown,
+                              backgroundColor: const Color(0xFF497B93),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(15),
                               ),
@@ -159,19 +172,87 @@ class _LoginScreenState extends State<LoginScreen> {
                                 color: Colors.white,
                               ),
                             ),
+                            child:
+                                authVM.isLoading
+                                    ? const CircularProgressIndicator(
+                                      color: Colors.white,
+                                    )
+                                    : Text(
+                                      isSignupMode ? "Sign Up" : "Sign In",
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 18,
+                                      ),
+                                    ),
                           ),
                         ),
 
+                        const SizedBox(height: 20),
+                        // زر التبديل بين الدخول والإنشاء
+                        TextButton(
+                          onPressed:
+                              () =>
+                                  setState(() => isSignupMode = !isSignupMode),
+                          child: Text(
+                            isSignupMode
+                                ? "Already have an account? Sign In"
+                                : "Don't have an account? Sign Up",
+                          ),
+                        ),
                       ],
                     ),
                   ),
                 ),
               ),
-            )
+            ),
           ],
         ),
       ),
     );
+  }
+
+  Future<void> _processAuth() async {
+    if (!_formKey.currentState!.validate()) return;
+
+    try {
+      final authVM = context.read<LoginViewModel>();
+      final supervisorVM = context.read<SupervisorViewModel>();
+      User? user;
+
+      if (isSignupMode) {
+        user = await authVM.signUp(
+          emailController.text.trim(),
+          passwordController.text.trim(),
+        );
+        if (user != null) {
+          // إضافة بيانات المشرف لـ لارفل/فايربيس
+          final supervisor = SupervisorModel(
+            id: DateTime.now().millisecondsSinceEpoch,
+            name: widget.supervisorName ?? nameController.text,
+            type: widget.supervisorType ?? "",
+            area: widget.supervisorArea ?? "",
+            areaDetails: [],
+          );
+          await supervisorVM.addSupervisor(supervisor);
+        }
+      } else {
+        user = await authVM.signIn(
+          emailController.text.trim(),
+          passwordController.text.trim(),
+        );
+      }
+
+      if (user != null && mounted) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (_) => const DashboardView()),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(e.toString())));
+    }
   }
 
   Widget buildTextField({
@@ -181,18 +262,26 @@ class _LoginScreenState extends State<LoginScreen> {
     bool isPassword = false,
     bool isEmail = false,
   }) {
-
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-
-        Text(label),
-
+        Text(label, style: const TextStyle(fontWeight: FontWeight.bold)),
         const SizedBox(height: 8),
-
         TextFormField(
           controller: controller,
           obscureText: isPassword ? _isObscure : false,
+          decoration: InputDecoration(
+            hintText: hint,
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(15)),
+            suffixIcon:
+                isPassword
+                    ? IconButton(
+                      icon: Icon(
+                        _isObscure ? Icons.visibility_off : Icons.visibility,
+                      ),
+                      onPressed: () => setState(() => _isObscure = !_isObscure),
+                    )
+                    : null,
 
           validator: (value) {
 
@@ -237,6 +326,9 @@ class _LoginScreenState extends State<LoginScreen> {
             )
                 : null,
           ),
+          validator:
+              (value) =>
+                  (value == null || value.isEmpty) ? "Field required" : null,
         ),
       ],
     );

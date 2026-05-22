@@ -12,7 +12,7 @@ class StatCard extends StatelessWidget {
     required this.title,
     required this.subtitle,
     required this.icon,
-    this.value,// required ممكن تكون نل عشان كذا م كتبت
+    this.value,
     required this.color,
   });
 
@@ -34,16 +34,22 @@ class StatCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          //هنا الايقونة والعوان
+          // [تعديل هنا] استخدام Expanded لمنع الـ Overflow في العناوين الطويلة
           Row(
             children: [
               Icon(icon, color: color, size: 22),
               const SizedBox(width: 8),
-              Text(
-                title,
-                style: const TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500,
+              Expanded(
+                child: Text(
+                  title,
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                  ),
+                  maxLines: 1, // إبقاء النص في سطر واحد
+                  overflow:
+                      TextOverflow
+                          .ellipsis, // وضع نقاط (...) إذا كان النص طويلاً
                 ),
               ),
             ],
@@ -51,25 +57,31 @@ class StatCard extends StatelessWidget {
 
           const SizedBox(height: 20),
 
-         //الرقم
-          Text(
-            value ?? '--',
-            style: TextStyle(
-              fontSize: 28,
-              fontWeight: FontWeight.bold,
-              color: color,
+          // الرقم - مع إضافة حماية بسيطة للمساحة
+          FittedBox(
+            // [إضافة] تجعل الرقم يصغر حجمه تلقائياً إذا كان كبيراً جداً بدل الانفجار
+            fit: BoxFit.scaleDown,
+            child: Text(
+              value ?? '--',
+              style: TextStyle(
+                fontSize: 28,
+                fontWeight: FontWeight.bold,
+                color: color,
+              ),
             ),
           ),
 
           const SizedBox(height: 6),
 
-         //الوصف الي تحت
+          // الوصف الي تحت
           Text(
             subtitle,
             style: TextStyle(
-              fontSize: 13,
+              fontSize: 12, // تصغير بسيط ليناسب الويب
               color: Colors.grey.shade600,
             ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
           ),
         ],
       ),
