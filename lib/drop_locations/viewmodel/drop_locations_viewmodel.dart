@@ -27,7 +27,13 @@ class DropLocationsViewModel extends ChangeNotifier {
     try {
       _areas = await _repository.fetchAreasWithContainers();
 
-      _statistics = await _repository.fetchStatistics();
+      // جلب الإحصائيات بشكل منفصل حتى لا يمنع فشلها عرض الحاويات
+      try {
+        _statistics = await _repository.fetchStatistics();
+      } catch (statsError) {
+        debugPrint("⚠️ فشل جلب الإحصائيات (لن يمنع عرض البيانات): $statsError");
+        // نتجاهل خطأ الإحصائيات ونعرض البيانات بدونها
+      }
     } catch (e) {
       _errorMessage = "فشل في تحميل البيانات: ${e.toString()}";
       debugPrint("ViewModel Error: $e");

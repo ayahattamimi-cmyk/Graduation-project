@@ -48,8 +48,16 @@ class ContainerModel {
     );
   }
 
-  // كود الـ fromJson الخاص بكِ سليم تماماً ويتطابق مع Postman
+  // كود الـ fromJson مع معالجة collection_day كقائمة من السيرفر
   factory ContainerModel.fromJson(Map<String, dynamic> json) {
+    // معالجة حقل collection_day: قد يأتي كقائمة ["الثلاثاء", "الخميس"] أو كنص
+    String collectionDayValue;
+    if (json['collection_day'] is List) {
+      collectionDayValue = (json['collection_day'] as List).join(', ');
+    } else {
+      collectionDayValue = json['collection_day']?.toString() ?? '';
+    }
+
     return ContainerModel(
       id: json['id'],
       nameContainer: json['name_container'] ?? '',
@@ -57,7 +65,7 @@ class ContainerModel {
       type: json['type'] ?? '',
       period: json['period'] ?? '',
       collectionFrequency: json['collection_frequency'] ?? 0,
-      collectionDay: json['collection_day'] ?? '',
+      collectionDay: collectionDayValue,
       startTime: json['start_time'] ?? '',
       classification: json['classification'] ?? '',
       areaDetails: json['area_details'],
