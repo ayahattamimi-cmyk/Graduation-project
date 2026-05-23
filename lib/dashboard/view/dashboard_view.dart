@@ -2,18 +2,18 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:web2/content/view/ContentPage.dart';
-import 'package:web2/dashboard/view/chart_box.dart';
-import 'package:web2/dashboard/view/sidebar.dart';
-import 'package:web2/dashboard/view/stat_card.dart';
+import 'package:web2/dashboard/view/widgets/chart_box.dart';
+import 'package:web2/dashboard/view/widgets/sidebar.dart';
+import 'package:web2/dashboard/view/widgets/stat_card.dart';
 import 'package:web2/dashboard/viewmodel/dashboard_viewmodel.dart';
 import 'package:web2/drop_locations/view/drop_locations_page.dart';
 import 'package:web2/notification/view/notifications_page.dart';
 import 'package:web2/report_assignment/view/report_assignment_page.dart';
 import 'package:web2/reports/view/reports_page.dart';
 import 'package:web2/supervisors/view/supervisor_page.dart';
+import 'package:web2/map/view/map_screen.dart';
 
 class DashboardView extends StatefulWidget {
-
   const DashboardView({super.key});
 
   @override
@@ -71,21 +71,32 @@ class _DashboardViewState extends State<DashboardView> {
       case AppPage.dashboard:
         return _dashboardLayout(vm);
       case AppPage.notifications:
-        return const NotificationsPage();
+        return NotificationsPage(
+          onPageSelected: (AppPage page) {
+            setState(() {
+              currentPage = page;
+            });
+          },
+        );
       case AppPage.assignReports:
         return const ReportAssignmentPage();
       case AppPage.map:
-        return const Center(child: Text('الخريطة'));
+        return const MapScreen();
+
       case AppPage.admins:
         return const SupervisorPage();
       case AppPage.news:
         return const ContentPage();
       case AppPage.uploadSites:
-        return const DropLocationsPage();
+        return DropLocationsPage(
+          onPageSelected: (AppPage page) {
+            setState(() {
+              currentPage = page;
+            });
+          },
+        );
       case AppPage.reports:
         return const ReportPage();
-      default:
-        return _dashboardLayout(vm);
     }
   }
 

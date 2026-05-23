@@ -1,4 +1,3 @@
-import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:web2/supervisors/data/supervisor_repository.dart';
 import '../data/model/supervisor_model.dart';
@@ -10,19 +9,15 @@ class SupervisorViewModel extends ChangeNotifier {
 
   SupervisorViewModel(this._repository);
 
-  // البيانات
   List<SupervisorModel> supervisors = [];
   List<AreaDetailModel> areas = [];
-  // قائمة بسيطة لتخزين أداء المشرفين القادم من السيرفر
   List<dynamic> supervisorsPerformance = [];
   StatisticsModel? statistics;
 
-  // حالات الواجهة
   bool isLoading = false;
   String filter = "all";
   String? errorMessage;
 
-  // 1. جلب جميع المشرفين من السيرفر
   Future<void> loadSupervisors() async {
     _setLoading(true);
     try {
@@ -30,7 +25,8 @@ class SupervisorViewModel extends ChangeNotifier {
       errorMessage = null;
     } catch (e) {
       errorMessage = "حدث خطأ أثناء جلب بيانات المشرفين";
-    } finally {
+    } 
+    finally {
       _setLoading(false);
     }
   }
@@ -40,21 +36,20 @@ class SupervisorViewModel extends ChangeNotifier {
     notifyListeners();
 
     try {
-      // استدعاء الريبوزيتوري لإرسال البيانات للسيرفر (Laravel API)
+      // إرسال البيانات إلى Laravel API
       await _repository.addSupervisor(supervisor);
-
-      // يمكنك هنا تحديث القائمة المحلية إذا أردت
-      // _supervisors.add(supervisor);
+      
+      // ✅ إعادة جلب القائمة مباشرة من السيرفر لضمان مزامنة الـ ID والبيانات بدقة
+      await loadSupervisors(); 
     } catch (e) {
       debugPrint("Error adding supervisor: $e");
-      rethrow; // لإتاحة معالجة الخطأ في شاشة الـ Login
+      rethrow; 
     } finally {
       isLoading = false;
       notifyListeners();
     }
   }
 
-  // 2. جلب الإحصائيات (CountStatistics)
   Future<void> loadStatistics() async {
     try {
       statistics = await _repository.fetchStatistics();
@@ -64,7 +59,7 @@ class SupervisorViewModel extends ChangeNotifier {
     }
   }
 
-  // 3. جلب المربعات للقائمة المنسدلة (Dropdown)
+  // جلب المربعات ديناميكياً بحسب نوع العمل المختار
   Future<void> loadAreas(String type) async {
     try {
       areas = await _repository.fetchAreas(type);
@@ -74,13 +69,12 @@ class SupervisorViewModel extends ChangeNotifier {
     }
   }
 
-  // 4. تحديث بيانات مشرف (تواصل مع السيرفر وتحديث محلي)
   Future<bool> updateSupervisor(int id, Map<String, dynamic> data) async {
     _setLoading(true);
     try {
       bool success = await _repository.updateSupervisorInfo(id, data);
       if (success) {
-        await loadSupervisors(); // إعادة جلب البيانات لتحديث القائمة
+        await loadSupervisors();
         return true;
       }
       return false;
@@ -91,7 +85,6 @@ class SupervisorViewModel extends ChangeNotifier {
     }
   }
 
-  // 5. منطق الفلترة (Filtered List)
   List<SupervisorModel> get filteredSupervisors {
     if (filter == "sweeping") {
       return supervisors.where((e) => e.type == "sweeping").toList();
@@ -101,37 +94,28 @@ class SupervisorViewModel extends ChangeNotifier {
     return supervisors;
   }
 
-  // 6. عدادات سريعة للواجهة
-  int get sweepingCount =>
-      supervisors.where((e) => e.type == "sweeping").length;
+  int get sweepingCount => supervisors.where((e) => e.type == "sweeping").length;
   int get liftingCount => supervisors.where((e) => e.type == "lifting").length;
 
-  // تغيير الفلتر
   void changeFilter(String f) {
     filter = f;
     notifyListeners();
   }
 
-  // دالة مساعدة لتغيير حالة التحميل
   void _setLoading(bool value) {
     isLoading = value;
     notifyListeners();
   }
-
-  // --- تقييم أداء المشرفين ---
 
   Future<void> fetchPerformanceReport(String name, String type) async {
     isLoading = true;
     notifyListeners();
 
     try {
-      FormData formData = FormData.fromMap({
-        "name": name,
-        "type":
-            type == "رفع" ? "lifting" : "sweeping", // التحويل لإنجليزية السيرفر
-      });
-
-      final result = await _repository.fetchSupervisorPerformance(name, type);
+      final result = await _repository.fetchSupervisorPerformance(
+        name, 
+        type == "رفع" ? "lifting" : "sweeping"
+      );
       supervisorsPerformance = result;
       errorMessage = null;
     } catch (e) {

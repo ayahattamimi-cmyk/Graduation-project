@@ -62,4 +62,9 @@ class LoginViewModel extends ChangeNotifier {
       notifyListeners();
     }
   }
+
+  // --- تسجيل الخروج ---
+  Future<void> signOut() async {
+    await _auth.signOut();
+  }
 }

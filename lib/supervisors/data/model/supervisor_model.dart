@@ -13,6 +13,7 @@ class SupervisorModel {
     required this.type,
     required this.area,
     required this.areaDetails,
+    
   });
   Map<String, dynamic> toJson() {
     return {

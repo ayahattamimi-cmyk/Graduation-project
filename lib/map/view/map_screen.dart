@@ -13,129 +13,108 @@ class MapScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-
-    return ChangeNotifierProvider(
-      create: (_) => MapViewModel(),
-
-      child: Consumer<MapViewModel>(
-        builder: (context, vm, _) {
-
-          return Scaffold(
-
-            body: Stack(
-              children: [
-
-                GoogleMap(
-
-                  initialCameraPosition: CameraPosition(
-                    target: MapViewModel.seiyunCenter,
-                    zoom: 13,
-                  ),
-
-                  mapType:
-                  vm.isSatellite
-                      ? MapType.satellite
-                      : MapType.normal,
-
-                  polygons: vm.polygons,
-
-                  markers: vm.markers,
-
-                  myLocationEnabled: true,
-
-                  zoomControlsEnabled: false,
-
-                  onMapCreated: vm.onMapCreated,
-
-                  onTap: vm.selectLocation,
+    return Consumer<MapViewModel>(
+      builder: (context, vm, _) {
+        return Scaffold(
+          body: Stack(
+            children: [
+              GoogleMap(
+                initialCameraPosition: CameraPosition(
+                  target: MapViewModel.seiyunCenter,
+                  zoom: 13,
                 ),
 
-                /// TOP BAR
-                Positioned(
-                  top: 20,
-                  left: 20,
-                  right: 20,
+                mapType: vm.isSatellite ? MapType.satellite : MapType.normal,
 
-                  child: Row(
-                    children: [
+                polygons: vm.polygons,
 
-                      Expanded(
-                        child: SingleChildScrollView(
-                          scrollDirection: Axis.horizontal,
+                markers: vm.markers,
 
-                          child: Row(
-                            children: [
+                myLocationEnabled: true,
 
-                              MapFilterChip(
-                                label: "البلاغات",
-                                color: Colors.red,
-                                icon: Icons.report,
-                                isSelected: vm.showReports,
-                                onTap: vm.toggleReports,
-                              ),
+                zoomControlsEnabled: false,
 
-                              const SizedBox(width: 8),
+                onMapCreated: vm.onMapCreated,
 
-                              MapFilterChip(
-                                label: "الحاويات",
-                                color: Colors.blue,
-                                icon: Icons.delete,
-                                isSelected: vm.showContainers,
-                                onTap: vm.toggleContainers,
-                              ),
+                onTap: vm.selectLocation,
+              ),
 
-                              const SizedBox(width: 8),
+              /// TOP BAR
+              Positioned(
+                top: 20,
+                left: 20,
+                right: 20,
 
-                              MapFilterChip(
-                                label: "المناطق",
-                                color: Colors.green,
-                                icon: Icons.map,
-                                isSelected: vm.showAreas,
-                                onTap: vm.toggleAreas,
-                              ),
-                            ],
-                          ),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+
+                        child: Row(
+                          children: [
+                            MapFilterChip(
+                              label: "البلاغات",
+                              color: Colors.red,
+                              icon: Icons.report,
+                              isSelected: vm.showReports,
+                              onTap: vm.toggleReports,
+                            ),
+
+                            const SizedBox(width: 8),
+
+                            MapFilterChip(
+                              label: "الحاويات",
+                              color: Colors.blue,
+                              icon: Icons.delete,
+                              isSelected: vm.showContainers,
+                              onTap: vm.toggleContainers,
+                            ),
+
+                            const SizedBox(width: 8),
+
+                            MapFilterChip(
+                              label: "المناطق",
+                              color: Colors.green,
+                              icon: Icons.map,
+                              isSelected: vm.showAreas,
+                              onTap: vm.toggleAreas,
+                            ),
+                          ],
                         ),
                       ),
+                    ),
 
-                      const SizedBox(width: 12),
+                    const SizedBox(width: 12),
 
-                      FloatingActionButton.small(
-                        heroTag: "satellite",
+                    FloatingActionButton.small(
+                      heroTag: "satellite",
 
-                        backgroundColor: Colors.white,
+                      backgroundColor: Colors.white,
 
-                        onPressed: vm.toggleSatellite,
+                      onPressed: vm.toggleSatellite,
 
-                        child: Icon(
-                          vm.isSatellite
-                              ? Icons.map
-                              : Icons.satellite_alt,
-                          color: Colors.black,
-                        ),
+                      child: Icon(
+                        vm.isSatellite ? Icons.map : Icons.satellite_alt,
+                        color: Colors.black,
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
+              ),
 
-                /// LAYERS
-                Positioned(
-                  top: 90,
-                  right: 20,
-                  child: const MapLayersToggle(),
-                ),
+              /// LAYERS
+              Positioned(top: 90, right: 20, child: const MapLayersToggle()),
 
-                /// LEGEND
-                Positioned(
-                  bottom: 20,
-                  left: 20,
-                  child: const MapLegend(),
-                ),
-              ],
-            ),
-          );
-        },
-      ),
+              /// LEGEND
+              Positioned(bottom: 20, left: 20, child: const MapLegend()),
+
+              if (vm.isLoading)
+                const Center(child: CircularProgressIndicator()),
+            ],
+          ),
+        );
+      },
     );
   }
 }

@@ -32,6 +32,11 @@ import 'notification/data/notification_service.dart';
 import 'report_assignment/data/assignment_repository.dart';
 import 'report_assignment/data/assignment_service.dart';
 import 'report_assignment/viewmodel/assignment_viewmodel.dart';
+import 'map/data/map_repository.dart';
+import 'map/data/map_service.dart';
+import 'map/viewmodel/map_viewmodel.dart';
+
+import 'package:google_fonts/google_fonts.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -104,6 +109,9 @@ void main() async {
                 AssignmentRepository(AssignmentService(dioClient.dio)),
               ),
         ),
+        ChangeNotifierProvider(
+          create: (context) => MapViewModel(MapRepository(MapService())),
+        ),
       ],
       child: MyApp(isLoggedIn: isLoggedIn),
     ),
@@ -117,11 +125,24 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
+      title: 'نظام إدارة البلاغات',
+      theme: ThemeData(
+        useMaterial3: true,
+        primaryColor: const Color(0xFF10B981),
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: const Color(0xFF059669),
+          primary: const Color(0xFF10B981),
+          secondary: const Color(0xFF34D399),
+        ),
+        textTheme: GoogleFonts.cairoTextTheme(),
+      ),
+
       locale: const Locale('ar'),
       builder: (context, child) {
         return Directionality(textDirection: TextDirection.rtl, child: child!);
       },
       home: isLoggedIn ? const DashboardView() : const LoginScreen(),
+      routes: {'/mapPage': (context) => const MapScreen()},
     );
   }
 }

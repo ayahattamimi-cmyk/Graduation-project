@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:web2/content/data/models/content_model.dart';
+import 'dart:convert';
 
 class ContentCard extends StatefulWidget {
   final ContentModel content;
@@ -26,14 +27,16 @@ class _ContentCardState extends State<ContentCard> {
       margin: const EdgeInsets.only(bottom: 20),
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: widget.content.isPublished
-            ? const Color(0xffeefcf3)
-            : Colors.grey.shade100,
+        color:
+            widget.content.isPublished
+                ? const Color(0xffeefcf3)
+                : Colors.grey.shade100,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: widget.content.isPublished
-              ? Colors.green.shade300
-              : Colors.grey.shade300,
+          color:
+              widget.content.isPublished
+                  ? Colors.green.shade300
+                  : Colors.grey.shade300,
         ),
       ),
       child: Column(
@@ -50,9 +53,10 @@ class _ContentCardState extends State<ContentCard> {
                     widget.content.type == ContentType.news
                         ? Icons.article_outlined
                         : Icons.lightbulb_outline,
-                    color: widget.content.type == ContentType.news
-                        ? Colors.purple
-                        : Colors.orange,
+                    color:
+                        widget.content.type == ContentType.news
+                            ? Colors.purple
+                            : Colors.orange,
                   ),
                   const SizedBox(width: 8),
 
@@ -63,18 +67,20 @@ class _ContentCardState extends State<ContentCard> {
                       vertical: 4,
                     ),
                     decoration: BoxDecoration(
-                      color: widget.content.isPublished
-                          ? Colors.green.shade100
-                          : Colors.grey.shade300,
+                      color:
+                          widget.content.isPublished
+                              ? Colors.green.shade100
+                              : Colors.grey.shade300,
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: Text(
                       widget.content.isPublished ? 'منشور' : 'مسودة',
                       style: TextStyle(
                         fontSize: 12,
-                        color: widget.content.isPublished
-                            ? Colors.green
-                            : Colors.black54,
+                        color:
+                            widget.content.isPublished
+                                ? Colors.green
+                                : Colors.black54,
                       ),
                     ),
                   ),
@@ -93,12 +99,14 @@ class _ContentCardState extends State<ContentCard> {
                   ElevatedButton(
                     onPressed: widget.onTogglePublish,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: widget.content.isPublished
-                          ? Colors.red.shade100
-                          : Colors.green.shade100,
-                      foregroundColor: widget.content.isPublished
-                          ? Colors.red
-                          : Colors.green,
+                      backgroundColor:
+                          widget.content.isPublished
+                              ? Colors.red.shade100
+                              : Colors.green.shade100,
+                      foregroundColor:
+                          widget.content.isPublished
+                              ? Colors.red
+                              : Colors.green,
                       elevation: 0,
                     ),
                     child: Text(
@@ -128,21 +136,33 @@ class _ContentCardState extends State<ContentCard> {
           const SizedBox(height: 16),
 
           /// الصورة
-          /// الصورة
-          /// الصورة
-          if (widget.content.imageBase64 != null) ...[
+          if (widget.content.image != null &&
+              widget.content.image!.isNotEmpty) ...[
             const SizedBox(height: 14),
-
             Align(
               alignment: Alignment.centerRight,
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(14),
-                child: Image.memory(
-                  base64Decode(widget.content.imageBase64!),
-                  height: 180,
-                  width: 180,
-                  fit: BoxFit.cover,
-                ),
+                child:
+                    widget.content.image!.startsWith('http')
+                        ? Image.network(
+                          widget.content.image!,
+                          height: 180,
+                          width: 250,
+                          fit: BoxFit.cover,
+                          errorBuilder:
+                              (context, error, stackTrace) =>
+                                  const Icon(Icons.broken_image, size: 50),
+                        )
+                        : Image.memory(
+                          base64Decode(widget.content.image!),
+                          height: 180,
+                          width: 250,
+                          fit: BoxFit.cover,
+                          errorBuilder:
+                              (context, error, stackTrace) =>
+                                  const Icon(Icons.broken_image, size: 50),
+                        ),
               ),
             ),
           ],
@@ -181,7 +201,9 @@ class _ContentCardState extends State<ContentCard> {
   /// ================= تعديل =================
   void _showEditDialog(BuildContext context) {
     final titleController = TextEditingController(text: widget.content.title);
-    final contentController = TextEditingController(text: widget.content.content);
+    final contentController = TextEditingController(
+      text: widget.content.content,
+    );
 
     showDialog(
       context: context,

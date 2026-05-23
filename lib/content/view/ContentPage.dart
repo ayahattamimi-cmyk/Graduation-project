@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../data/models/content_model.dart';
 import '../viewmodel/content_viewmodel.dart';
-import 'content_card.dart';
-import 'add_content_dialog.dart';
+import 'widgets/content_card.dart';
+import 'widgets/add_content_dialog.dart';
 
 class ContentPage extends StatefulWidget {
   const ContentPage({super.key});

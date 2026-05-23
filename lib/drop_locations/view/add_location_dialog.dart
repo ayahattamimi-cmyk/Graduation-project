@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
-import '../../dashboard/view/sidebar.dart';
+
+import '../../dashboard/view/widgets/sidebar.dart';
 
 // ... نفس الـ imports
 class AddLocationDialog extends StatefulWidget {
@@ -24,7 +24,6 @@ class AddLocationDialog extends StatefulWidget {
 }
 
 class _AddLocationDialogState extends State<AddLocationDialog> {
-
   final _formKey = GlobalKey<FormState>();
 
   late TextEditingController nameController;

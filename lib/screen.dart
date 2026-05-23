@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:web2/dashboard/view/dashboard_view.dart';
-import 'dashboard/view/dashboard_page.dart';
 
 class AppScreen extends StatelessWidget {
   const AppScreen({super.key});

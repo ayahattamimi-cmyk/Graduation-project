@@ -7,6 +7,7 @@ import '../data/report_repository.dart';
 import '../../supervisors/data/supervisor_repository.dart';
 
 class ReportViewModel extends ChangeNotifier {
+  List<ReportModel> get filteredReports => reports;
   final ReportRepository _reportRepository;
   final SupervisorRepository _supervisorRepository;
 

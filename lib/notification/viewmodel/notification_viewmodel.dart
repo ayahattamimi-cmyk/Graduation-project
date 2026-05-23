@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:web2/notification/data/models/notification_model.dart';
 import 'package:web2/notification/data/models/statistics_model.dart';
 import 'package:web2/notification/data/notification_repository.dart';
+import '../data/models/report_details_model.dart';
 
 class NotificationsViewModel extends ChangeNotifier {
   final NotificationRepository _repository;
@@ -10,6 +11,10 @@ class NotificationsViewModel extends ChangeNotifier {
   // --- الإحصائيات ---
   StatisticModel? _stats; // [تعديل] استخدام كائن المودل مباشرة أسهل
   StatisticModel? get stats => _stats;
+
+  // --- تفاصيل البلاغ المحدد ---
+  ReportDetailsModel? _selectedReport;
+  ReportDetailsModel? get selectedReport => _selectedReport;
 
   // --- الإشعارات ---
   List<NotificationModel> _notifications = [];
@@ -75,6 +80,20 @@ class NotificationsViewModel extends ChangeNotifier {
       _stats = await _repository.fetchStatistics();
     } catch (e) {
       debugPrint("Error loading stats: $e");
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<void> loadReportDetails(int reportId) async {
+    _isLoading = true;
+    _selectedReport = null;
+    notifyListeners();
+    try {
+      _selectedReport = await _repository.fetchReportDetails(reportId);
+    } catch (e) {
+      debugPrint("Error loading report details ($reportId): $e");
     } finally {
       _isLoading = false;
       notifyListeners();

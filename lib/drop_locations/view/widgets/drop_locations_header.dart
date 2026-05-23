@@ -1,14 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../../../dashboard/view/sidebar.dart';
+import '../../../dashboard/view/widgets/sidebar.dart';
+
 import '../add_location_dialog.dart';
 import '../../viewmodel/drop_locations_viewmodel.dart';
 
 class DropLocationsHeader extends StatelessWidget {
   final Function(Map data) onAdd;
   final Function(AppPage) onPageSelected;
-  const DropLocationsHeader({super.key,required this.onPageSelected, required this.onAdd, });
+  const DropLocationsHeader({
+    super.key,
+    required this.onPageSelected,
+    required this.onAdd,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -26,17 +31,12 @@ class DropLocationsHeader extends StatelessWidget {
               children: const [
                 Text(
                   "إدارة مواقع الرفع",
-                  style: TextStyle(
-                    fontSize: 22,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
                 ),
                 SizedBox(height: 4),
                 Text(
                   "إضافة وتحديث مواقع الحاويات والرفع",
-                  style: TextStyle(
-                    color: Colors.grey,
-                  ),
+                  style: TextStyle(color: Colors.grey),
                 ),
               ],
             ),
@@ -44,9 +44,8 @@ class DropLocationsHeader extends StatelessWidget {
               onPressed: () async {
                 final result = await showDialog(
                   context: context,
-                  builder: (_) => AddLocationDialog(
-                    onPageSelected:onPageSelected,
-                  ),
+                  builder:
+                      (_) => AddLocationDialog(onPageSelected: onPageSelected),
                 );
 
                 if (result != null) {
