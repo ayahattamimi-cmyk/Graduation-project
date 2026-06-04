@@ -1,12 +1,16 @@
+///   يمثّل ملخص إحصائيات البلاغات للعرض في بطاقات صفحة
+
 class StatisticModel {
   final int total;
   final int active;
   final int resolved;
+  final String resolutionRate;
 
   StatisticModel({
     required this.total,
     required this.active,
     required this.resolved,
+    required this.resolutionRate,
   });
 
   factory StatisticModel.fromJson(Map<String, dynamic> json) {
@@ -14,6 +18,7 @@ class StatisticModel {
       total: _parseInt(json['total']),
       active: _parseInt(json['active']),
       resolved: _parseInt(json['resolved']),
+      resolutionRate: json['resolution_rate']?.toString() ?? '0%',
     );
   }
 

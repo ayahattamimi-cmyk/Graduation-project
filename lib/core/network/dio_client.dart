@@ -10,8 +10,8 @@ class DioClient {
     dio = Dio(
       BaseOptions(
         baseUrl: 'https://medicalhouse-ye.net/api/',
-        connectTimeout: const Duration(seconds: 30),
-        receiveTimeout: const Duration(seconds: 30),
+        connectTimeout: const Duration(seconds: 60),
+        receiveTimeout: const Duration(seconds: 60),
         headers: {'Accept': 'application/json'},
       ),
     );
@@ -19,6 +19,11 @@ class DioClient {
     dio.interceptors.add(
       InterceptorsWrapper(
         onRequest: (options, handler) async {
+          // إذا كان الطلب يحمل علامة 'no-auth' فلا نضع التوكن تلقائياً
+          if (options.extra['no-auth'] == true) {
+            return handler.next(options);
+          }
+
           final String? token =
               await SharedPrefsService.getToken(); // استدعاء مباشر
           if (token != null) {

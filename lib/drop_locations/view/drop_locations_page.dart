@@ -29,6 +29,18 @@ class _DropLocationsPageState extends State<DropLocationsPage> {
   Widget build(BuildContext context) {
     final viewModel = context.watch<DropLocationsViewModel>();
 
+    // استماع للأخطاء وعرضها
+    if (viewModel.errorMessage != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(viewModel.errorMessage!),
+            backgroundColor: Colors.red,
+          ),
+        );
+      });
+    }
+
     return Scaffold(
       backgroundColor: const Color(0xfff6f8fb), // متناسق مع لوحة التحكم
       body:
@@ -44,17 +56,18 @@ class _DropLocationsPageState extends State<DropLocationsPage> {
                     onPageSelected: widget.onPageSelected,
                     onAdd: (data) {
                       final newContainer = ContainerModel(
-                        nameContainer: data["name"],
-                        areaDetails:
-                            data["area"], // المربع المختار من القائمة المنسدلة
+                        locationName: data["location_name"],
+                        nameStreet: data["name_street"],
                         type: data["type"],
                         period: data["period"],
                         classification: data["classification"],
-                        // إضافة قيم افتراضية للحقول التي لم يطلبها الدايالوج بعد
-                        nameStreet: "شارع عام",
-                        collectionFrequency: 1,
-                        collectionDay: "daily",
-                        startTime: "08:00:00",
+                        areaId: data["area_id"],
+                        areaDetails: data["area_details"],
+                        lat: data["lat"],
+                        lng: data["lng"],
+                        collectionFrequency: data["collection_frequency"],
+                        collectionDay: data["collection_day"],
+                        startTime: data["start_time"],
                       );
 
                       // استدعاء دالة الإضافة في الـ ViewModel

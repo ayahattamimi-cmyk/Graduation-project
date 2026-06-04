@@ -1,3 +1,7 @@
+///   يعمل كوسيط بين [NotificationService] والـ ViewModel.
+///   يتولى تحويل بيانات الإشعارات وتفاصيل البلاغات إلى
+///   نماذج Dart قابلة للعرض مع معالجة آمنة للأخطاء.
+
 import 'package:flutter/foundation.dart';
 import 'package:web2/notification/data/models/notification_model.dart';
 import 'package:web2/notification/data/models/report_details_model.dart';
@@ -18,15 +22,14 @@ class NotificationRepository {
       final Map<String, dynamic> body = response.data;
 
       if (body.containsKey('data') && body['data'] is Map) {
-        final inner = body['data'] as Map<String, dynamic>;
-        notificationsList = inner['notifications'] ?? [];
-        unreadCount = inner['unread_count'] ?? 0;
+        notificationsList = body['data']['notifications'] ?? [];
+        unreadCount = _parseInt(body['data']['unread_count']);
       } else if (body.containsKey('data') && body['data'] is List) {
         notificationsList = body['data'];
-        unreadCount = body['unread_count'] ?? 0;
+        unreadCount = _parseInt(body['unread_count']);
       } else if (body.containsKey('notifications')) {
         notificationsList = body['notifications'] ?? [];
-        unreadCount = body['unread_count'] ?? 0;
+        unreadCount = _parseInt(body['unread_count']);
       }
     } else if (response.data is List) {
       notificationsList = response.data;
@@ -39,23 +42,24 @@ class NotificationRepository {
           notifications.add(NotificationModel.fromJson(element));
         }
       } catch (e) {
-        debugPrint("⚠️ Failed to parse notification element: $element, error: $e");
+        debugPrint(
+          "⚠️ Failed to parse notification element: $element, error: $e",
+        );
       }
     }
 
-    return {
-      'unread_count': unreadCount,
-      'notifications': notifications,
-    };
+    return {'unread_count': unreadCount, 'notifications': notifications};
   }
 
-  Future<void> setRead(String id) async => await _service.markAsRead(id);
+  Future<void> setRead(String id) async {
+    await _service.markAsRead(id);
+  }
 
   Future<ReportDetailsModel> fetchReportDetails(int id) async {
     final response = await _service.getReportDetails(id);
     debugPrint("=== Debug Report Details RAW Response ===");
     debugPrint(response.data.toString());
-    
+
     dynamic reportData;
     if (response.data is Map) {
       final body = response.data as Map<String, dynamic>;
@@ -78,6 +82,9 @@ class NotificationRepository {
   }
 
   Future<void> publish(int id) async => await _service.publishReport(id);
+
+  Future<void> cancel(int id, String reason) async =>
+      await _service.cancelReport(id, reason);
 
   Future<StatisticModel> fetchStatistics() async {
     try {
@@ -103,7 +110,18 @@ class NotificationRepository {
       }
     } catch (e) {
       debugPrint("fetchStatistics error: $e");
-      return StatisticModel(total: 0, active: 0, resolved: 0);
+      return StatisticModel(
+        total: 0,
+        active: 0,
+        resolved: 0,
+        resolutionRate: '0%',
+      );
     }
+  }
+
+  int _parseInt(dynamic v) {
+    if (v == null) return 0;
+    if (v is int) return v;
+    return int.tryParse(v.toString()) ?? 0;
   }
 }

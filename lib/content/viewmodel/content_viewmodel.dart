@@ -1,9 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:web2/content/data/content_repository.dart';
 import 'package:web2/content/data/models/content_stats_model.dart';
-import 'package:web2/core/network/api_service.dart';
-import 'package:web2/core/network/dio_client.dart';
-import '../data/content_service.dart';
 import '../data/models/content_model.dart';
 
 class NewsTipsViewModel extends ChangeNotifier {
@@ -19,30 +16,32 @@ class NewsTipsViewModel extends ChangeNotifier {
     isLoading = true;
     notifyListeners();
 
-    // تشغيل جلب المحتوى وجلب الإحصائيات بالتوازي لمنع تأثر أي منهما بالآخر ولتحميل البيانات بأسرع وقت
-    await Future.wait([
-      _repository.getAllContent().then((value) {
-        contents = value;
-      }).catchError((e) {
-        debugPrint("❌ Error fetching content list: $e");
-      }),
-      _repository.getStats().then((value) {
-        stats = value;
-      }).catchError((e) {
-        debugPrint("❌ Error fetching content stats: $e");
-      }),
-    ]);
-
-    isLoading = false;
-    notifyListeners();
+    try {
+      // تشغيل جلب المحتوى وجلب الإحصائيات بالتوازي
+      await Future.wait([
+        _repository.getAllContent().then((value) {
+          contents = value;
+        }),
+        _repository.getStats().then((value) {
+          stats = value;
+        }),
+      ]);
+    } catch (e) {
+      debugPrint("❌ Error loading news/tips data: $e");
+    } finally {
+      isLoading = false;
+      notifyListeners();
+    }
   }
 
-  Future<void> addContent(ContentModel content) async {
+  // إضافة محتوى جديد مع دعم الصورة
+  Future<void> addContent(ContentModel content, {dynamic imageFile}) async {
     try {
-      await _repository.createContent(content);
+      await _repository.createContent(content, imageFile: imageFile);
       await loadData();
     } catch (e) {
       debugPrint("Add Error: $e");
+      rethrow;
     }
   }
 
@@ -53,22 +52,26 @@ class NewsTipsViewModel extends ChangeNotifier {
       debugPrint("Delete Success for ID: $id");
     } catch (e) {
       debugPrint("Delete Error for ID $id: $e");
+      rethrow;
     }
   }
 
-  Future<void> editContent(ContentModel updated) async {
+  // تعديل محتوى مع دعم تحديث الصورة
+  Future<void> editContent(ContentModel updated, {dynamic imageFile}) async {
     try {
-      await _repository.updateContent(updated);
+      await _repository.updateContent(updated, imageFile: imageFile);
       await loadData();
       debugPrint("Edit Success for ID: ${updated.id}");
     } catch (e) {
       debugPrint("Edit Error: $e");
+      rethrow;
     }
   }
 
-  Future<void> togglePublish(int id) async {
+  // تبديل حالة النشر (Active/Inactive)
+  Future<void> togglePublish(int id, bool currentStatus) async {
     try {
-      await _repository.toggleStatus(id);
+      await _repository.toggleStatus(id, currentStatus);
       await loadData();
       debugPrint("Toggle Success for ID: $id");
     } catch (e) {

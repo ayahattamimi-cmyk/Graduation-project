@@ -1,5 +1,8 @@
+///   يعمل كوسيط بين [ContainerService] وباقي طبقات التطبيق،
+///   ويتولى تحويل بيانات المناطق وبنود الجمع والإحصائيات إلى
+
 import 'package:flutter/foundation.dart';
-import 'area_model.dart'; // تأكدي من صحة المسارات لديكِ
+import 'area_model.dart';
 import 'container_model.dart';
 import 'container_service.dart';
 import 'statistics_model.dart';
@@ -8,15 +11,11 @@ class ContainerRepository {
   final ContainerService _service;
   ContainerRepository(this._service);
 
-  /// جلب المربعات مع حاوياتها (الهيكل الهرمي)
+  /// جلب المربعات مع حاوياتها
   Future<List<AreaModel>> fetchAreasWithContainers() async {
     final response = await _service.getAllContainers();
 
     debugPrint("📦 [ContainerRepo] Response status: ${response.statusCode}");
-    debugPrint(
-      "📦 [ContainerRepo] Response type: ${response.data.runtimeType}",
-    );
-    debugPrint("📦 [ContainerRepo] Response data: ${response.data}");
 
     // التعامل مع أشكال الاستجابة المختلفة
     List data;
@@ -27,13 +26,8 @@ class ContainerRepository {
       // إذا كانت الاستجابة مغلفة في حقل 'data'
       data = response.data['data'];
     } else {
-      debugPrint(
-        "❌ [ContainerRepo] Unexpected response structure: ${response.data}",
-      );
       throw Exception("هيكل الاستجابة غير متوقع من السيرفر");
     }
-
-    debugPrint("✅ [ContainerRepo] Parsed ${data.length} areas");
 
     // تحويل كل عنصر في القائمة إلى AreaModel
     return data.map((json) => AreaModel.fromJson(json)).toList();
@@ -42,8 +36,6 @@ class ContainerRepository {
   /// جلب الإحصائيات للكروت العلوية
   Future<StatisticsModel> fetchStatistics() async {
     final response = await _service.getStatistics();
-
-    debugPrint("📊 [ContainerRepo] Statistics response: ${response.data}");
 
     // التعامل مع أشكال الاستجابة المختلفة
     Map<String, dynamic> statsData;
@@ -61,7 +53,6 @@ class ContainerRepository {
     return StatisticsModel.fromJson(statsData);
   }
 
-  // --- أضفتُ لكِ هذه الدالة المفقودة لربط عملية الإضافة بالسيرفر ---
   Future<void> addContainer(ContainerModel container) async {
     await _service.createContainer(container.toJson());
   }

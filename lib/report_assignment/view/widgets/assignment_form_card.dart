@@ -77,32 +77,53 @@ class AssignmentFormCard extends StatelessWidget {
               },
             ),
 
-            if (vm.supervisorName.isNotEmpty)
-              Container(
-                margin: const EdgeInsets.only(top: 20),
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: const Color(0xffE8F0FE),
-                  borderRadius: BorderRadius.circular(12),
-                ),
+            const SizedBox(height: 16),
+            const Text(
+              "المشرف المسؤول",
+              style: TextStyle(fontWeight: FontWeight.w600),
+            ),
+            const SizedBox(height: 8),
+
+            DropdownButtonFormField<int>(
+              value:
+                  vm.supervisors.any((s) => s.id == vm.selectedSupervisorId)
+                      ? vm.selectedSupervisorId
+                      : null,
+              dropdownColor: Colors.white,
+              decoration: _inputDecoration().copyWith(
+                prefixIcon: const Icon(Icons.person, color: Colors.blue),
+                hintText: "اختر المشرف المسؤول",
+              ),
+              items:
+                  vm.supervisors.map((s) {
+                    return DropdownMenuItem<int>(
+                      value: s.id,
+                      child: Text(s.name),
+                    );
+                  }).toList(),
+              onChanged: (v) {
+                if (v != null) vm.setSupervisor(v);
+              },
+            ),
+
+            if (vm.suggestion != null &&
+                vm.selectedSupervisorId == vm.suggestion!.supervisorId)
+              Padding(
+                padding: const EdgeInsets.only(top: 8.0),
                 child: Row(
                   children: [
-                    const Icon(Icons.person, color: Colors.blue),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text(
-                            "المشرف المسؤول المقترح للعمل بموقع البلاغ",
-                            style: TextStyle(color: Colors.grey, fontSize: 12),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            vm.supervisorName,
-                            style: const TextStyle(fontWeight: FontWeight.bold),
-                          ),
-                        ],
+                    Icon(
+                      Icons.auto_awesome,
+                      size: 14,
+                      color: Colors.blue.shade700,
+                    ),
+                    const SizedBox(width: 4),
+                    Text(
+                      "هذا هو المشرف المقترح آلياً حسب موقع البلاغ",
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: Colors.blue.shade700,
+                        fontWeight: FontWeight.w500,
                       ),
                     ),
                   ],
@@ -165,7 +186,7 @@ class AssignmentFormCard extends StatelessWidget {
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
                                 content: Text(
-                                  "تم بنجاح تعيين البلاغ ومشاركته مع المشرف: ${vm.supervisorName}",
+                                  "تم بنجاح تعيين البلاغ ومشاركته مع المشرف: ${vm.selectedSupervisorName}",
                                 ),
                                 backgroundColor: Colors.green,
                               ),

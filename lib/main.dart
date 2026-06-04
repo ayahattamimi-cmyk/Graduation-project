@@ -20,7 +20,6 @@ import 'package:web2/supervisors/viewmodel/supervisor_viewmodel.dart';
 import 'content/viewmodel/content_viewmodel.dart';
 import 'content/data/content_repository.dart';
 import 'content/data/content_service.dart';
-import 'login screen/data/firebase_options.dart';
 import 'login screen/view/login_view.dart';
 import 'login screen/viewmodel/login_viewmodel.dart';
 import 'dashboard/viewmodel/dashboard_viewmodel.dart';
@@ -35,84 +34,97 @@ import 'report_assignment/viewmodel/assignment_viewmodel.dart';
 import 'map/data/map_repository.dart';
 import 'map/data/map_service.dart';
 import 'map/viewmodel/map_viewmodel.dart';
-
 import 'package:google_fonts/google_fonts.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   final String? token = await SharedPrefsService.getToken();
-  debugPrint("🔑 Startup Token: $token"); // جملة للتشخيص
+  debugPrint("🔑 Startup Token: $token");
   final bool isLoggedIn = token != null && token.isNotEmpty;
   debugPrint("✅ Is User Logged In: $isLoggedIn");
 
   final dioClient = DioClient();
 
+  //  نقوم بإنشاء نسخة الـ ApiService الموحدة هنا باستخدام الـ dioClient المجهز للمشروع بالكامل
+  final apiService = ApiService(dioClient);
+
   runApp(
     MultiProvider(
       providers: [
+        // 1. حقن الـ ApiService الموحد ليكون متاحاً لكل الفيو مودلز بالأسفل
+        Provider<ApiService>.value(value: apiService),
+
         ChangeNotifierProvider(
-          create: (_) => LoginViewModel(AuthService(dioClient.dio)),
+          create: (_) => LoginViewModel(AuthService(apiService)),
         ),
 
         ChangeNotifierProvider(
           create:
               (context) => DashboardViewModel(
-                DashboardRepository(DashboardService(dioClient.dio)),
+                DashboardRepository(DashboardService(apiService)),
               ),
         ),
+
         ChangeNotifierProvider(
           create:
               (_) => NotificationsViewModel(
-                NotificationRepository(NotificationService(dioClient.dio)),
+                NotificationRepository(NotificationService(apiService)),
               ),
         ),
+
         Provider<NotificationRepository>(
           create:
-              (_) => NotificationRepository(NotificationService(dioClient.dio)),
+              (_) => NotificationRepository(NotificationService(apiService)),
         ),
-        // --- تعديل NewsTipsViewModel ليعمل مع السيرفر ---
+
         ChangeNotifierProvider(
           create:
               (context) => NewsTipsViewModel(
-                NewsRepository(ContentService(ApiService(dioClient))),
+                NewsRepository(ContentService(context.read<ApiService>())),
               ),
         ),
 
-        // --- تعديل المشرفين ليعمل عبر الـ ApiService الموحد ---
+        // --- قسم المشرفين ---
         ChangeNotifierProvider(
           create:
               (context) => SupervisorViewModel(
-                SupervisorRepository(SupervisorService(dioClient.dio)),
+                SupervisorRepository(SupervisorService(apiService)),
               ),
         ),
 
-        // --- تعديل مواقع الحاويات لضمان عمل التعديل والحذف ---
         ChangeNotifierProvider(
           create:
               (context) => DropLocationsViewModel(
-                ContainerRepository(ContainerService(dioClient.dio)),
+                ContainerRepository(ContainerService(apiService)),
+                SupervisorRepository(SupervisorService(apiService)),
               ),
         ),
+
         ChangeNotifierProvider(
           create:
               (context) => ReportViewModel(
-                ReportRepository(ReportService(dioClient.dio)),
-                SupervisorRepository(
-                  SupervisorService(dioClient.dio),
-                ), // تمرير الريبو الثاني
+                ReportRepository(ReportService(apiService)),
+                SupervisorRepository(SupervisorService(apiService)),
               ),
         ),
+
         ChangeNotifierProvider(
           create:
               (context) => AssignmentViewModel(
-                AssignmentRepository(AssignmentService(dioClient.dio)),
+                AssignmentRepository(AssignmentService(apiService)),
+                SupervisorRepository(SupervisorService(apiService)),
               ),
         ),
+
         ChangeNotifierProvider(
-          create: (context) => MapViewModel(MapRepository(MapService())),
+          create:
+              (context) => WebMapViewModel(
+                WebMapRepository(MapService(context.read<ApiService>())),
+              ),
         ),
       ],
+
       child: MyApp(isLoggedIn: isLoggedIn),
     ),
   );
@@ -121,6 +133,7 @@ void main() async {
 class MyApp extends StatelessWidget {
   final bool isLoggedIn;
   const MyApp({super.key, required this.isLoggedIn});
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -136,13 +149,12 @@ class MyApp extends StatelessWidget {
         ),
         textTheme: GoogleFonts.cairoTextTheme(),
       ),
-
       locale: const Locale('ar'),
       builder: (context, child) {
         return Directionality(textDirection: TextDirection.rtl, child: child!);
       },
       home: isLoggedIn ? const DashboardView() : const LoginScreen(),
-      routes: {'/mapPage': (context) => const MapScreen()},
+      routes: {'/mapPage': (context) => const WebMapScreen()},
     );
   }
 }

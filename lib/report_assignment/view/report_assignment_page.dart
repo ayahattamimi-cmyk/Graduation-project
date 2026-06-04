@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../viewmodel/assignment_viewmodel.dart';
 import 'widgets/assignment_form_card.dart';
 import 'widgets/assignment_empty_state.dart';
+import '../../map/view/map_screen.dart';
 
 class ReportAssignmentPage extends StatefulWidget {
   final int? reportId;
@@ -59,7 +60,14 @@ class _ReportAssignmentPageState extends State<ReportAssignmentPage> {
               ),
               OutlinedButton.icon(
                 onPressed: () {
-                  Navigator.pushNamed(context, "/mapPage");
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder:
+                          (context) =>
+                              WebMapScreen(focusReportId: widget.reportId),
+                    ),
+                  );
                 },
                 icon: const Icon(Icons.map_outlined, color: Colors.white),
                 label: const Text(
@@ -83,6 +91,13 @@ class _ReportAssignmentPageState extends State<ReportAssignmentPage> {
 
           if (widget.reportId == null)
             const AssignmentEmptyState()
+          else if (vm.isLoading && vm.supervisors.isEmpty)
+            const Center(
+              child: Padding(
+                padding: EdgeInsets.all(40.0),
+                child: CircularProgressIndicator(),
+              ),
+            )
           else
             AssignmentFormCard(vm: vm, reportId: widget.reportId!),
         ],

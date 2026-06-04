@@ -5,6 +5,7 @@ class StatCard extends StatelessWidget {
   final String value;
   final Color color;
   final IconData icon;
+  final String? subtitle;
 
   const StatCard({
     super.key,
@@ -12,7 +13,7 @@ class StatCard extends StatelessWidget {
     required this.value,
     required this.color,
     required this.icon,
-
+    this.subtitle,
   });
 
   @override
@@ -22,19 +23,45 @@ class StatCard extends StatelessWidget {
         padding: const EdgeInsets.all(16),
         margin: const EdgeInsets.all(6),
         decoration: BoxDecoration(
+          color: Colors.white,
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: Colors.grey.shade300),
+          border: Border.all(color: Colors.grey.shade200),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.grey.withOpacity(0.05),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Icon(icon, color: color, size: 28),
-            Text(title),
-            const SizedBox(height: 10),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Icon(icon, color: color, size: 28),
+                if (subtitle != null)
+                  Text(
+                    subtitle!,
+                    style: TextStyle(fontSize: 12, color: Colors.grey.shade500),
+                  ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Text(
+              title,
+              style: TextStyle(
+                fontSize: 14,
+                color: Colors.grey.shade600,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            const SizedBox(height: 6),
             Text(
               value,
               style: TextStyle(
-                fontSize: 22,
+                fontSize: 26,
                 color: color,
                 fontWeight: FontWeight.bold,
               ),

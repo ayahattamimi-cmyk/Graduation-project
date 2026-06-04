@@ -43,7 +43,7 @@ class _LoginScreenState extends State<LoginScreen> {
               end: Alignment.bottomRight,
               colors: [
                 Color(0xFF064E3B), // Deep Emerald
-                Color(0xFF022C22), // Darker Emerald
+                Color.fromARGB(255, 5, 63, 49), // Darker Emerald
                 Color(0xFF064E3B),
               ],
             ),
@@ -83,10 +83,16 @@ class _LoginScreenState extends State<LoginScreen> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       /// العنوان العلوي
-                      const Icon(
-                        Icons.eco_rounded,
-                        size: 48,
-                        color: Color(0xFF34D399),
+                      Image.asset(
+                        'assets/images/lorem.png',
+                        height: 120, // حجم مناسب للتصميم
+                        fit: BoxFit.contain,
+                        errorBuilder:
+                            (context, error, stackTrace) => const Icon(
+                              Icons.eco_rounded,
+                              size: 80,
+                              color: Color(0xFF34D399),
+                            ),
                       ),
                       const SizedBox(height: 12),
                       const Text(

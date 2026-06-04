@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:web2/reports/data/models/report_model.dart';
 import 'package:web2/reports/data/models/SupervisorPerformanceModel.dart';
+import 'package:web2/reports/data/models/report_model.dart';
 import 'package:web2/reports/data/models/report_statistics_model.dart';
 import 'package:web2/supervisors/data/model/area_detail_model.dart';
 import '../data/report_repository.dart';
@@ -18,20 +18,23 @@ class ReportViewModel extends ChangeNotifier {
   List<SupervisorPerformanceModel> supervisorsPerformance = [];
   List<AreaDetailModel> areaObjects = [];
   ReportStatisticsModel? generalStats;
-  bool isLoading = false;
+  bool isLoadingReports = false; // حالة تحميل البلاغات بشكل مستقل
+  bool isLoadingSupervisors = false; // حالة تحميل المشرفين بشكل مستقل
 
-  // --- فلاتر البلاغات ---
+  bool get isLoading => isLoadingReports || isLoadingSupervisors;
+
+  // --- فلاتر البلاغات الرئيسية ---
   String selectedArea = "جميع المناطق";
   String selectedType = "جميع الأنواع";
   String selectedStatus = "جميع الحالات";
-  String selectedPeriod = "آخر أسبوع";
+  String selectedPeriod = "جميع الفترات"; // افتراضياً: بدون فلتر فترة زمنية
 
-  // --- فلاتر أداء المشرفين ---
+  // --- فلاتر أداء المشرفين المصححة ---
   String selectedSupervisor = "جميع المشرفين";
   String selectedSupType = "جميع الأنواع";
 
-  // قوائم الاختيارات
-  List<String> areas = ["جميع المناطق"]; // سيتم ملؤها من السيرفر
+  // قوائم الاختيارات للـ Dropdowns
+  List<String> areas = ["جميع المناطق"];
   List<String> types = ["جميع الأنواع", "رفع", "كنس"];
   List<String> status = [
     "جميع الحالات",
@@ -39,21 +42,30 @@ class ReportViewModel extends ChangeNotifier {
     "قيد الانتظار",
     "قيد التنفيذ",
   ];
-  List<String> periods = ["آخر أسبوع", "آخر شهر", "آخر سنة"];
+  List<String> periods = [
+    "جميع الفترات",
+    "اليوم",
+    "أمس",
+    "هذا الأسبوع",
+    "الأسبوع الماضي",
+    "هذا الشهر",
+    "الشهر الماضي",
+    "هذا العام",
+  ];
   List<String> supervisors = ["جميع المشرفين"];
 
-  // دالة التهيئة الشاملة
+  // دالة التهيئة الشاملة عند فتح الصفحة
   void loadAllData() {
     fetchReports();
     fetchSupervisorsNames();
     fetchAreas();
     fetchGeneralStats();
+    fetchSupervisorStats();
   }
 
-  // جلب المناطق من السيرفر (إعادة استخدام من قسم المشرفين)
+  // جلب المناطق من السيرفر
   Future<void> fetchAreas() async {
     try {
-      // نطلب مناطق الرفع مثلاً أو حسب الحاجة
       final result = await _supervisorRepository.fetchAreas("lifting");
       areaObjects = result;
       areas = [
@@ -66,7 +78,7 @@ class ReportViewModel extends ChangeNotifier {
     }
   }
 
-  // جلب الإحصائيات العامة
+  // جلب الإحصائيات العامة للبلاغات
   Future<void> fetchGeneralStats() async {
     try {
       generalStats = await _reportRepository.getGeneralStats();
@@ -76,25 +88,61 @@ class ReportViewModel extends ChangeNotifier {
     }
   }
 
-  // 1. جلب بلاغات التقارير
+  // 1. جلب بلاغات التقارير (مع معالجة "جميع المناطق")
   Future<void> fetchReports() async {
-    isLoading = true;
+    isLoadingReports = true;
     notifyListeners();
     try {
+      String? areaParam;
+      if (selectedArea != "جميع المناطق") {
+        final areaObj = areaObjects.firstWhere(
+          (e) => (e.label ?? e.name ?? e.id.toString()) == selectedArea,
+          orElse:
+              () =>
+                  areaObjects.isNotEmpty
+                      ? areaObjects[0]
+                      : AreaDetailModel(id: 0, name: ""),
+        );
+        areaParam = areaObj.id.toString();
+      }
+
+      // تحويل القيم العربية إلى القيم التي يتوقعها الباك أند (English)
+      String? mappedStatus;
+      if (selectedStatus == "تم الحل")
+        mappedStatus = "Solved";
+      else if (selectedStatus == "قيد الانتظار")
+        mappedStatus = "Pending";
+      else if (selectedStatus == "قيد التنفيذ")
+        mappedStatus = "Processing";
+
+      String? mappedType;
+      if (selectedType == "رفع")
+        mappedType = "Lifting";
+      else if (selectedType == "كنس")
+        mappedType = "Sweeping";
+
+      // إرسال period فقط إذا تم اختيار فترة محددة
+      final String? periodParam =
+          (selectedPeriod == "جميع الفترات")
+              ? null
+              : _mapPeriodToApi(selectedPeriod);
+
       debugPrint(
-        "📡 [Reports] Fetching with: Area:$selectedArea, Type:$selectedType, Status:$selectedStatus",
+        "🔎 [VM] Fetching reports: area=$areaParam status=$mappedStatus type=$mappedType period=$periodParam",
       );
+
       reports = await _reportRepository.getFilteredReports(
-        areaId: selectedArea == "جميع المناطق" ? null : selectedArea,
-        status: selectedStatus == "جميع الحالات" ? null : selectedStatus,
-        reportType: selectedType == "جميع الأنواع" ? null : selectedType,
-        period: _mapPeriodToApi(selectedPeriod),
+        areaId: areaParam,
+        status: mappedStatus,
+        reportType: mappedType,
+        period: periodParam,
       );
-      debugPrint("✅ [Reports] Found ${reports.length} reports");
+
+      debugPrint("✅ [VM] Reports loaded: ${reports.length} items");
     } catch (e) {
       debugPrint("❌ [Reports] Error: $e");
     } finally {
-      isLoading = false;
+      isLoadingReports = false;
       notifyListeners();
     }
   }
@@ -110,64 +158,36 @@ class ReportViewModel extends ChangeNotifier {
     }
   }
 
-  // 3. جلب أداء مشرف معين
+  // 3. جلب أداء المشرفين بناءً على الفلاتر الخاصة بهم
   Future<void> fetchSupervisorStats() async {
-    if (selectedSupervisor == "جميع المشرفين") {
-      supervisorsPerformance = [];
-      notifyListeners();
-      return;
-    }
-
-    isLoading = true;
+    isLoadingSupervisors = true;
     notifyListeners();
     try {
+      final String supervisorName =
+          selectedSupervisor == "جميع المشرفين" ? "" : selectedSupervisor;
+      final String supType =
+          selectedSupType == "رفع"
+              ? "Lifting"
+              : (selectedSupType == "كنس" ? "Sweeping" : "");
+
       final result = await _supervisorRepository.fetchSupervisorPerformance(
-        selectedSupervisor,
-        selectedSupType,
+        supervisorName,
+        supType,
       );
       supervisorsPerformance =
           result.map((e) => SupervisorPerformanceModel.fromJson(e)).toList();
     } catch (e) {
       debugPrint("❌ خطأ جلب أداء المشرف: $e");
     } finally {
-      isLoading = false;
+      isLoadingSupervisors = false;
       notifyListeners();
     }
   }
 
-  // الدوال المساعدة للتحديث من الواجهة
+  // دوال الـ Setters المحدثة لضمان استدعاء الـ API الصحيح تلقائياً فور التغيير
   void setArea(String v) {
     selectedArea = v;
-    // إذا كانت "جميع المناطق" نرسل null، وإلا نرسل الـ id الحقيقي
-    if (v == "جميع المناطق") {
-      fetchReports();
-    } else {
-      // البحث عن الـ id المقابل للاسم المختار
-      final areaObj = areaObjects.firstWhere(
-        (e) => (e.label ?? e.name ?? e.id.toString()) == v,
-        orElse: () => areaObjects[0],
-      );
-      // تحديث الفلترة بالـ ID الحقيقي
-      _fetchReportsWithId(areaObj.id.toString());
-    }
-  }
-
-  Future<void> _fetchReportsWithId(String id) async {
-    isLoading = true;
-    notifyListeners();
-    try {
-      reports = await _reportRepository.getFilteredReports(
-        areaId: id,
-        status: selectedStatus == "جميع الحالات" ? null : selectedStatus,
-        reportType: selectedType == "جميع الأنواع" ? null : selectedType,
-        period: _mapPeriodToApi(selectedPeriod),
-      );
-    } catch (e) {
-      debugPrint("❌ خطأ جلب البلاغات بالـ ID: $e");
-    } finally {
-      isLoading = false;
-      notifyListeners();
-    }
+    fetchReports();
   }
 
   void setType(String v) {
@@ -185,6 +205,7 @@ class ReportViewModel extends ChangeNotifier {
     fetchReports();
   }
 
+  // دوال فلاتر قسم المشرفين لكي لا تتداخل مع فلاتر البلاغات
   void setSupervisor(String v) {
     selectedSupervisor = v;
     fetchSupervisorStats();
@@ -195,23 +216,62 @@ class ReportViewModel extends ChangeNotifier {
     fetchSupervisorStats();
   }
 
-  // الإحصائيات (تدعم مسميات السيرفر المختلفة)
+  // حسابات الإحصائيات الذكية للبلاغات الحالية
   int get total => reports.length;
   int get solved =>
-      reports.where((e) => e.status == "تم الحل" || e.status == "محلول").length;
+      reports.where((e) {
+        final s = e.status.toLowerCase();
+        return s == "تم الحل" ||
+            s == "محلول" ||
+            s == "solved" ||
+            s == "completed";
+      }).length;
   int get pending => total - solved;
 
   String _mapPeriodToApi(String p) {
-    if (p == "آخر أسبوع") return "last_week";
-    if (p == "آخر شهر") return "last_month";
-    return "last_year";
+    switch (p) {
+      case "اليوم":
+        return "today";
+      case "أمس":
+        return "yesterday";
+      case "هذا الأسبوع":
+        return "this_week";
+      case "الأسبوع الماضي":
+        return "last_week";
+      case "هذا الشهر":
+        return "this_month";
+      case "الشهر الماضي":
+        return "last_month";
+      case "هذا العام":
+        return "this_year";
+      default:
+        return "";
+    }
   }
 
-  // أفضل 3 مشرفين بناءً على الإنجاز
+  // أفضل 3 مشرفين بناءً على حساب نسبة الإنجاز
   List<String> get topSupervisors {
     if (supervisorsPerformance.isEmpty) return [];
     List<SupervisorPerformanceModel> sorted = List.from(supervisorsPerformance);
-    sorted.sort((a, b) => b.completionRate.compareTo(a.completionRate));
+
+    // ترتيب تنازلي حسب نسبة الإنجاز النصية (مثل تحويل "85%" إلى رقم ومقارنته)
+    sorted.sort((a, b) {
+      double rateA =
+          double.tryParse(a.completionRate.replaceAll('%', '')) ?? 0.0;
+      double rateB =
+          double.tryParse(b.completionRate.replaceAll('%', '')) ?? 0.0;
+      return rateB.compareTo(rateA);
+    });
     return sorted.take(3).map((s) => s.name).toList();
+  }
+
+  // إلغاء البلاغ وتحديث القائمة
+  Future<bool> cancelReport(int id, String reason) async {
+    final success = await _reportRepository.cancelReport(id, reason);
+    if (success) {
+      await fetchReports(); // تحديث القائمة فوراً بعد الإلغاء
+      await fetchGeneralStats(); // تحديث الإحصائيات أيضاً
+    }
+    return success;
   }
 }

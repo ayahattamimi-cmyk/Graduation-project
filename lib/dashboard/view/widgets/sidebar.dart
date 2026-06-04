@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:web2/login%20screen/view/login_view.dart';
 import 'package:web2/login%20screen/viewmodel/login_viewmodel.dart';
+import 'package:web2/notification/viewmodel/notification_viewmodel.dart';
 
 enum AppPage {
   dashboard,
@@ -20,12 +21,15 @@ class Sidebar extends StatelessWidget {
 
   const Sidebar({
     super.key,
-    required this.currentPage, //required يعني لازم امرر قيمتها
+    required this.currentPage,
     required this.onPageSelected,
   });
 
   @override
   Widget build(BuildContext context) {
+    // الاستماع لبيانات الإشعارات لعرض العداد
+    final notificationVM = context.watch<NotificationsViewModel>();
+
     return Container(
       width: 250,
       color: Colors.white,
@@ -43,10 +47,17 @@ class Sidebar extends StatelessWidget {
                   children: [
                     Row(
                       children: [
-                        const Icon(
-                          Icons.eco,
-                          color: Color(0xFF10B981),
-                          size: 28,
+                        Image.asset(
+                          'assets/images/lorem.png',
+                          width: 60,
+                          height: 60,
+                          fit: BoxFit.contain,
+                          errorBuilder:
+                              (context, error, stackTrace) => const Icon(
+                                Icons.eco,
+                                color: Color(0xFF10B981),
+                                size: 28,
+                              ),
                         ),
                         const SizedBox(width: 10),
                         Column(
@@ -72,15 +83,18 @@ class Sidebar extends StatelessWidget {
                         ),
                       ],
                     ),
-
                     const SizedBox(height: 32),
 
                     _item('لوحة التحكم', Icons.home, AppPage.dashboard),
+
                     _item(
                       'الإشعارات',
                       Icons.notifications,
                       AppPage.notifications,
+                      badgeCount:
+                          notificationVM.unreadCount, // تمرير عدد الإشعارات
                     ),
+
                     _item(
                       'توجيه البلاغات',
                       Icons.alt_route,
@@ -122,6 +136,7 @@ class Sidebar extends StatelessWidget {
     IconData icon,
     AppPage page, {
     bool isLogout = false,
+    int badgeCount = 0, // إضافة متغير العداد
   }) {
     final bool active = !isLogout && currentPage == page;
 
@@ -194,14 +209,36 @@ class Sidebar extends StatelessWidget {
                                 : Colors.black54),
                   ),
                   const SizedBox(width: 10),
-                  Text(
-                    title,
-                    style: TextStyle(
-                      color: isLogout ? Colors.redAccent : Colors.black87,
-                      fontWeight:
-                          isLogout ? FontWeight.bold : FontWeight.normal,
+                  Expanded(
+                    child: Text(
+                      title,
+                      style: TextStyle(
+                        color: isLogout ? Colors.redAccent : Colors.black87,
+                        fontWeight:
+                            isLogout ? FontWeight.bold : FontWeight.normal,
+                      ),
                     ),
                   ),
+                  // رص العارضة (Badge) إذا كان هناك إشعارات
+                  if (badgeCount > 0 && !isLogout)
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 2,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.redAccent,
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Text(
+                        badgeCount > 99 ? "+99" : badgeCount.toString(),
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
                 ],
               ),
             ),

@@ -1,11 +1,12 @@
+import 'package:flutter/foundation.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import '../../core/network/api_service.dart';
 import 'package:dio/dio.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:web2/core/services/shared_pref.dart';
 
 class AuthService {
-  final Dio _dio;
-  AuthService(this._dio);
+  final ApiService _apiService;
+  AuthService(this._apiService);
 
   Future<bool> loginToLaravel() async {
     try {
@@ -15,24 +16,20 @@ class AuthService {
 
       if (firebaseToken == null) return false;
 
-      // 2. إرسال التوكن إلى لارفل (كما في Postman) باستخدام FormData
-      FormData formData = FormData.fromMap({
-        'idToken': firebaseToken,
-        // 'role': 'admins', // أضيفيها إذا كان السيرفر يتطلب تحديد الدور هنا
-      });
+      // 2. إرسال التوكن إلى لارفل باستخدام FormData
+      FormData formData = FormData.fromMap({'idToken': firebaseToken});
 
-      final response = await _dio.post('login', data: formData);
+      final response = await _apiService.post('login', data: formData);
 
       if (response.statusCode == 200) {
         String laravelToken = response.data['data']['token'];
-        await SharedPrefsService.saveToken(laravelToken); 
-        print("💾 تم حفظ التوكن بنجاح في الذاكرة: $laravelToken");
+        await SharedPrefsService.saveToken(laravelToken);
         return true;
       }
 
       return false;
     } catch (e) {
-      print("Login Error: $e");
+      debugPrint("❌ Login Error: $e");
       return false;
     }
   }

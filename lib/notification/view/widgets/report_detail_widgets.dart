@@ -63,14 +63,14 @@ class ReportImageCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return DetailCard(
-      title: 'صورة البلاغ من المواطن',
+      title: 'صورة البلاغ الأصلية',
       child: ClipRRect(
         borderRadius: BorderRadius.circular(12),
         child:
             imageUrl.isNotEmpty
                 ? Image.network(
                   imageUrl,
-                  height: 400,
+                  height: 250,
                   width: double.infinity,
                   fit: BoxFit.cover,
                   errorBuilder:

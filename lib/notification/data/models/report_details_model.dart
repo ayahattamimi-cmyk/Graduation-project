@@ -1,3 +1,6 @@
+///   يحمل كافة تفاصيل بلاغ بيئي بعينه، يتضمن بيانات
+///   المبلّغ والموقع والصور وتاريخ الإنشاء.
+///   يتضمن [ReporterModel] ككائن فرعي يمثّل بيانات صاحب البلاغ.
 import 'reporter_model.dart'; // استيراد مودل المبلّغ
 
 class ReportDetailsModel {
@@ -13,6 +16,8 @@ class ReportDetailsModel {
   final String area;
   final String square;
   final ReporterModel reporter; // ربط المودلين ببعض
+  final String? cancelReason;
+  final bool isPublished;
 
   ReportDetailsModel({
     required this.reportNumber,
@@ -27,24 +32,47 @@ class ReportDetailsModel {
     required this.area,
     required this.square,
     required this.reporter,
+    this.cancelReason,
+    this.isPublished = false,
   });
 
   factory ReportDetailsModel.fromJson(Map<String, dynamic> json) {
     return ReportDetailsModel(
-      reportNumber: _parseInt(json['report_number'] ?? json['id']), // fallback to id if report_number is missing
+      reportNumber: _parseInt(
+        json['report_number'] ?? json['id'],
+      ), // fallback to id if report_number is missing
       description: json['description'] ?? "",
       status: json['status'] ?? "",
       priority: json['priority'] ?? "",
-      type: json['type'] ?? json['report_type'] ?? "", // fallback to report_type
+      type:
+          json['type'] ?? json['report_type'] ?? "", // fallback to report_type
       title: json['title'] ?? "",
       createdAt: json['created_at'] ?? "",
       createdTime: json['created_time'] ?? "",
       imageUrl: _formatImageUrl(json['image_url'] ?? json['image']),
-      area: json['location']?['area'] ?? json['area_name'] ?? json['area'] ?? "غير محدد",
-      square: json['location']?['square'] ?? json['square_name'] ?? json['square'] ?? "غير محدد",
-      reporter: json['reporter'] != null 
-          ? ReporterModel.fromJson(json['reporter']) 
-          : ReporterModel(name: json['citizen_name'] ?? "غير معروف", phone: "غير متوفر"), // fallback to citizen_name
+      area:
+          json['location']?['area'] ??
+          json['area_name'] ??
+          json['area'] ??
+          "غير محدد",
+      square:
+          json['location']?['square'] ??
+          json['square_name'] ??
+          json['square'] ??
+          "غير محدد",
+      reporter:
+          json['reporter'] != null
+              ? ReporterModel.fromJson(json['reporter'])
+              : ReporterModel(
+                name: json['citizen_name'] ?? "غير معروف",
+                phone: "غير متوفر",
+              ), // fallback to citizen_name
+      cancelReason: json['cancel_reason'] ?? json['reason'],
+      isPublished:
+          _parseInt(
+            json['is_published'] ?? json['is_publish'] ?? json['isPublished'],
+          ) ==
+          1,
     );
   }
 
@@ -58,33 +86,32 @@ class ReportDetailsModel {
   static String _formatImageUrl(dynamic path) {
     if (path == null || path.toString().isEmpty) return "";
     String url = path.toString();
-    if (url.startsWith('http')) return url;
-    
-    // إزالة السلاش البادئ إذا وجد لتجنب التكرار
-    if (url.startsWith('/')) {
-      url = url.substring(1);
+    if (url.startsWith('http')) {
+      return "https://images.weserv.nl/?url=$url";
     }
-    
-    String baseUrl = "https://medicalhouse-ye.net";
-    
-    // إذا كان الرابط يحتوي بالفعل على http، نرجعه كما هو
-    if (url.startsWith('http')) return url;
 
-    // تنظيف السلاشات الزائدة
     while (url.startsWith('/')) {
       url = url.substring(1);
     }
-    
-    // إذا كان الرابط يحتوي على public/ في بدايته (خطأ شائع في Laravel)
+
+    String baseUrl = "https://medicalhouse-ye.net";
+
+    // إذا كان الرابط يبدأ بـ uploads أو storage، ندمجه مباشرة مع الـ baseUrl
+    if (url.startsWith('uploads/') || url.startsWith('storage/')) {
+      return "https://images.weserv.nl/?url=$baseUrl/$url";
+    }
+
     if (url.startsWith('public/')) {
       url = url.replaceFirst('public/', '');
     }
 
-    // إذا كان لا يبدأ بـ storage/، نضيفه
-    if (!url.startsWith('storage/')) {
-      url = "storage/$url";
+    String finalUrl = "";
+    if (!url.contains('/')) {
+      finalUrl = "$baseUrl/storage/$url";
+    } else {
+      finalUrl = "$baseUrl/$url";
     }
-    
-    return "$baseUrl/$url";
+
+    return "https://images.weserv.nl/?url=$finalUrl";
   }
 }

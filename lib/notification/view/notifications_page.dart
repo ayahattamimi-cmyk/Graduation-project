@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:web2/notification/viewmodel/notification_viewmodel.dart';
 import '../../dashboard/view/widgets/sidebar.dart';
-
 import 'package:provider/provider.dart';
-
 import 'widgets/notification_item.dart';
-import 'widgets/notification_stat.dart';
+import 'package:web2/dashboard/view/widgets/stat_card.dart';
 
 class NotificationsPage extends StatefulWidget {
   final Function(AppPage) onPageSelected;
@@ -14,16 +12,6 @@ class NotificationsPage extends StatefulWidget {
 
   @override
   State<NotificationsPage> createState() => _NotificationsPageState();
-
-  static Widget _sectionTitle(String title) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 16, top: 8),
-      child: Text(
-        title,
-        style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-      ),
-    );
-  }
 }
 
 class _NotificationsPageState extends State<NotificationsPage> {
@@ -64,37 +52,44 @@ class _NotificationsPageState extends State<NotificationsPage> {
                       ),
                       const SizedBox(height: 32),
 
-                      Wrap(
-                        spacing: 16,
-                        runSpacing: 16,
+                      Row(
                         children: [
-                          NotificationStat(
-                            title: 'إجمالي الإشعارات',
-                            value: viewModel.stats?.total.toString() ?? '0',
-                            icon: Icons.notifications,
-                            color: const Color(0xFF10B981),
+                          Expanded(
+                            child: StatCard(
+                              title: 'إجمالي الإشعارات',
+                              value:
+                                  viewModel.totalNotificationsCount.toString(),
+                              subtitle: 'جميع التنبيهات المستلمة',
+                              icon: Icons.notifications_none,
+                              color: const Color(0xFF10B981),
+                            ),
                           ),
-
-                          NotificationStat(
-                            title: 'البلاغات المحلولة',
-                            value: viewModel.stats?.resolved.toString() ?? '0',
-                            icon: Icons.check_circle,
-                            color: Colors.green,
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: StatCard(
+                              title: 'إشعارات مقروءة',
+                              value:
+                                  viewModel.readNotificationsCount.toString(),
+                              subtitle: 'تمت معاينتها مسبقاً',
+                              icon: Icons.mark_email_read_outlined,
+                              color: Colors.blue,
+                            ),
                           ),
-                          NotificationStat(
-                            title: 'البلاغات النشطة',
-                            value: viewModel.stats?.active.toString() ?? '0',
-                            icon: Icons.error,
-                            color: Colors.orange,
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: StatCard(
+                              title: 'إشعارات غير مقروءة',
+                              value:
+                                  viewModel.unreadNotificationsCount.toString(),
+                              subtitle: 'تنتظر المراجعة',
+                              icon: Icons.mark_email_unread_outlined,
+                              color: Colors.orange,
+                            ),
                           ),
                         ],
                       ),
 
                       const SizedBox(height: 32),
-
-                      NotificationsPage._sectionTitle(
-                        'قائمة الإشعارات والتحديثات الحالية (${viewModel.notifications.length})',
-                      ),
 
                       if (viewModel.notifications.isEmpty)
                         const Center(
@@ -109,26 +104,108 @@ class _NotificationsPageState extends State<NotificationsPage> {
                             ),
                           ),
                         )
-                      else
-                        ...viewModel.notifications
-                            .map(
-                              (notif) => NotificationItem(
-                                id: notif.title,
-                                reportId: notif.reportId,
-                                category: notif.reportType,
-                                priority: notif.priority,
-                                days: notif.createdAt,
-                                status: notif.status,
-                                notificationId: notif.id,
-                                isRead: notif.isRead,
-                                onPageSelected: widget.onPageSelected,
-                              ),
-                            )
-                            .toList(),
+                      else ...[
+                        // قسم البلاغات الجديدة / قيد الانتظار
+                        _buildNotificationSection(
+                          context,
+                          ' بلاغات جديدة (قيد الانتظار)',
+                          viewModel.notifications
+                              .where((n) => n.status.contains("انتظار"))
+                              .toList(),
+                          widget.onPageSelected,
+                          Colors.orange,
+                        ),
+
+                        // قسم البلاغات قيد المعالجة
+                        _buildNotificationSection(
+                          context,
+                          ' بلاغات قيد المعالجة',
+                          viewModel.notifications
+                              .where((n) => n.status.contains("معالجة"))
+                              .toList(),
+                          widget.onPageSelected,
+                          Colors.blue,
+                        ),
+
+                        // قسم البلاغات المنجزة
+                        _buildNotificationSection(
+                          context,
+                          ' بلاغات منجزة  ',
+                          viewModel.notifications
+                              .where(
+                                (n) =>
+                                    n.status.contains("حل") ||
+                                    n.status.contains("إنجاز"),
+                              )
+                              .toList(),
+                          widget.onPageSelected,
+                          Colors.green,
+                        ),
+
+                        // قسم البلاغات الملغية
+                        _buildNotificationSection(
+                          context,
+                          ' بلاغات ملغية',
+                          viewModel.notifications
+                              .where((n) => n.status.contains("ملغي"))
+                              .toList(),
+                          widget.onPageSelected,
+                          Colors.red,
+                        ),
+                      ],
                     ],
                   ),
                 ),
       ),
+    );
+  }
+
+  Widget _buildNotificationSection(
+    BuildContext context,
+    String title,
+    List<dynamic> items,
+    Function(AppPage) onPageSelected,
+    Color color,
+  ) {
+    if (items.isEmpty) return const SizedBox();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(vertical: 16),
+          child: Row(
+            children: [
+              Container(width: 4, height: 24, color: color),
+              const SizedBox(width: 12),
+              Text(
+                "$title (${items.length})",
+                style: const TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
+        ),
+        ...items.map(
+          (notif) => NotificationItem(
+            id: notif.title,
+            reportId: notif.reportId,
+            category: notif.reportType,
+            priority: notif.priority,
+            days: notif.createdAt,
+            status: notif.status,
+            notificationId: notif.id,
+            isRead: notif.isRead,
+            imageUrl: notif.image,
+            supervisor: notif.supervisor,
+            note: notif.note,
+            onPageSelected: onPageSelected,
+          ),
+        ),
+        const SizedBox(height: 24),
+      ],
     );
   }
 }

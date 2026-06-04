@@ -1,6 +1,6 @@
 class ContainerModel {
   final int? id;
-  final String nameContainer;
+  final String locationName;
   final String nameStreet;
   final String type;
   final String period;
@@ -9,10 +9,13 @@ class ContainerModel {
   final String startTime;
   final String classification;
   final String? areaDetails;
+  final int? areaId;
+  final double? lat;
+  final double? lng;
 
   ContainerModel({
     this.id,
-    required this.nameContainer,
+    required this.locationName,
     required this.nameStreet,
     required this.type,
     required this.period,
@@ -21,10 +24,14 @@ class ContainerModel {
     required this.startTime,
     required this.classification,
     this.areaDetails,
+    this.areaId,
+    this.lat,
+    this.lng,
   });
+
   ContainerModel copyWith({
     int? id,
-    String? nameContainer,
+    String? locationName,
     String? nameStreet,
     String? type,
     String? period,
@@ -33,10 +40,13 @@ class ContainerModel {
     String? startTime,
     String? classification,
     String? areaDetails,
+    int? areaId,
+    double? lat,
+    double? lng,
   }) {
     return ContainerModel(
       id: id ?? this.id,
-      nameContainer: nameContainer ?? this.nameContainer,
+      locationName: locationName ?? this.locationName,
       nameStreet: nameStreet ?? this.nameStreet,
       type: type ?? this.type,
       period: period ?? this.period,
@@ -45,12 +55,13 @@ class ContainerModel {
       startTime: startTime ?? this.startTime,
       classification: classification ?? this.classification,
       areaDetails: areaDetails ?? this.areaDetails,
+      areaId: areaId ?? this.areaId,
+      lat: lat ?? this.lat,
+      lng: lng ?? this.lng,
     );
   }
 
-  // كود الـ fromJson مع معالجة collection_day كقائمة من السيرفر
   factory ContainerModel.fromJson(Map<String, dynamic> json) {
-    // معالجة حقل collection_day: قد يأتي كقائمة ["الثلاثاء", "الخميس"] أو كنص
     String collectionDayValue;
     if (json['collection_day'] is List) {
       collectionDayValue = (json['collection_day'] as List).join(', ');
@@ -60,7 +71,7 @@ class ContainerModel {
 
     return ContainerModel(
       id: json['id'],
-      nameContainer: json['name_container'] ?? '',
+      locationName: json['location_name'] ?? json['name_container'] ?? '',
       nameStreet: json['name_street'] ?? '',
       type: json['type'] ?? '',
       period: json['period'] ?? '',
@@ -69,21 +80,40 @@ class ContainerModel {
       startTime: json['start_time'] ?? '',
       classification: json['classification'] ?? '',
       areaDetails: json['area_details'],
+      areaId: json['area_id'],
+      lat: json['lat'] != null ? double.tryParse(json['lat'].toString()) : null,
+      lng: json['lng'] != null ? double.tryParse(json['lng'].toString()) : null,
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
-      'name_container': nameContainer,
+      'location_name': locationName,
       'name_street': nameStreet,
       'type': type,
-      'area_details': areaDetails,
-      'period': period,
-      'collection_frequency': collectionFrequency,
-      'collection_day': collectionDay,
-      'start_time': startTime,
       'classification': classification,
-      if (areaDetails != null) 'area_details': areaDetails,
+      if (areaId != null) 'area_id': areaId,
+      'collection_frequency': collectionFrequency,
+      'collection_day[]':
+          collectionDay.contains("يومياً")
+              ? [
+                "الأحد",
+                "الاثنين",
+                "الثلاثاء",
+                "الأربعاء",
+                "الخميس",
+                "الجمعة",
+                "السبت",
+              ]
+              : collectionDay
+                  .split(',')
+                  .map((e) => e.trim())
+                  .where((e) => e.isNotEmpty)
+                  .toList(),
+      'start_time': startTime,
+      'period': period,
+      if (lat != null) 'lat': lat,
+      if (lng != null) 'lng': lng,
     };
   }
 }

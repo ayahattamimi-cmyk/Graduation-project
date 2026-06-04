@@ -25,8 +25,7 @@ class SupervisorViewModel extends ChangeNotifier {
       errorMessage = null;
     } catch (e) {
       errorMessage = "حدث خطأ أثناء جلب بيانات المشرفين";
-    } 
-    finally {
+    } finally {
       _setLoading(false);
     }
   }
@@ -38,12 +37,12 @@ class SupervisorViewModel extends ChangeNotifier {
     try {
       // إرسال البيانات إلى Laravel API
       await _repository.addSupervisor(supervisor);
-      
+
       // ✅ إعادة جلب القائمة مباشرة من السيرفر لضمان مزامنة الـ ID والبيانات بدقة
-      await loadSupervisors(); 
+      await loadSupervisors();
     } catch (e) {
       debugPrint("Error adding supervisor: $e");
-      rethrow; 
+      rethrow;
     } finally {
       isLoading = false;
       notifyListeners();
@@ -94,7 +93,8 @@ class SupervisorViewModel extends ChangeNotifier {
     return supervisors;
   }
 
-  int get sweepingCount => supervisors.where((e) => e.type == "sweeping").length;
+  int get sweepingCount =>
+      supervisors.where((e) => e.type == "sweeping").length;
   int get liftingCount => supervisors.where((e) => e.type == "lifting").length;
 
   void changeFilter(String f) {
@@ -113,8 +113,8 @@ class SupervisorViewModel extends ChangeNotifier {
 
     try {
       final result = await _repository.fetchSupervisorPerformance(
-        name, 
-        type == "رفع" ? "lifting" : "sweeping"
+        name,
+        type == "رفع" ? "lifting" : "sweeping",
       );
       supervisorsPerformance = result;
       errorMessage = null;
@@ -123,6 +123,54 @@ class SupervisorViewModel extends ChangeNotifier {
     } finally {
       isLoading = false;
       notifyListeners();
+    }
+  }
+
+  // الخطوة الأولى: إنشاء حساب المستخدم (يرجع الـ ID والتوكن الجديد)
+  Future<Map<String, dynamic>?> createServerAccount(
+    String idToken,
+    String name,
+  ) async {
+    _setLoading(true);
+    try {
+      final result = await _repository.createAccountOnServer(
+        idToken: idToken,
+        name: name,
+        role: "supervisors",
+      );
+      _setLoading(false);
+      return result;
+    } catch (e) {
+      _setLoading(false);
+      rethrow;
+    }
+  }
+
+  Future<bool> completeSupervisorData(
+    String type,
+    String areaId, {
+    int? userId,
+    String? firebaseToken,
+    String? serverToken,
+  }) async {
+    _setLoading(true);
+    try {
+      bool success = await _repository.saveSupervisorDetails(
+        type: type,
+        areaId: areaId,
+        userId: userId,
+        firebaseToken: firebaseToken,
+        serverToken: serverToken,
+      );
+      if (success) {
+        await loadSupervisors(); // تحديث القائمة فوراً
+      }
+      return success;
+    } catch (e) {
+      debugPrint("Error completing supervisor data: $e");
+      return false;
+    } finally {
+      _setLoading(false);
     }
   }
 }

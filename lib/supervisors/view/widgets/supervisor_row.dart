@@ -102,21 +102,27 @@ class SupervisorRow extends StatelessWidget {
             ),
           ),
 
-          /// جدول العمل
+          /// تفاصيل العمل (شوارع للكنس / وقت للرفع)
           Expanded(
-            flex: 3,
+            flex: 4,
             child: Row(
               children: [
-                const Icon(Icons.access_time, size: 18, color: Colors.grey),
-
+                Icon(
+                  isSweeping ? Icons.map_outlined : Icons.access_time,
+                  size: 18,
+                  color: Colors.grey,
+                ),
                 const SizedBox(width: 6),
-
-                Text(
-                  supervisor.areaDetails.isNotEmpty &&
-                          supervisor.areaDetails[0].period != null
-                      ? "${supervisor.areaDetails[0].period} (${supervisor.areaDetails[0].startTime})"
-                      : "-",
-                  style: const TextStyle(color: Colors.grey),
+                Expanded(
+                  child: Text(
+                    supervisor.areaDetails.isNotEmpty
+                        ? (isSweeping
+                            ? "${supervisor.areaDetails[0].nameStartStreet ?? '-'} إلى ${supervisor.areaDetails[0].nameEndStreet ?? '-'}"
+                            : "${supervisor.areaDetails[0].period ?? '-'} (${supervisor.areaDetails[0].startTime?.substring(0, 5) ?? '-'} - ${supervisor.areaDetails[0].endTime?.substring(0, 5) ?? '-'})")
+                        : "-",
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(color: Colors.grey, fontSize: 13),
+                  ),
                 ),
               ],
             ),

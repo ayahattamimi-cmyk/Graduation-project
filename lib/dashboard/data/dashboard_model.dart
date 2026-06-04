@@ -1,3 +1,17 @@
+/// ============================================================
+/// 📁 dashboard_model.dart — نماذج بيانات لوحة التحكم (Dashboard Models)
+/// ============================================================
+/// المسؤولية:
+///   يحتوي على جميع نماذج البيانات الخاصة بلوحة التحكم،
+///   وتشمل إحصائيات البلاغات والتصنيفات والبيانات الشهرية.
+///
+/// الكلاسات الموجودة:
+///   - [DashboardModel]      : النموذج الرئيسي (غلاف لكل البيانات)
+///   - [StatisticsModel]     : إحصائيات إجمالية
+///   - [ClassificationModel] : توزيع البلاغات حسب النوع
+///   - [MonthlyStatModel]    : إحصائيات شهرية
+///   - [TopAreaModel]        : أكثر المناطق بلاغاتً
+/// ============================================================
 class DashboardModel {
   final StatisticsModel statistics;
   final List<ClassificationModel> classifications;
@@ -13,19 +27,22 @@ class DashboardModel {
 
   factory DashboardModel.fromJson(Map<String, dynamic> json) {
     return DashboardModel(
-      statistics: StatisticsModel.fromJson(json['statistics']),
+      statistics: StatisticsModel.fromJson(json['statistics'] ?? {}),
       classifications:
-          (json['classification'] as List)
-              .map((i) => ClassificationModel.fromJson(i))
-              .toList(),
+          (json['classification'] as List?)
+              ?.map((i) => ClassificationModel.fromJson(i))
+              .toList() ??
+          [],
       monthlyStats:
-          (json['monthly_stats'] as List)
-              .map((i) => MonthlyStatModel.fromJson(i))
-              .toList(),
+          (json['monthly_stats'] as List?)
+              ?.map((i) => MonthlyStatModel.fromJson(i))
+              .toList() ??
+          [],
       topAreas:
-          (json['top_areas'] as List)
-              .map((i) => TopAreaModel.fromJson(i))
-              .toList(),
+          (json['top_areas'] as List?)
+              ?.map((i) => TopAreaModel.fromJson(i))
+              .toList() ??
+          [],
     );
   }
 }
@@ -45,24 +62,24 @@ class StatisticsModel {
 
   factory StatisticsModel.fromJson(Map<String, dynamic> json) {
     return StatisticsModel(
-      totalReports: json['total_reports'] ?? 0,
-      resolved: StatDetail.fromJson(json['resolved']),
-      inProgress: StatDetail.fromJson(json['in_progress']),
-      pending: StatDetail.fromJson(json['pending']),
+      totalReports: _parseInt(json['total_reports']),
+      resolved: StatDetail.fromJson(json['resolved'] ?? {}),
+      inProgress: StatDetail.fromJson(json['in_progress'] ?? {}),
+      pending: StatDetail.fromJson(json['pending'] ?? {}),
     );
   }
 }
 
 class StatDetail {
   final int count;
-  final int percentage;
+  final double percentage; // Changed to double for safety
 
   StatDetail({required this.count, required this.percentage});
 
   factory StatDetail.fromJson(Map<String, dynamic> json) {
     return StatDetail(
-      count: json['count'] ?? 0,
-      percentage: json['percentage'] ?? 0,
+      count: _parseInt(json['count']),
+      percentage: _toDouble(json['percentage']),
     );
   }
 }
@@ -80,9 +97,9 @@ class ClassificationModel {
 
   factory ClassificationModel.fromJson(Map<String, dynamic> json) {
     return ClassificationModel(
-      type: json['type'] ?? '',
-      count: json['count'] ?? 0,
-      percentage: (json['percentage'] as num).toDouble(),
+      type: json['type']?.toString() ?? '',
+      count: _parseInt(json['count']),
+      percentage: _toDouble(json['percentage']),
     );
   }
 }
@@ -95,8 +112,8 @@ class MonthlyStatModel {
 
   factory MonthlyStatModel.fromJson(Map<String, dynamic> json) {
     return MonthlyStatModel(
-      month: json['month'] ?? '',
-      count: json['count'] ?? 0,
+      month: json['month']?.toString() ?? '',
+      count: _parseInt(json['count']),
     );
   }
 }
@@ -108,6 +125,24 @@ class TopAreaModel {
   TopAreaModel({required this.name, required this.count});
 
   factory TopAreaModel.fromJson(Map<String, dynamic> json) {
-    return TopAreaModel(name: json['name'] ?? '', count: json['count'] ?? 0);
+    return TopAreaModel(
+      name: json['name']?.toString() ?? '',
+      count: _parseInt(json['count']),
+    );
   }
+}
+
+// Helpers
+int _parseInt(dynamic v) {
+  if (v == null) return 0;
+  if (v is int) return v;
+  if (v is double) return v.toInt();
+  return int.tryParse(v.toString()) ?? 0;
+}
+
+double _toDouble(dynamic v) {
+  if (v == null) return 0.0;
+  if (v is double) return v;
+  if (v is int) return v.toDouble();
+  return double.tryParse(v.toString()) ?? 0.0;
 }

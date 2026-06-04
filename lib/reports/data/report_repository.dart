@@ -1,6 +1,5 @@
 import 'package:web2/reports/data/models/report_model.dart';
 import 'package:flutter/foundation.dart';
-import 'package:web2/reports/data/models/report_model.dart';
 import 'package:web2/reports/data/models/report_statistics_model.dart';
 import 'package:web2/reports/data/report_service.dart';
 
@@ -22,17 +21,37 @@ class ReportRepository {
         period: period,
       );
 
-      debugPrint("📡 [Repo] Raw Response: ${response.data}");
+      final data = response.data;
 
-      if (response.data['status'] == 'success') {
-        List reportsData = response.data['data']['reports'];
-        return reportsData.map((e) => ReportModel.fromJson(e)).toList();
-      } else {
-        debugPrint("⚠️ [Repo] Status was not success: ${response.data['message']}");
+      // تحقق من نوع الاستجابة
+      if (data == null) {
         return [];
       }
-    } catch (e) {
+
+      final responseStatus = data['status']?.toString();
+
+      if (responseStatus == 'success') {
+        final innerData = data['data'];
+
+        List? reportsData = innerData?['reports'] ?? innerData?['data'];
+        if (reportsData == null) {
+          if (innerData is List) {
+            reportsData = innerData;
+          } else {
+            debugPrint(
+              "⚠️ [Repo] reportsData not found. innerData = $innerData",
+            );
+            return [];
+          }
+        }
+
+        return reportsData.map((e) => ReportModel.fromJson(e)).toList();
+      } else {
+        return [];
+      }
+    } catch (e, st) {
       debugPrint("❌ [Repo] Exception: $e");
+      debugPrint("❌ [Repo] StackTrace: $st");
       return [];
     }
   }
@@ -53,4 +72,14 @@ class ReportRepository {
     }
   }
 
+  // إلغاء البلاغ
+  Future<bool> cancelReport(int id, String reason) async {
+    try {
+      final response = await _service.cancelReport(id, reason);
+      return response.data['status'] == 'success';
+    } catch (e) {
+      debugPrint("❌ [Repo] Error cancelling report: $e");
+      return false;
+    }
+  }
 }

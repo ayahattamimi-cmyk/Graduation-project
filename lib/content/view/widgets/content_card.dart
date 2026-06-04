@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:web2/content/data/models/content_model.dart';
 import 'dart:convert';
+import 'dart:typed_data';
+import 'package:image_picker/image_picker.dart';
 
 class ContentCard extends StatefulWidget {
   final ContentModel content;
@@ -120,76 +122,135 @@ class _ContentCardState extends State<ContentCard> {
 
           const SizedBox(height: 16),
 
-          /// العنوان
-          Text(
-            widget.content.title,
-            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-          ),
-
-          const SizedBox(height: 8),
-
-          /// النص
-          Text(
-            widget.content.content,
-            style: const TextStyle(color: Colors.black87, height: 1.6),
-          ),
-          const SizedBox(height: 16),
-
-          /// الصورة
-          if (widget.content.image != null &&
-              widget.content.image!.isNotEmpty) ...[
-            const SizedBox(height: 14),
-            Align(
-              alignment: Alignment.centerRight,
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(14),
-                child:
-                    widget.content.image!.startsWith('http')
-                        ? Image.network(
-                          widget.content.image!,
-                          height: 180,
-                          width: 250,
-                          fit: BoxFit.cover,
-                          errorBuilder:
-                              (context, error, stackTrace) =>
-                                  const Icon(Icons.broken_image, size: 50),
-                        )
-                        : Image.memory(
-                          base64Decode(widget.content.image!),
-                          height: 180,
-                          width: 250,
-                          fit: BoxFit.cover,
-                          errorBuilder:
-                              (context, error, stackTrace) =>
-                                  const Icon(Icons.broken_image, size: 50),
-                        ),
-              ),
-            ),
-          ],
-
-          const SizedBox(height: 12),
-
-          /// التاريخ
+          /// المحتوى (نص + صورة) بتصميم حديث
           Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Icon(Icons.calendar_today, size: 14, color: Colors.grey),
-              const SizedBox(width: 6),
-              Text(
-                widget.content.publishDate ?? "غير محدد",
-                style: const TextStyle(fontSize: 12, color: Colors.grey),
+              // النص
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      widget.content.title,
+                      style: const TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF1F2937),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      widget.content.content,
+                      maxLines: 4,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        color: Colors.black87,
+                        height: 1.6,
+                        fontSize: 14,
+                      ),
+                    ),
+                  ],
+                ),
               ),
+
+              // الصورة (إذا وجدت)
+              if (widget.content.image != null &&
+                  widget.content.image!.isNotEmpty) ...[
+                const SizedBox(width: 20),
+                Container(
+                  width: 140,
+                  height: 140,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.1),
+                        blurRadius: 10,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(16),
+                    child:
+                        widget.content.image!.startsWith('http')
+                            ? Image.network(
+                              widget.content.image!,
+                              fit: BoxFit.cover,
+                              errorBuilder:
+                                  (context, error, stackTrace) => Container(
+                                    color: Colors.grey.shade200,
+                                    child: const Icon(
+                                      Icons.image_not_supported,
+                                      color: Colors.grey,
+                                    ),
+                                  ),
+                            )
+                            : Image.memory(
+                              base64Decode(widget.content.image!),
+                              fit: BoxFit.cover,
+                              errorBuilder:
+                                  (context, error, stackTrace) => Container(
+                                    color: Colors.grey.shade200,
+                                    child: const Icon(
+                                      Icons.image_not_supported,
+                                      color: Colors.grey,
+                                    ),
+                                  ),
+                            ),
+                  ),
+                ),
+              ],
             ],
           ),
-          const SizedBox(height: 12),
 
-          /// اسم الناشر
+          const SizedBox(height: 20),
+          const Divider(height: 1),
+          const SizedBox(height: 16),
+
+          /// التذييل (التاريخ + الناشر)
           Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Icon(Icons.person_outline, size: 16, color: Colors.grey),
-              const SizedBox(width: 6),
-              Text(
-                "كتب بواسطة: ${widget.content.adminName ?? 'غير محدد'}",
-                style: const TextStyle(fontSize: 13, color: Colors.grey),
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(6),
+                    decoration: BoxDecoration(
+                      color: Colors.blue.shade50,
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      Icons.calendar_today,
+                      size: 12,
+                      color: Colors.blue.shade600,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    widget.content.publishDate ?? "غير محدد",
+                    style: const TextStyle(fontSize: 12, color: Colors.grey),
+                  ),
+                  const SizedBox(width: 20),
+                  Container(
+                    padding: const EdgeInsets.all(6),
+                    decoration: BoxDecoration(
+                      color: Colors.orange.shade50,
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      Icons.person_outline,
+                      size: 12,
+                      color: Colors.orange.shade600,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    "بواسطة: ${widget.content.adminName ?? 'الإدارة'}",
+                    style: const TextStyle(fontSize: 12, color: Colors.grey),
+                  ),
+                ],
               ),
             ],
           ),
@@ -204,44 +265,118 @@ class _ContentCardState extends State<ContentCard> {
     final contentController = TextEditingController(
       text: widget.content.content,
     );
+    Uint8List? newImageBytes;
 
     showDialog(
       context: context,
-      builder: (_) {
-        return AlertDialog(
-          title: const Text('تعديل المحتوى'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                controller: titleController,
-                decoration: const InputDecoration(labelText: 'العنوان'),
+      builder: (ctx) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              title: const Text('تعديل المحتوى'),
+              content: SizedBox(
+                width: 500,
+                child: SingleChildScrollView(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      TextField(
+                        controller: titleController,
+                        decoration: const InputDecoration(labelText: 'العنوان'),
+                      ),
+                      const SizedBox(height: 12),
+                      TextField(
+                        controller: contentController,
+                        maxLines: 3,
+                        decoration: const InputDecoration(labelText: 'المحتوى'),
+                      ),
+                      const SizedBox(height: 20),
+
+                      // زر اختيار صورة جديدة
+                      OutlinedButton.icon(
+                        onPressed: () async {
+                          final picker = ImagePicker();
+                          final picked = await picker.pickImage(
+                            source: ImageSource.gallery,
+                          );
+                          if (picked != null) {
+                            final bytes = await picked.readAsBytes();
+                            setState(() {
+                              newImageBytes = bytes;
+                            });
+                          }
+                        },
+                        icon: const Icon(Icons.image_outlined),
+                        label: Text(
+                          newImageBytes == null &&
+                                  (widget.content.image == null ||
+                                      widget.content.image!.isEmpty)
+                              ? "إضافة صورة"
+                              : "تغيير الصورة",
+                        ),
+                      ),
+
+                      if (newImageBytes != null) ...[
+                        const SizedBox(height: 10),
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(12),
+                          child: Image.memory(
+                            newImageBytes!,
+                            height: 100,
+                            width: double.infinity,
+                            fit: BoxFit.cover,
+                          ),
+                        ),
+                      ] else if (widget.content.image != null &&
+                          widget.content.image!.isNotEmpty) ...[
+                        const SizedBox(height: 10),
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(12),
+                          child:
+                              widget.content.image!.startsWith('http')
+                                  ? Image.network(
+                                    widget.content.image!,
+                                    height: 100,
+                                    width: double.infinity,
+                                    fit: BoxFit.cover,
+                                  )
+                                  : Image.memory(
+                                    base64Decode(widget.content.image!),
+                                    height: 100,
+                                    width: double.infinity,
+                                    fit: BoxFit.cover,
+                                  ),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
               ),
-              const SizedBox(height: 12),
-              TextField(
-                controller: contentController,
-                maxLines: 3,
-                decoration: const InputDecoration(labelText: 'المحتوى'),
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('إلغاء'),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                final updated = widget.content.copyWith(
-                  title: titleController.text,
-                  content: contentController.text,
-                );
-                widget.onEdit(updated);
-                Navigator.pop(context);
-              },
-              child: const Text('حفظ'),
-            ),
-          ],
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text('إلغاء'),
+                ),
+                ElevatedButton(
+                  onPressed: () {
+                    final updated = widget.content.copyWith(
+                      title: titleController.text,
+                      content: contentController.text,
+                      image:
+                          newImageBytes != null
+                              ? base64Encode(newImageBytes!)
+                              : widget.content.image,
+                    );
+                    Navigator.pop(
+                      context,
+                    ); // نغلق النافذة أولاً لتجنب مشاكل الـ Hit Test
+                    widget.onEdit(updated); // ثم نقوم بعملية التحديث
+                  },
+                  child: const Text('حفظ'),
+                ),
+              ],
+            );
+          },
         );
       },
     );

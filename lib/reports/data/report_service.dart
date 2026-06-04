@@ -1,10 +1,11 @@
+import '../../core/network/api_service.dart';
 import 'package:dio/dio.dart';
 
 class ReportService {
-  final Dio _dio;
-  ReportService(this._dio);
+  final ApiService _apiService;
+  ReportService(this._apiService);
 
-  Future<Response> filterReports({
+  Future<dynamic> filterReports({
     String? areaId,
     String? status,
     String? reportType,
@@ -19,12 +20,17 @@ class ReportService {
       if (period != null && period.isNotEmpty) "period": period,
     });
 
-    return await _dio.post('filter-reports', data: formData);
+    return await _apiService.post('filter-reports', data: formData);
   }
 
   // دالة جلب الإحصائيات العامة للبلاغات
-  Future<Response> getGeneralReportStats() async {
-    // سنستخدم الرابط الذي يوفره الباك أند للبلاغات
-    return await _dio.get('reports/statistics'); // افتراضي حتى يتم تأكيد الرابط
+  Future<dynamic> getGeneralReportStats() async {
+    return await _apiService.get('reports/statistics');
+  }
+
+  // دالة إلغاء البلاغ مع ذكر السبب
+  Future<dynamic> cancelReport(int id, String reason) async {
+    FormData formData = FormData.fromMap({"reason": reason});
+    return await _apiService.post('reports/$id/cancel', data: formData);
   }
 }

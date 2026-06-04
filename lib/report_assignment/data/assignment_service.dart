@@ -1,21 +1,21 @@
-import 'package:dio/dio.dart';
+import '../../core/network/api_service.dart';
 
 class AssignmentService {
-  final Dio _dio;
-  AssignmentService(this._dio);
+  final ApiService _apiService;
+  AssignmentService(this._apiService);
 
   // جلب المربع المقترح بناءً على إحداثيات البلاغ
-  Future<Response> getSuggestion(int reportId) async {
-    return await _dio.get('report-square/$reportId');
+  Future<dynamic> getSuggestion(int reportId) async {
+    return await _apiService.get('report-square/$reportId');
   }
 
   // إنشاء عملية التعيين (ربط البلاغ بمشرف)
-  Future<Response> postAssignment(FormData data) async {
-    return await _dio.post('AssignmenCreate', data: data);
+  Future<dynamic> postAssignment(dynamic data) async {
+    return await _apiService.post('AssignmenCreate', data: data);
   }
 
-  // جلب كل المشرفين (في حال أراد المدير تغيير المشرف المقترح)
-  Future<Response> getAllSupervisors() async {
-    return await _dio.get('showSupervisors');
+  // جلب تفاصيل المربع بناءً على رقم المربع ونوع العمل (توجيه يدوي متقدم)
+  Future<dynamic> getSquareDetails(int squareId, String type) async {
+    return await _apiService.get('report-square-all/$squareId/$type');
   }
 }

@@ -37,31 +37,6 @@ class ReporterInfoCard extends StatelessWidget {
             reporter.phone,
             style: const TextStyle(fontWeight: FontWeight.bold),
           ),
-
-          if (status == 'قيد المعالجة') ...[
-            const SizedBox(height: 12),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton.icon(
-                onPressed: () {
-                  onGoToAssignment?.call(AppPage.assignReports);
-                },
-                icon: const Icon(Icons.swap_horiz),
-                label: const Text(
-                  'إعادة توجيه لمشرف آخر',
-                  style: TextStyle(color: Colors.white),
-                ),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xff2563EB),
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-              ),
-            ),
-          ],
         ],
       ),
     );

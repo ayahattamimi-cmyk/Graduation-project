@@ -19,192 +19,191 @@ class EditSupervisorDialog extends StatefulWidget {
 
 class _EditSupervisorDialogState extends State<EditSupervisorDialog> {
   late TextEditingController nameController;
-  late TextEditingController areaController;
-
-  late TextEditingController startStreetController;
-  late TextEditingController endStreetController;
-
-  late TextEditingController startTimeController;
-  late TextEditingController endTimeController;
-
-  String type = "sweeping";
-  String period = "صباحية";
+  int? selectedAreaId;
 
   @override
   void initState() {
     super.initState();
-
     final s = widget.supervisor;
-    final details = s.areaDetails.isNotEmpty ? s.areaDetails[0] : null;
-
     nameController = TextEditingController(text: s.name);
-    areaController = TextEditingController(text: s.area);
 
-    startStreetController = TextEditingController(
-      text: details?.nameStartStreet,
-    );
-
-    endStreetController = TextEditingController(text: details?.nameEndStreet);
-
-    startTimeController = TextEditingController(text: details?.startTime);
-
-    endTimeController = TextEditingController(text: details?.endTime);
-
-    type = s.type;
-
-    if (details?.period != null) {
-      period = details!.period!;
+    // محاولة استخراج المعرف الحالي للمربع من البيانات
+    // بما أن الـ supervisor model قد لا يحتوي على الـ area_id مباشرة في الـ root
+    // سنحاول استخراجه من الـ area_details إذا وجد
+    if (s.areaDetails.isNotEmpty) {
+      selectedAreaId = s.areaDetails[0].id;
     }
+
+    // تحميل المربعات المتاحة بناءً على نوع عمل المشرف الحالي
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<SupervisorViewModel>().loadAreas(s.type);
+    });
+  }
+
+  @override
+  void dispose() {
+    nameController.dispose();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    final vm = context.read<SupervisorViewModel>();
+    final vm = context.watch<SupervisorViewModel>();
 
     return AlertDialog(
-      title: const Text("تعديل المشرف"),
-
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      title: const Text(
+        "تعديل بيانات المشرف",
+        style: TextStyle(fontWeight: FontWeight.bold),
+      ),
       content: SizedBox(
         width: 400,
-
         child: SingleChildScrollView(
           child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              /// الاسم
+              const Text(
+                "اسم المشرف",
+                style: TextStyle(fontSize: 13, color: Colors.grey),
+              ),
+              const SizedBox(height: 8),
               TextField(
                 controller: nameController,
-                decoration: const InputDecoration(labelText: "الاسم"),
+                decoration: InputDecoration(
+                  prefixIcon: const Icon(Icons.person_outline, size: 20),
+                  filled: true,
+                  fillColor: Colors.grey.shade50,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(color: Colors.grey.shade300),
+                  ),
+                ),
               ),
+              const SizedBox(height: 24),
 
-              const SizedBox(height: 15),
-
-              /// المربع
-              TextField(
-                controller: areaController,
-                decoration: const InputDecoration(labelText: "المربع"),
+              const Text(
+                "تعيين المربع الجغرافي",
+                style: TextStyle(fontSize: 13, color: Colors.grey),
               ),
+              const SizedBox(height: 8),
 
-              const SizedBox(height: 15),
-
-              /// نوع العمل
-              DropdownButtonFormField<String>(
-                value: type,
-
-                items: const [
-                  DropdownMenuItem(value: "sweeping", child: Text("كنس")),
-
-                  DropdownMenuItem(value: "lifting", child: Text("رفع")),
-                ],
-
-                onChanged: (v) {
+              DropdownButtonFormField<int>(
+                value:
+                    vm.areas.any((a) => a.id == selectedAreaId)
+                        ? selectedAreaId
+                        : null,
+                decoration: InputDecoration(
+                  prefixIcon: const Icon(Icons.grid_view, size: 20),
+                  filled: true,
+                  fillColor: Colors.grey.shade50,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(color: Colors.grey.shade300),
+                  ),
+                ),
+                items:
+                    vm.areas.map((area) {
+                      return DropdownMenuItem<int>(
+                        value: area.id,
+                        child: Text(
+                          area.label ?? area.name ?? "مربع ${area.id}",
+                        ),
+                      );
+                    }).toList(),
+                onChanged: (value) {
                   setState(() {
-                    type = v!;
+                    selectedAreaId = value;
                   });
                 },
+                hint: const Text("اختر المربع"),
               ),
-
-              const SizedBox(height: 20),
-
-              /// تفاصيل الكنس
-              if (type == "sweeping") ...[
-                TextField(
-                  controller: startStreetController,
-                  decoration: const InputDecoration(labelText: "بداية الشارع"),
+              const SizedBox(height: 10),
+              Text(
+                "نوع العمل الحالي: ${widget.supervisor.type == 'sweeping' ? 'كنس' : 'رفع'}",
+                style: TextStyle(
+                  fontSize: 11,
+                  color: Colors.blue.shade700,
+                  fontWeight: FontWeight.w500,
                 ),
-
-                const SizedBox(height: 12),
-
-                TextField(
-                  controller: endStreetController,
-                  decoration: const InputDecoration(labelText: "نهاية الشارع"),
-                ),
-              ],
-
-              /// تفاصيل الرفع
-              if (type == "lifting") ...[
-                DropdownButtonFormField<String>(
-                  value: period,
-
-                  items: const [
-                    DropdownMenuItem(value: "صباحية", child: Text("صباحية")),
-
-                    DropdownMenuItem(value: "مسائية", child: Text("مسائية")),
-                  ],
-
-                  onChanged: (v) {
-                    setState(() {
-                      period = v!;
-                    });
-                  },
-                ),
-
-                const SizedBox(height: 12),
-
-                TextField(
-                  controller: startTimeController,
-                  decoration: const InputDecoration(labelText: "بداية الوقت"),
-                ),
-
-                const SizedBox(height: 12),
-
-                TextField(
-                  controller: endTimeController,
-                  decoration: const InputDecoration(labelText: "نهاية الوقت"),
-                ),
-              ],
+              ),
             ],
           ),
         ),
       ),
-
+      actionsPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
       actions: [
         TextButton(
-          onPressed: () {
-            Navigator.pop(context);
-          },
-          child: const Text("إلغاء"),
+          onPressed: () => Navigator.pop(context),
+          child: const Text("إلغاء", style: TextStyle(color: Colors.grey)),
         ),
+        const SizedBox(width: 8),
         ElevatedButton(
-          child: const Text("حفظ"),
-          onPressed: () async {
-            // تجهيز البيانات بالشكل الذي يتوقعه الـ Laravel API (حسب البوست مان)
-            final Map<String, dynamic> data = {
-              "name": nameController.text,
-              "type": type,
-              "area": areaController.text,
-              "square_name": areaController.text, // أو حسب الحقل المطلوب
-            };
+          style: ElevatedButton.styleFrom(
+            backgroundColor: const Color(0xff2563EB),
+            foregroundColor: Colors.white,
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+            elevation: 0,
+          ),
+          onPressed:
+              vm.isLoading
+                  ? null
+                  : () async {
+                    if (nameController.text.isEmpty) {
+                      _showSnack("الرجاء إدخال الاسم", Colors.orange);
+                      return;
+                    }
+                    if (selectedAreaId == null) {
+                      _showSnack("الرجاء اختيار المربع", Colors.orange);
+                      return;
+                    }
 
-            if (type == "sweeping") {
-              data.addAll({
-                "name_start_street": startStreetController.text,
-                "name_end_street": endStreetController.text,
-              });
-            } else {
-              data.addAll({
-                "period": period,
-                "start_time": startTimeController.text,
-                "end_time": endTimeController.text,
-              });
-            }
+                    final Map<String, dynamic> data = {
+                      "name": nameController.text,
+                      "area_id": selectedAreaId,
+                    };
 
-            // استدعاء دالة التحديث من الـ ViewModel التي أنشأناها سابقاً
-            bool success = await vm.updateSupervisor(
-              widget.supervisor.id,
-              data,
-            );
+                    bool success = await vm.updateSupervisor(
+                      widget.supervisor.id,
+                      data,
+                    );
 
-            if (success) {
-              if (context.mounted) Navigator.pop(context);
-            } else {
-              // يمكنك إظهار رسالة خطأ هنا
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text("فشل تحديث البيانات")),
-              );
-            }
-          },
+                    if (success) {
+                      if (context.mounted) {
+                        _showSnack("تم تحديث البيانات بنجاح", Colors.green);
+                        Navigator.pop(context);
+                      }
+                    } else {
+                      if (context.mounted) {
+                        _showSnack(
+                          "فشل تحديث البيانات، حاول مرة أخرى",
+                          Colors.red,
+                        );
+                      }
+                    }
+                  },
+          child:
+              vm.isLoading
+                  ? const SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(
+                      color: Colors.white,
+                      strokeWidth: 2,
+                    ),
+                  )
+                  : const Text("حفظ التعديلات"),
         ),
       ],
     );
+  }
+
+  void _showSnack(String msg, Color color) {
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(msg), backgroundColor: color));
   }
 }

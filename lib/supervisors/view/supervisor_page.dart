@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:web2/supervisors/view/widgets/supervisor_row.dart';
 import '../viewmodel/supervisor_viewmodel.dart';
 import 'dialogs/add_supervisor_dialog.dart';
+import 'package:web2/dashboard/view/widgets/stat_card.dart';
 
 class SupervisorPage extends StatefulWidget {
   const SupervisorPage({super.key});
@@ -87,18 +88,34 @@ class _SupervisorPageState extends State<SupervisorPage> {
           /// الإحصائيات
           Row(
             children: [
-              stat("مشرفي الرفع", vm.liftingCount.toString(), Colors.orange),
-
-              const SizedBox(width: 15),
-
-              stat("مشرفي الكنس", vm.sweepingCount.toString(), Colors.green),
-
-              const SizedBox(width: 15),
-
-              stat(
-                "إجمالي المشرفين",
-                vm.supervisors.length.toString(),
-                Colors.blue,
+              Expanded(
+                child: StatCard(
+                  title: "مشرفي الرفع",
+                  value: vm.liftingCount.toString(),
+                  subtitle: "مشرفي رفع النفايات",
+                  icon: Icons.upload_file,
+                  color: Colors.orange,
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: StatCard(
+                  title: "مشرفي الكنس",
+                  value: vm.sweepingCount.toString(),
+                  subtitle: "مشرفي نظافة الشوارع",
+                  icon: Icons.cleaning_services,
+                  color: Colors.green,
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: StatCard(
+                  title: "إجمالي المشرفين",
+                  value: vm.supervisors.length.toString(),
+                  subtitle: "جميع المشرفين المسجلين",
+                  icon: Icons.people,
+                  color: Colors.blue,
+                ),
               ),
             ],
           ),
@@ -204,9 +221,9 @@ class _SupervisorPageState extends State<SupervisorPage> {
                         ),
 
                         Expanded(
-                          flex: 3,
+                          flex: 4,
                           child: Text(
-                            "جدولة العمل",
+                            "تفاصيل العمل",
                             style: TextStyle(
                               fontWeight: FontWeight.bold,
                               color: Colors.grey,
@@ -236,36 +253,6 @@ class _SupervisorPageState extends State<SupervisorPage> {
             ),
           ),
         ],
-      ),
-    );
-  }
-
-  Widget stat(String title, String value, Color color) {
-    return Expanded(
-      child: Container(
-        padding: const EdgeInsets.all(20),
-
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(15),
-          border: Border.all(color: Colors.grey.shade200),
-        ),
-
-        child: Column(
-          children: [
-            Text(title),
-
-            const SizedBox(height: 6),
-
-            Text(
-              value,
-              style: TextStyle(
-                fontSize: 22,
-                fontWeight: FontWeight.bold,
-                color: color,
-              ),
-            ),
-          ],
-        ),
       ),
     );
   }

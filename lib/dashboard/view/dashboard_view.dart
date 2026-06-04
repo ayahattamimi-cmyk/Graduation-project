@@ -12,6 +12,7 @@ import 'package:web2/report_assignment/view/report_assignment_page.dart';
 import 'package:web2/reports/view/reports_page.dart';
 import 'package:web2/supervisors/view/supervisor_page.dart';
 import 'package:web2/map/view/map_screen.dart';
+import 'package:web2/notification/viewmodel/notification_viewmodel.dart';
 
 class DashboardView extends StatefulWidget {
   const DashboardView({super.key});
@@ -28,6 +29,7 @@ class _DashboardViewState extends State<DashboardView> {
     super.initState();
     Future.microtask(() {
       context.read<DashboardViewModel>().loadStats();
+      context.read<NotificationsViewModel>().loadDashboardData();
     });
   }
 
@@ -81,7 +83,7 @@ class _DashboardViewState extends State<DashboardView> {
       case AppPage.assignReports:
         return const ReportAssignmentPage();
       case AppPage.map:
-        return const MapScreen();
+        return const WebMapScreen();
 
       case AppPage.admins:
         return const SupervisorPage();
@@ -141,16 +143,6 @@ class _DashboardViewState extends State<DashboardView> {
                   color: Colors.orange,
                 ),
               ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: StatCard(
-                  title: 'المناطق النشطة',
-                  value: vm.activeAreas,
-                  subtitle: 'مربعات جغرافية مسجلة',
-                  icon: Icons.location_on,
-                  color: Colors.purple,
-                ),
-              ),
             ],
           ),
           const SizedBox(height: 24),
@@ -169,10 +161,23 @@ class _DashboardViewState extends State<DashboardView> {
                             centerSpaceRadius: 40,
                             sections:
                                 vm.dashboardData?.classifications.map((item) {
-                                  final isWaste = item.type.contains("رفع");
+                                  Color sectionColor;
+                                  if (item.type.contains("رفع")) {
+                                    sectionColor = const Color(
+                                      0xFF10B981,
+                                    ); // Green
+                                  } else if (item.type.contains("كنس")) {
+                                    sectionColor = const Color(
+                                      0xFF3B82F6,
+                                    ); // Blue
+                                  } else {
+                                    sectionColor = const Color(
+                                      0xFFF59E0B,
+                                    ); // Orange
+                                  }
+
                                   return PieChartSectionData(
-                                    color:
-                                        isWaste ? Colors.green : Colors.orange,
+                                    color: sectionColor,
                                     value: item.percentage,
                                     title: '${item.percentage.toInt()}%',
                                     radius: 50,
@@ -188,12 +193,23 @@ class _DashboardViewState extends State<DashboardView> {
                         ),
                       ),
                       const SizedBox(height: 16),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
+                      Wrap(
+                        alignment: WrapAlignment.center,
+                        spacing: 16,
+                        runSpacing: 8,
                         children: [
-                          _buildLegendItem("رفع مخلفات", Colors.green),
-                          const SizedBox(width: 16),
-                          _buildLegendItem("بلاغات أخرى", Colors.orange),
+                          _buildLegendItem(
+                            "رفع مخلفات",
+                            const Color(0xFF10B981),
+                          ),
+                          _buildLegendItem(
+                            "أعمال الكنس",
+                            const Color(0xFF3B82F6),
+                          ),
+                          _buildLegendItem(
+                            "بلاغات أخرى",
+                            const Color(0xFFF59E0B),
+                          ),
                         ],
                       ),
                     ],
@@ -286,31 +302,144 @@ class _DashboardViewState extends State<DashboardView> {
             child:
                 (vm.dashboardData?.topAreas.isEmpty ?? true)
                     ? const Center(child: Text("لا توجد بيانات للمناطق"))
-                    : ListView.separated(
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      itemCount: vm.dashboardData!.topAreas.length,
-                      separatorBuilder: (context, index) => const Divider(),
-                      itemBuilder: (context, index) {
-                        final area = vm.dashboardData!.topAreas[index];
-                        return ListTile(
-                          leading: CircleAvatar(
-                            backgroundColor: Colors.blue.withOpacity(0.1),
-                            child: Text(
-                              "${index + 1}",
-                              style: const TextStyle(fontSize: 12),
+                    : Column(
+                      children: [
+                        const SizedBox(height: 20),
+                        SizedBox(
+                          height: 300,
+                          child: BarChart(
+                            BarChartData(
+                              alignment: BarChartAlignment.spaceAround,
+                              maxY: 60,
+                              minY: 0,
+                              barTouchData: BarTouchData(enabled: true),
+                              titlesData: FlTitlesData(
+                                topTitles: const AxisTitles(
+                                  sideTitles: SideTitles(showTitles: false),
+                                ),
+                                rightTitles: const AxisTitles(
+                                  sideTitles: SideTitles(showTitles: false),
+                                ),
+                                leftTitles: AxisTitles(
+                                  sideTitles: SideTitles(
+                                    showTitles: true,
+                                    reservedSize: 40,
+                                    interval: 15,
+                                    getTitlesWidget: (value, meta) {
+                                      return Text(
+                                        value.toInt().toString(),
+                                        style: const TextStyle(
+                                          color: Colors.grey,
+                                          fontSize: 12,
+                                        ),
+                                      );
+                                    },
+                                  ),
+                                ),
+                                bottomTitles: AxisTitles(
+                                  sideTitles: SideTitles(
+                                    showTitles: true,
+                                    getTitlesWidget: (value, meta) {
+                                      final index = value.toInt();
+                                      if (index >= 0 &&
+                                          index <
+                                              vm
+                                                  .dashboardData!
+                                                  .topAreas
+                                                  .length) {
+                                        return Padding(
+                                          padding: const EdgeInsets.only(
+                                            top: 8,
+                                          ),
+                                          child: Transform.rotate(
+                                            angle: -0.5,
+                                            child: Text(
+                                              vm
+                                                  .dashboardData!
+                                                  .topAreas[index]
+                                                  .name,
+                                              style: const TextStyle(
+                                                fontSize: 10,
+                                                color: Colors.grey,
+                                              ),
+                                            ),
+                                          ),
+                                        );
+                                      }
+                                      return const SizedBox();
+                                    },
+                                    reservedSize: 60,
+                                  ),
+                                ),
+                              ),
+                              gridData: FlGridData(
+                                show: true,
+                                drawVerticalLine: false,
+                                horizontalInterval: 15,
+                                getDrawingHorizontalLine: (value) {
+                                  return FlLine(
+                                    color: Colors.grey.withOpacity(0.2),
+                                    strokeWidth: 1,
+                                    dashArray: [5, 5],
+                                  );
+                                },
+                              ),
+                              borderData: FlBorderData(
+                                show: true,
+                                border: Border(
+                                  bottom: BorderSide(
+                                    color: Colors.grey.withOpacity(0.5),
+                                  ),
+                                  left: BorderSide(
+                                    color: Colors.grey.withOpacity(0.5),
+                                  ),
+                                ),
+                              ),
+                              barGroups:
+                                  vm.dashboardData!.topAreas
+                                      .asMap()
+                                      .entries
+                                      .map((entry) {
+                                        return BarChartGroupData(
+                                          x: entry.key,
+                                          barRods: [
+                                            BarChartRodData(
+                                              toY: entry.value.count.toDouble(),
+                                              color: const Color(0xFF3B82F6),
+                                              width: 50,
+                                              borderRadius:
+                                                  const BorderRadius.all(
+                                                    Radius.zero,
+                                                  ),
+                                            ),
+                                          ],
+                                        );
+                                      })
+                                      .toList(),
                             ),
                           ),
-                          title: Text(area.name),
-                          trailing: Text(
-                            '${area.count} بلاغ',
-                            style: const TextStyle(
-                              fontWeight: FontWeight.bold,
-                              color: Colors.blue,
+                        ),
+                        const SizedBox(height: 16),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Container(
+                              width: 12,
+                              height: 12,
+                              color: const Color(0xFF3B82F6),
                             ),
-                          ),
-                        );
-                      },
+                            const SizedBox(width: 8),
+                            const Text(
+                              "عدد البلاغات",
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: Colors.blue,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
                     ),
           ),
         ],

@@ -1,90 +1,53 @@
 import 'package:flutter/material.dart';
-import 'package:web2/notification/data/models/notification_model.dart';
-import 'package:web2/notification/data/models/statistics_model.dart';
-import 'package:web2/notification/data/notification_repository.dart';
+import '../data/models/notification_model.dart';
+import '../data/notification_repository.dart';
 import '../data/models/report_details_model.dart';
 
 class NotificationsViewModel extends ChangeNotifier {
   final NotificationRepository _repository;
   NotificationsViewModel(this._repository);
 
-  // --- الإحصائيات ---
-  StatisticModel? _stats; // [تعديل] استخدام كائن المودل مباشرة أسهل
-  StatisticModel? get stats => _stats;
-
-  // --- تفاصيل البلاغ المحدد ---
+  // --- البيانات الأساسية ---
+  List<NotificationModel> _notifications = [];
+  int _serverUnreadCount = 0; // العدد القادم من السيرفر مباشرة
+  bool _isLoading = false;
   ReportDetailsModel? _selectedReport;
+
+  // --- Getters ---
+  List<NotificationModel> get notifications => _notifications;
+  bool get isLoading => _isLoading;
   ReportDetailsModel? get selectedReport => _selectedReport;
 
-  // --- الإشعارات ---
-  List<NotificationModel> _notifications = [];
-  int _unreadCount = 0;
-  bool _isLoading = false;
+  // --- إحصائيات محسوبة ذاتياً من البيانات القادمة ---
+  int get totalNotificationsCount => _notifications.length;
 
-  List<NotificationModel> get notifications => _notifications;
-  int get unreadCount => _unreadCount;
-  bool get isLoading => _isLoading;
+  int get readNotificationsCount =>
+      _notifications.where((n) => n.isRead == true).length;
 
-  // دالة شاملة لتحميل كل بيانات الصفحة مرة واحدة
+  int get unreadNotificationsCount =>
+      _notifications.where((n) => n.isRead == false).length;
+
+  // استخدام العدد القادم من السيرفر كأولوية للتنبيه (Badge)
+  int get unreadCount => _serverUnreadCount;
+
+  // دالة شاملة لتحميل بيانات الصفحة
   Future<void> loadDashboardData() async {
     _isLoading = true;
     notifyListeners();
 
-    // نجلب البيانين بشكل مستقل حتى لو فشل أحدهم لا يوقف الآخر
     try {
-      await _fetchInternalNotifications();
+      final result = await _repository.fetchNotifications();
+      _notifications = result['notifications'];
+      _serverUnreadCount = result['unread_count'];
     } catch (e) {
       debugPrint("❌ خطأ في جلب الإشعارات: $e");
-    }
-
-    try {
-      await _fetchInternalStatistics();
-    } catch (e) {
-      debugPrint("❌ خطأ في جلب الإحصائيات: $e");
     }
 
     _isLoading = false;
     notifyListeners();
   }
 
-  // الدوال الداخلية تكون بسيطة فقط لجلب البيانات
-  Future<void> _fetchInternalNotifications() async {
-    final result = await _repository.fetchNotifications();
-    _notifications = result['notifications'];
-    _unreadCount = result['unread_count'];
-  }
-
-  Future<void> _fetchInternalStatistics() async {
-    _stats = await _repository.fetchStatistics();
-  }
-
-  Future<void> loadNotifications() async {
-    _isLoading = true;
-    notifyListeners();
-    try {
-      final result = await _repository.fetchNotifications();
-      _notifications = result['notifications'];
-      _unreadCount = result['unread_count'];
-    } catch (e) {
-      debugPrint("Error loading notifications: $e");
-    } finally {
-      _isLoading = false;
-      notifyListeners();
-    }
-  }
-
-  Future<void> loadStatistics() async {
-    _isLoading = true;
-    notifyListeners();
-    try {
-      _stats = await _repository.fetchStatistics();
-    } catch (e) {
-      debugPrint("Error loading stats: $e");
-    } finally {
-      _isLoading = false;
-      notifyListeners();
-    }
-  }
+  Future<void> loadNotifications() => loadDashboardData();
 
   Future<void> loadReportDetails(int reportId) async {
     _isLoading = true;
@@ -103,9 +66,40 @@ class NotificationsViewModel extends ChangeNotifier {
   Future<void> markRead(String id) async {
     try {
       await _repository.setRead(id);
-      await loadNotifications(); // تحديث القائمة والعدد فوراً بعد القراءة
+      await loadNotifications(); // تحديث القائمة والعدد فوراً
     } catch (e) {
       debugPrint("Error marking as read: $e");
+    }
+  }
+
+  Future<void> publishReport(int id) async {
+    _isLoading = true;
+    notifyListeners();
+    try {
+      await _repository.publish(id);
+      // بعد النشر نقوم بتحديث البلاغ والإشعارات لضمان مزامنة حالة الزر
+      await loadReportDetails(id);
+      await loadNotifications();
+    } catch (e) {
+      debugPrint("Error publishing report: $id: $e");
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<void> cancelReport(int id, String reason) async {
+    _isLoading = true;
+    notifyListeners();
+    try {
+      await _repository.cancel(id, reason);
+      await loadReportDetails(id);
+      await loadNotifications();
+    } catch (e) {
+      debugPrint("Error cancelling report: $id: $e");
+    } finally {
+      _isLoading = false;
+      notifyListeners();
     }
   }
 }

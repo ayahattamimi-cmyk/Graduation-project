@@ -1,20 +1,38 @@
 import 'package:flutter/material.dart';
+import 'package:dio/dio.dart';
 import 'package:web2/drop_locations/data/area_model.dart';
 import 'package:web2/drop_locations/data/container_model.dart';
+import '../../supervisors/data/supervisor_repository.dart';
+import '../../supervisors/data/model/area_detail_model.dart';
 import '../data/container_repository.dart';
 import '../data/statistics_model.dart';
 
 class DropLocationsViewModel extends ChangeNotifier {
   final ContainerRepository _repository;
+  final SupervisorRepository _supervisorRepo;
 
-  DropLocationsViewModel(this._repository);
+  DropLocationsViewModel(this._repository, this._supervisorRepo);
 
   List<AreaModel> _areas = [];
+  List<AreaDetailModel> _referenceAreas =
+      []; // استخدام الموديل الموجود مسبقاً في المشروع
   StatisticsModel? _statistics;
   bool _isLoading = false;
   String? _errorMessage;
 
   List<AreaModel> get areas => _areas;
+  List<AreaModel> get referenceAreas =>
+      _referenceAreas.isEmpty
+          ? _areas
+          : _referenceAreas
+              .map(
+                (e) => AreaModel(
+                  id: e.id,
+                  areaDetails: e.label ?? e.name ?? '',
+                  containers: [],
+                ),
+              )
+              .toList();
   StatisticsModel? get statistics => _statistics;
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
@@ -26,6 +44,13 @@ class DropLocationsViewModel extends ChangeNotifier {
 
     try {
       _areas = await _repository.fetchAreasWithContainers();
+
+      // جلب المناطق الملحقة بالمشرفين لضمان الحصول على IDs صحيحة (إعادة استخدام الكود الجاهز)
+      try {
+        _referenceAreas = await _supervisorRepo.fetchAreas('lifting');
+      } catch (e) {
+        debugPrint("⚠️ فشل جلب المناطق المرجعية عبر SupervisorRepo: $e");
+      }
 
       // جلب الإحصائيات بشكل منفصل حتى لا يمنع فشلها عرض الحاويات
       try {
@@ -53,6 +78,13 @@ class DropLocationsViewModel extends ChangeNotifier {
       await fetchContainersData(); // تحديث القائمة بعد الإضافة
     } catch (e) {
       _errorMessage = "فشل إضافة الموقع: $e";
+      // طباعة تفصيلية للخطأ في الـ Console
+      debugPrint("❌ [Add Container Error]: $e");
+
+      // إذا كان الخطأ من مكتبة Dio (السيرفر)، نطبع رد السيرفر
+      if (e is DioException) {
+        debugPrint("📄 [Server Response]: ${e.response?.data}");
+      }
     } finally {
       _isLoading = false;
       notifyListeners();
@@ -78,7 +110,6 @@ class DropLocationsViewModel extends ChangeNotifier {
     }
   }
 
-  // --- أضيفي هذه الدالة داخل الفيو مودل ---
   Future<void> editContainer(int id, ContainerModel updatedContainer) async {
     try {
       // نرسل طلب التعديل للمستودع

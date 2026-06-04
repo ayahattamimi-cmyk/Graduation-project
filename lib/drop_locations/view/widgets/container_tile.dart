@@ -16,75 +16,122 @@ class ContainerTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.symmetric(
-        horizontal: 12,
-        vertical: 6,
-      ),
-      padding: const EdgeInsets.all(12),
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       decoration: BoxDecoration(
-        color: Colors.grey.shade100,
+        color: Colors.grey.shade50,
         borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.grey.shade200),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-
-          /// العنوان + أزرار
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-
-              Text(
-                container.nameContainer,
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 16,
-                ),
-              ),
-
-              Row(
-                children: [
-
-                  /// حذف
-                  IconButton(
-                    onPressed: onDelete,
-                    icon: const Icon(
-                      Icons.delete_outline,
-                      color: Colors.red,
+          // Header with Name and Actions
+          Padding(
+            padding: const EdgeInsets.fromLTRB(8, 8, 16, 0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Expanded(
+                  child: Text(
+                    container.locationName,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 15,
+                      color: Color(0xFF374151),
                     ),
                   ),
-
-                  /// تعديل
-                  IconButton(
-                    onPressed: onEdit,
-                    icon: const Icon(Icons.edit_outlined),
-                  ),
-
-                ],
-              ),
-            ],
+                ),
+                Row(
+                  children: [
+                    IconButton(
+                      onPressed: onEdit,
+                      icon: const Icon(Icons.edit_outlined, size: 20),
+                      color: Colors.blue.shade600,
+                      tooltip: 'تعديل',
+                    ),
+                    IconButton(
+                      onPressed: onDelete,
+                      icon: const Icon(Icons.delete_outline, size: 20),
+                      color: Colors.red.shade400,
+                      tooltip: 'حذف',
+                    ),
+                  ],
+                ),
+              ],
+            ),
           ),
 
-          const SizedBox(height: 6),
-
-          Text("الشارع: ${container.nameStreet}"),
-          Text("النوع: ${container.type}"),
-          Text("الفترة: ${container.period}"),
-          Text("التصنيف: ${container.classification}"),
-
-          const SizedBox(height: 6),
-
-          Row(
-            children: [
-              Text("مرات الرفع: ${container.collectionFrequency}"),
-              const SizedBox(width: 12),
-              Text("اليوم: ${container.collectionDay}"),
-            ],
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+            child: Column(
+              children: [
+                const SizedBox(height: 8),
+                Row(
+                  children: [
+                    Expanded(
+                      child: _infoRow(
+                        Icons.access_time,
+                        "الفترة",
+                        container.period,
+                      ),
+                    ),
+                    Expanded(
+                      child: _infoRow(
+                        Icons.category_outlined,
+                        "النوع",
+                        container.type,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                Row(
+                  children: [
+                    Expanded(
+                      child: _infoRow(
+                        Icons.label_outline,
+                        "التصنيف",
+                        container.classification,
+                      ),
+                    ),
+                    Expanded(
+                      child: _infoRow(
+                        Icons.repeat,
+                        "التكرار",
+                        "${container.collectionFrequency} مرات",
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
           ),
-
-          Text("وقت البداية: ${container.startTime}"),
         ],
       ),
+    );
+  }
+
+  Widget _infoRow(IconData icon, String label, String value) {
+    return Row(
+      children: [
+        Icon(icon, size: 14, color: const Color(0xFF10B981)),
+        const SizedBox(width: 6),
+        Text(
+          "$label: ",
+          style: const TextStyle(
+            fontSize: 12,
+            color: Colors.grey,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        Expanded(
+          child: Text(
+            value,
+            style: const TextStyle(fontSize: 12, color: Color(0xFF4B5563)),
+            overflow: TextOverflow.ellipsis,
+          ),
+        ),
+      ],
     );
   }
 }
