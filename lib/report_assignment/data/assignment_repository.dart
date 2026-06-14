@@ -8,7 +8,7 @@ class AssignmentRepository {
 
   AssignmentRepository(this._service);
 
-  // جلب الاقتراح التلقائي بناءً على موقع البلاغ
+  /// يجلب اقتراح تعيين تلقائي للبلاغ المحدد.
   Future<AssignmentSuggestionModel?> fetchSuggestion(int reportId) async {
     try {
       final response = await _service.getSuggestion(reportId);
@@ -17,12 +17,11 @@ class AssignmentRepository {
       }
       return null;
     } catch (e) {
-      debugPrint("❌ Error in fetchSuggestion: $e");
       return null;
     }
   }
 
-  // جلب البيانات التفصيلية للمربع (يدوياً) حسب النوع
+  /// يجلب تفاصيل المربع يدوياً بواسطة معرف المربع ونوع العمل.
   Future<AssignmentSuggestionModel?> fetchSquareDetails(
     int squareId,
     String type,
@@ -34,12 +33,11 @@ class AssignmentRepository {
       }
       return null;
     } catch (e) {
-      debugPrint("❌ Error in fetchSquareDetails: $e");
       return null;
     }
   }
 
-  // إرسال طلب التعيين النهائي للسيرفر
+  /// يرسل التعيين النهائي لبلاغ إلى مشرف.
   Future<bool> sendAssignment({
     required int reportId,
     required int supervisorId,
@@ -53,10 +51,8 @@ class AssignmentRepository {
       final response = await _service.postAssignment(formData);
       return response.data['status'] == 'success';
     } on DioException catch (e) {
-      debugPrint("❌ DioException in sendAssignment: ${e.message}");
       return false;
     } catch (e) {
-      debugPrint("❌ Error in sendAssignment: $e");
       return false;
     }
   }

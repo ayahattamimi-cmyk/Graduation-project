@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+/// غلاف بطاقة قابل لإعادة الاستخدام مع عنوان ومحتوى فرعي.
 class DetailCard extends StatelessWidget {
   final String title;
   final Widget child;
@@ -31,6 +32,7 @@ class DetailCard extends StatelessWidget {
   }
 }
 
+/// صف تسمية-قيمة يُستخدم داخل بطاقات التفاصيل.
 class DetailRowItem extends StatelessWidget {
   final String label;
   final String value;
@@ -44,7 +46,7 @@ class DetailRowItem extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label, style: const TextStyle(color: Colors.grey)),
+          Text(label, style: const TextStyle(color: Color(0xFF616161))),
           Text(value, style: const TextStyle(fontWeight: FontWeight.bold)),
         ],
       ),

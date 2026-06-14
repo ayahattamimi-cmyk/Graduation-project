@@ -6,6 +6,7 @@ import '../viewmodel/map_viewmodel.dart';
 import 'widgets/zone_details_side.dart';
 import '../../report_assignment/viewmodel/assignment_viewmodel.dart';
 
+/// عرض الخريطة بملء الشاشة يعرض البلاغات والحاويات والمناطق على Google Maps.
 class WebMapScreen extends StatefulWidget {
   final int? focusReportId;
   const WebMapScreen({Key? key, this.focusReportId}) : super(key: key);
@@ -30,7 +31,6 @@ class _WebMapScreenState extends State<WebMapScreen> {
     return Scaffold(
       body: Stack(
         children: [
-          // الخريطة الأساسية
           GoogleMap(
             mapType: mapVM.isSatellite ? MapType.satellite : MapType.normal,
             initialCameraPosition: const CameraPosition(
@@ -49,7 +49,6 @@ class _WebMapScreenState extends State<WebMapScreen> {
             },
           ),
 
-          // زر التأكيد في وضع الـ Picker
           if (mapVM.isPickerMode && mapVM.pickedLocation != null)
             Positioned(
               bottom: 40,
@@ -85,7 +84,6 @@ class _WebMapScreenState extends State<WebMapScreen> {
               ),
             ),
 
-          // خيارات التصفية العلوية (Premium Chips)
           if (!mapVM.isPickerMode)
             Positioned(
               top: 20,
@@ -104,7 +102,7 @@ class _WebMapScreenState extends State<WebMapScreen> {
                   const SizedBox(width: 12),
                   MapFilterChip(
                     label: "الحاويات",
-                    color: const Color.fromARGB(255, 12, 100, 38),
+                    color: Color.fromARGB(255, 12, 100, 38),
                     icon: Icons.delete_outline,
                     isSelected: mapVM.showContainers,
                     onTap: () => mapVM.toggleContainers(),
@@ -121,7 +119,6 @@ class _WebMapScreenState extends State<WebMapScreen> {
               ),
             ),
 
-          // أدوات التحكم الجانبية (Satellite + Zoom)
           Positioned(
             right: 20,
             bottom: 40,
@@ -155,7 +152,6 @@ class _WebMapScreenState extends State<WebMapScreen> {
             ),
           ),
 
-          // تفاصيل المنطقة المختارة
           if (mapVM.selectedZoneName != null)
             Positioned(
               bottom: 30,
@@ -167,7 +163,6 @@ class _WebMapScreenState extends State<WebMapScreen> {
               ),
             ),
 
-          // مؤشر التحميل
           if (mapVM.isLoading)
             Container(
               color: Colors.black26,
@@ -176,7 +171,6 @@ class _WebMapScreenState extends State<WebMapScreen> {
               ),
             ),
 
-          // --- إرجاع واجهة توجيه البلاغ الآلي (بناءً على طلب التراجع) ---
           if (widget.focusReportId != null)
             Positioned(
               left: 20,
@@ -320,6 +314,7 @@ class _WebMapScreenState extends State<WebMapScreen> {
   }
 }
 
+/// زر إجراء دائري يُستخدم لعناصر تحكم الخريطة (تكبير، قمر صناعي، توسيط).
 class _MapActionButton extends StatelessWidget {
   final IconData icon;
   final VoidCallback onPressed;

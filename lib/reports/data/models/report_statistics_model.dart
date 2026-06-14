@@ -11,6 +11,7 @@ class ReportStatisticsModel {
     required this.resolutionRate,
   });
 
+  /// ينشئ [ReportStatisticsModel] من خريطة JSON.
   factory ReportStatisticsModel.fromJson(Map<String, dynamic> json) {
     return ReportStatisticsModel(
       total: json['total'] ?? 0,

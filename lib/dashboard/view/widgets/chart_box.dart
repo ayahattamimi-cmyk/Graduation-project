@@ -4,7 +4,9 @@ class ChartBox extends StatelessWidget {
   final String title;
   final Widget child;
 
+  /// ينشئ [ChartBox] بعنوان وقطعة رسم بياني فرعية.
   const ChartBox({super.key, required this.title, required this.child});
+
   @override
   Widget build(BuildContext context) {
     return Container(

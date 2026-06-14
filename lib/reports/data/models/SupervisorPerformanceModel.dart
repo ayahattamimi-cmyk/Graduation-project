@@ -19,6 +19,7 @@ class SupervisorPerformanceModel {
     required this.avgProcessingTime,
   });
 
+  /// ينشئ [SupervisorPerformanceModel] من خريطة JSON.
   factory SupervisorPerformanceModel.fromJson(Map<String, dynamic> json) {
     return SupervisorPerformanceModel(
       id: _parseInt(json['supervisor_id']),
@@ -32,12 +33,14 @@ class SupervisorPerformanceModel {
     );
   }
 
+  /// يحلل قيمة ديناميكية إلى int بشكل آمن.
   static int _parseInt(dynamic v) {
     if (v == null) return 0;
     if (v is int) return v;
     return int.tryParse(v.toString()) ?? 0;
   }
 
+  /// يحلل قيمة ديناميكية إلى num بشكل آمن.
   static num _parseNum(dynamic v) {
     if (v == null) return 0;
     if (v is num) return v;

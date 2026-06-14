@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+/// عنصر بطاقة يوفر مفاتيح تبديل لإظهار البلاغات والحاويات والمناطق.
 class MapFilterCard extends StatelessWidget {
   final bool showReports;
   final bool showContainers;
@@ -32,37 +33,18 @@ class MapFilterCard extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          _buildItem(
-            "البلاغات",
-            showReports,
-            (val) => onChanged('reports', val),
-            Colors.red,
-          ),
+          _buildItem("البلاغات", showReports, (val) => onChanged('reports', val), Colors.red),
           const VerticalDivider(width: 20, indent: 10, endIndent: 10),
-          _buildItem(
-            "الحاويات",
-            showContainers,
-            (val) => onChanged('containers', val),
-            Colors.blue,
-          ),
+          _buildItem("الحاويات", showContainers, (val) => onChanged('containers', val), Colors.blue),
           const VerticalDivider(width: 20, indent: 10, endIndent: 10),
-          _buildItem(
-            "المناطق",
-            showZones,
-            (val) => onChanged('zones', val),
-            Colors.purple,
-          ),
+          _buildItem("المناطق", showZones, (val) => onChanged('zones', val), Colors.purple),
         ],
       ),
     );
   }
 
-  Widget _buildItem(
-    String label,
-    bool value,
-    Function(bool?) onToggle,
-    Color color,
-  ) {
+  /// يبني صف تبديل تصفية مفرد مع خانة اختيار وتسمية.
+  Widget _buildItem(String label, bool value, Function(bool?) onToggle, Color color) {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [

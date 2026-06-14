@@ -9,6 +9,7 @@ class StatisticsModel {
     required this.sweepingCount,
   });
 
+  /// ينشئ [StatisticsModel] من خريطة JSON.
   factory StatisticsModel.fromJson(Map<String, dynamic> json) {
     return StatisticsModel(
       totalSupervisors: json['total_supervisors'] ?? 0,

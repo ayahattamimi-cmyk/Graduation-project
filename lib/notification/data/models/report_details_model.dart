@@ -1,9 +1,9 @@
-///   يحمل كافة تفاصيل بلاغ بيئي بعينه، يتضمن بيانات
-///   المبلّغ والموقع والصور وتاريخ الإنشاء.
-///   يتضمن [ReporterModel] ككائن فرعي يمثّل بيانات صاحب البلاغ.
-import 'reporter_model.dart'; // استيراد مودل المبلّغ
+import 'reporter_model.dart';
 
+/// يحمل التفاصيل الكاملة لبلاغ بيئي واحد،
+/// بما في ذلك معلومات المبلّغ والموقع والصور والطوابع الزمنية.
 class ReportDetailsModel {
+  final int id;
   final int reportNumber;
   final String description;
   final String status;
@@ -15,11 +15,12 @@ class ReportDetailsModel {
   final String imageUrl;
   final String area;
   final String square;
-  final ReporterModel reporter; // ربط المودلين ببعض
+  final ReporterModel reporter;
   final String? cancelReason;
   final bool isPublished;
 
   ReportDetailsModel({
+    required this.id,
     required this.reportNumber,
     required this.description,
     required this.status,
@@ -36,16 +37,38 @@ class ReportDetailsModel {
     this.isPublished = false,
   });
 
+  /// يُرجع نسخة مع قيمة [isPublished] محدّثة اختيارياً.
+  ReportDetailsModel copyWith({bool? isPublished}) {
+    return ReportDetailsModel(
+      id: id,
+      reportNumber: reportNumber,
+      description: description,
+      status: status,
+      priority: priority,
+      type: type,
+      title: title,
+      createdAt: createdAt,
+      createdTime: createdTime,
+      imageUrl: imageUrl,
+      area: area,
+      square: square,
+      reporter: reporter,
+      cancelReason: cancelReason,
+      isPublished: isPublished ?? this.isPublished,
+    );
+  }
+
+  /// ينشيء [ReportDetailsModel] من خريطة JSON مع سلاسل احتياطية.
   factory ReportDetailsModel.fromJson(Map<String, dynamic> json) {
     return ReportDetailsModel(
+      id: _parseInt(json['id'] ?? json['report_id'] ?? json['report_number']),
       reportNumber: _parseInt(
-        json['report_number'] ?? json['id'],
-      ), // fallback to id if report_number is missing
+        json['report_number'] ?? json['id'] ?? json['report_id'],
+      ),
       description: json['description'] ?? "",
       status: json['status'] ?? "",
       priority: json['priority'] ?? "",
-      type:
-          json['type'] ?? json['report_type'] ?? "", // fallback to report_type
+      type: json['type'] ?? json['report_type'] ?? "",
       title: json['title'] ?? "",
       createdAt: json['created_at'] ?? "",
       createdTime: json['created_time'] ?? "",
@@ -66,16 +89,25 @@ class ReportDetailsModel {
               : ReporterModel(
                 name: json['citizen_name'] ?? "غير معروف",
                 phone: "غير متوفر",
-              ), // fallback to citizen_name
+              ),
       cancelReason: json['cancel_reason'] ?? json['reason'],
-      isPublished:
-          _parseInt(
-            json['is_published'] ?? json['is_publish'] ?? json['isPublished'],
-          ) ==
-          1,
+      isPublished: _parseBool(
+        json['is_published'] ?? json['is_publish'] ?? json['isPublished'],
+      ),
     );
   }
 
+  /// يحلل قيمة منطقية (Boolean) بأمان من أنواع مختلفة.
+  static bool _parseBool(dynamic value) {
+    if (value == null) return false;
+    if (value is bool) return value;
+    if (value is int) return value == 1;
+    if (value is double) return value.toInt() == 1;
+    final str = value.toString().toLowerCase();
+    return str == '1' || str == 'true';
+  }
+
+  /// يحلل عدداً صحيحاً من قيمة ديناميكية بأمان.
   static int _parseInt(dynamic value) {
     if (value == null) return 0;
     if (value is int) return value;
@@ -83,6 +115,7 @@ class ReportDetailsModel {
     return int.tryParse(value.toString()) ?? 0;
   }
 
+  /// ينسّق رابط الصورة، مع تمريرها عبر weserv لـ HTTPS إذا لزم الأمر.
   static String _formatImageUrl(dynamic path) {
     if (path == null || path.toString().isEmpty) return "";
     String url = path.toString();
@@ -96,7 +129,6 @@ class ReportDetailsModel {
 
     String baseUrl = "https://medicalhouse-ye.net";
 
-    // إذا كان الرابط يبدأ بـ uploads أو storage، ندمجه مباشرة مع الـ baseUrl
     if (url.startsWith('uploads/') || url.startsWith('storage/')) {
       return "https://images.weserv.nl/?url=$baseUrl/$url";
     }

@@ -2,12 +2,11 @@ import 'package:flutter/material.dart';
 import '../data/assignment_repository.dart';
 import '../data/assignment_model.dart';
 import '../../supervisors/data/model/supervisor_model.dart';
-import '../../supervisors/data/supervisor_repository.dart'; // استيراد المستودع المشترك
+import '../../supervisors/data/supervisor_repository.dart';
 
 class AssignmentViewModel extends ChangeNotifier {
   final AssignmentRepository _repository;
-  final SupervisorRepository
-  _supervisorRepository; // حقن المستودع المشترك للمشرفين
+  final SupervisorRepository _supervisorRepository;
 
   AssignmentViewModel(this._repository, this._supervisorRepository);
 
@@ -19,6 +18,7 @@ class AssignmentViewModel extends ChangeNotifier {
   int? selectedSupervisorId;
   int reportsCount = 0;
 
+  /// يعيد اسم المشرف المحدد حالياً.
   String get selectedSupervisorName {
     if (selectedSupervisorId == null) return "غير محدد";
     final s = supervisors.firstWhere(
@@ -35,44 +35,40 @@ class AssignmentViewModel extends ChangeNotifier {
     return s.name;
   }
 
-  // القيم الافتراضية المعتمدة في السيرفر (sweeping للكنس، lifting للرفع)
   String selectedWorkType = "sweeping";
   final List<String> workTypes = ["sweeping", "lifting"];
 
-  // 1. التوجيه التلقائي (الخطوة الأولى)
+  /// يحمل اقتراح التعيين التلقائي لبلاغ ويملأ قائمة المشرفين.
   Future<void> loadAssignmentSuggestion(int reportId) async {
     isLoading = true;
     notifyListeners();
 
     try {
-      // جلب الاقتراح الآلي بناءً على الإحداثيات
       suggestion = await _repository.fetchSuggestion(reportId);
-
-      // استخدام المستودع المشترك لجلب قائمة كل المشرفين (منعاً للتكرار)
       supervisors = await _supervisorRepository.fetchAllSupervisors();
 
       if (suggestion != null) {
         selectedArea = suggestion!.squareLabel;
         selectedSupervisorId = suggestion!.supervisorId;
         reportsCount = suggestion!.reportsCount;
+
       } else if (supervisors.isNotEmpty) {
         selectedSupervisorId = supervisors.first.id;
       }
     } catch (e) {
-      debugPrint(" فشل جلب بيانات التوجيه: $e");
     } finally {
       isLoading = false;
       notifyListeners();
     }
   }
 
-  // 2. تحديث المشرف يدوياً من القائمة المنسدلة
+  /// يحدد المشرف المختار يدوياً من القائمة المنسدلة.
   void setSupervisor(int id) {
     selectedSupervisorId = id;
     notifyListeners();
   }
 
-  // 3. التوجيه المتقدم (تغيير نوع العمل وجلب المشرف المتخصص في المربع)
+  /// يغير نوع العمل ويجلب المشرف المتخصص لذلك المربع.
   Future<void> setWorkType(String type) async {
     selectedWorkType = type;
     notifyListeners();
@@ -93,7 +89,6 @@ class AssignmentViewModel extends ChangeNotifier {
           reportsCount = advancedData.reportsCount;
         }
       } catch (e) {
-        debugPrint(" فشل جلب بيانات التوجيه المتقدم: $e");
       } finally {
         isLoading = false;
         notifyListeners();
@@ -101,6 +96,7 @@ class AssignmentViewModel extends ChangeNotifier {
     }
   }
 
+  /// يرسل طلب التعيين النهائي إلى الخادم.
   Future<bool> sendAssignment(int reportId) async {
     if (selectedSupervisorId == null) return false;
 
@@ -114,7 +110,6 @@ class AssignmentViewModel extends ChangeNotifier {
       );
       return success;
     } catch (e) {
-      debugPrint(" فشل عملية التعيين النهائية: $e");
       return false;
     } finally {
       isLoading = false;

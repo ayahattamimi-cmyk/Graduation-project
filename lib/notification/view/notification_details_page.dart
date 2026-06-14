@@ -8,6 +8,8 @@ import 'widgets/report_detail_widgets.dart';
 import '../viewmodel/notification_viewmodel.dart';
 import '../data/models/notification_model.dart';
 
+/// صفحة تعرض التفاصيل الكاملة لبلاغ محدّد، بما في ذلك إجراءات
+/// مثل التوجيه والإلغاء والنشر.
 class NotificationDetailsPage extends StatefulWidget {
   final int reportId;
   final Function(AppPage)? onGoToAssignment;
@@ -27,23 +29,14 @@ class _NotificationDetailsPageState extends State<NotificationDetailsPage> {
   @override
   void initState() {
     super.initState();
-    Future.microtask(
-      () => context.read<NotificationsViewModel>().loadReportDetails(
-        widget.reportId,
-      ),
-    );
+    final viewModel = context.read<NotificationsViewModel>();
+    Future.microtask(() => viewModel.loadReportDetails(widget.reportId));
   }
 
   @override
   Widget build(BuildContext context) {
     final viewModel = context.watch<NotificationsViewModel>();
     final report = viewModel.selectedReport;
-
-    if (report != null) {
-      debugPrint(
-        "📢 Report #${report.reportNumber} | Status: ${report.status} | isPublished: ${report.isPublished}",
-      );
-    }
 
     return Directionality(
       textDirection: TextDirection.rtl,
@@ -140,7 +133,7 @@ class _NotificationDetailsPageState extends State<NotificationDetailsPage> {
                                 const SizedBox(height: 4),
                                 Text(
                                   report.title,
-                                  style: const TextStyle(color: Colors.grey),
+                                  style: const TextStyle(color: Color(0xFF616161)),
                                 ),
                               ],
                             ),
@@ -184,7 +177,7 @@ class _NotificationDetailsPageState extends State<NotificationDetailsPage> {
                                       _showCancelDialog(
                                         context,
                                         viewModel,
-                                        report.reportNumber,
+                                        report.id,
                                       );
                                     }
                                     : null,
@@ -211,57 +204,33 @@ class _NotificationDetailsPageState extends State<NotificationDetailsPage> {
                           ),
                           const SizedBox(width: 8),
                           if (report.status == "تم الحل" ||
-                              report.status == "تم الإنجاز")
-                            Builder(
-                              builder: (context) {
-                                // البحث عن الإشعار الخاص بهذا البلاغ لمعرفة حالة النشر منه
-                                bool isPublishedFromNotif = false;
-                                try {
-                                  final notif = viewModel.notifications
-                                      .firstWhere(
-                                        (n) =>
-                                            n.reportId == report.reportNumber,
-                                      );
-                                  isPublishedFromNotif = notif.isPublished;
-                                } catch (_) {}
-
-                                // استخدام الحالة من الإشعار أو من موديل البلاغ كاحتياط
-                                final bool isPublished =
-                                    isPublishedFromNotif || report.isPublished;
-
-                                return ElevatedButton.icon(
-                                  onPressed:
-                                      !isPublished
-                                          ? () async {
-                                            await viewModel.publishReport(
-                                              report.reportNumber,
-                                            );
-                                            if (mounted) {
-                                              ScaffoldMessenger.of(
-                                                context,
-                                              ).showSnackBar(
-                                                const SnackBar(
-                                                  content: Text(
-                                                    "تم نشر البلاغ بنجاح",
-                                                  ),
-                                                ),
-                                              );
-                                            }
-                                          }
-                                          : null,
-                                  icon: const Icon(Icons.public),
-                                  label: Text(
-                                    isPublished ? 'تم النشر' : 'نشر للجمهور',
-                                  ),
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor:
-                                        isPublished
-                                            ? Colors.grey.shade400
-                                            : const Color(0xFF10B981),
-                                    foregroundColor: Colors.white,
-                                  ),
+                              report.status == "تم الإنجاز" ||
+                              report.status == "مكتمل" ||
+                              report.status == "Solved" ||
+                              report.status == "Completed")
+                            ElevatedButton.icon(
+                              onPressed: () async {
+                                await viewModel.publishReport(
+                                  widget.reportId,
                                 );
                               },
+                              icon: Icon(
+                                report.isPublished
+                                    ? Icons.visibility_off
+                                    : Icons.public,
+                              ),
+                              label: Text(
+                                report.isPublished
+                                    ? 'إلغاء النشر'
+                                    : 'نشر البلاغ',
+                              ),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor:
+                                    report.isPublished
+                                        ? const Color(0xFFF97316)
+                                        : const Color(0xFF10B981),
+                                foregroundColor: Colors.white,
+                              ),
                             ),
                         ],
                       ),
@@ -274,7 +243,6 @@ class _NotificationDetailsPageState extends State<NotificationDetailsPage> {
                                 isMobile ? Axis.vertical : Axis.horizontal,
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              // العمود الرئيسي (المعلومات الأساسية للبلاغ)
                               Flexible(
                                 flex: isMobile ? 0 : 2,
                                 child: Column(
@@ -283,15 +251,13 @@ class _NotificationDetailsPageState extends State<NotificationDetailsPage> {
                                     const SizedBox(height: 16),
                                     LocationCard(report: report),
                                     const SizedBox(height: 16),
-
-                                    // قسم الصور والمقارنة
                                     if (report.status == "تم الحل" ||
                                         report.status == "تم الإنجاز") ...[
                                       if (isMobile) ...[
                                         _buildProcessingResults(
                                           context,
                                           viewModel,
-                                          report.reportNumber,
+                                          report.id,
                                         ),
                                         const SizedBox(height: 16),
                                         ReportImageCard(
@@ -306,7 +272,7 @@ class _NotificationDetailsPageState extends State<NotificationDetailsPage> {
                                               child: _buildProcessingResults(
                                                 context,
                                                 viewModel,
-                                                report.reportNumber,
+                                                report.id,
                                               ),
                                             ),
                                             const SizedBox(width: 16),
@@ -320,20 +286,16 @@ class _NotificationDetailsPageState extends State<NotificationDetailsPage> {
                                       ],
                                       const SizedBox(height: 16),
                                     ] else ...[
-                                      // إذا لم يتم الحل، نعرض الصورة الأصلية فقط
                                       ReportImageCard(
                                         imageUrl: report.imageUrl,
                                       ),
                                       const SizedBox(height: 16),
                                     ],
-
                                     if (isMobile) const SizedBox(height: 16),
                                   ],
                                 ),
                               ),
                               if (!isMobile) const SizedBox(width: 24),
-
-                              // العمود الجانبي (البيانات الإضافية)
                               Flexible(
                                 flex: isMobile ? 0 : 1,
                                 child: SizedBox(
@@ -423,6 +385,7 @@ class _NotificationDetailsPageState extends State<NotificationDetailsPage> {
     );
   }
 
+  /// يبني بطاقة تعرض نتائج المعالجة من المشرف.
   Widget _buildProcessingResults(
     BuildContext context,
     NotificationsViewModel vm,
@@ -449,7 +412,7 @@ class _NotificationDetailsPageState extends State<NotificationDetailsPage> {
             padding: EdgeInsets.all(16.0),
             child: Text(
               "لم يتم العثور على بيانات المعالجة في الإشعارات الحالية.",
-              style: TextStyle(color: Colors.grey),
+              style: TextStyle(color: Color(0xFF616161)),
             ),
           ),
         ),
@@ -529,7 +492,7 @@ class _NotificationDetailsPageState extends State<NotificationDetailsPage> {
                           Icon(Icons.broken_image, color: Colors.grey),
                           Text(
                             "تعذر تحميل صورة المعالجة",
-                            style: TextStyle(color: Colors.grey, fontSize: 12),
+                            style: TextStyle(color: Color(0xFF616161), fontSize: 12),
                           ),
                         ],
                       ),
@@ -542,7 +505,7 @@ class _NotificationDetailsPageState extends State<NotificationDetailsPage> {
                 padding: EdgeInsets.all(20.0),
                 child: Text(
                   "لا توجد صورة مرفقة للإنجاز",
-                  style: TextStyle(color: Colors.grey),
+                  style: TextStyle(color: Color(0xFF616161)),
                 ),
               ),
             ),
@@ -551,6 +514,7 @@ class _NotificationDetailsPageState extends State<NotificationDetailsPage> {
     );
   }
 
+  /// يعرض حواراً لإلغاء بلاغ مع سبب مطلوب.
   void _showCancelDialog(
     BuildContext context,
     NotificationsViewModel vm,
@@ -578,11 +542,13 @@ class _NotificationDetailsPageState extends State<NotificationDetailsPage> {
               ElevatedButton(
                 onPressed: () async {
                   if (textController.text.trim().isNotEmpty) {
+                    final navigator = Navigator.of(context);
+                    final messenger = ScaffoldMessenger.of(context);
                     await vm.cancelReport(reportId, textController.text.trim());
-                    if (mounted) {
-                      Navigator.pop(context); // إغلاق النافذة المنبثقة
-                      Navigator.pop(context); // الرجوع لشاشة الإشعارات
-                      ScaffoldMessenger.of(context).showSnackBar(
+                    if (context.mounted) {
+                      navigator.pop();
+                      navigator.pop();
+                      messenger.showSnackBar(
                         const SnackBar(
                           content: Text("تم إلغاء البلاغ بنجاح"),
                           backgroundColor: Colors.green,

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../data/models/report_details_model.dart';
 import 'detail_card.dart';
 
+/// بطاقة تعرض معلومات البلاغ الأساسية (الرقم، النوع، الحالة، الوصف).
 class ReportInfoCard extends StatelessWidget {
   final ReportDetailsModel report;
 
@@ -14,10 +15,7 @@ class ReportInfoCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          DetailRowItem(
-            label: 'رقم البلاغ',
-            value: report.reportNumber.toString(),
-          ),
+          DetailRowItem(label: 'رقم البلاغ', value: report.reportNumber.toString()),
           DetailRowItem(label: 'نوع العمل', value: report.type),
           DetailRowItem(label: 'الحالة', value: report.status),
           const Divider(),
@@ -35,6 +33,7 @@ class ReportInfoCard extends StatelessWidget {
   }
 }
 
+/// بطاقة تعرض الموقع الجغرافي (المربع والمنطقة) لبلاغ.
 class LocationCard extends StatelessWidget {
   final ReportDetailsModel report;
 
@@ -55,6 +54,7 @@ class LocationCard extends StatelessWidget {
   }
 }
 
+/// بطاقة تعرض صورة البلاغ الأصلية.
 class ReportImageCard extends StatelessWidget {
   final String imageUrl;
 
@@ -98,7 +98,7 @@ class ReportImageCard extends StatelessWidget {
                         SizedBox(height: 10),
                         Text(
                           "لا توجد صورة متوفرة لهذا البلاغ",
-                          style: TextStyle(color: Colors.grey),
+                          style: TextStyle(color: Color(0xFF616161)),
                         ),
                       ],
                     ),

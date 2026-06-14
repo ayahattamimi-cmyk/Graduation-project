@@ -32,7 +32,7 @@ class ReportFilterWidget extends StatelessWidget {
     required this.periods,
   });
 
-  /// شكل الـ dropdown
+  /// ينشئ حقل قائمة منسدلة منسق.
   Widget _dropdown(
     String value,
     List<String> items,
@@ -79,7 +79,6 @@ class ReportFilterWidget extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          /// العنوان
           Align(
             alignment: Alignment.centerRight,
             child: Row(
@@ -97,7 +96,6 @@ class ReportFilterWidget extends StatelessWidget {
 
           const SizedBox(height: 20),
 
-          /// الليبلات
           Row(
             children: const [
               Expanded(child: Text("المنطقة")),
@@ -112,7 +110,6 @@ class ReportFilterWidget extends StatelessWidget {
 
           const SizedBox(height: 8),
 
-          /// الدروب داون
           Row(
             children: [
               Expanded(child: _dropdown(selectedArea, areas, onAreaChanged)),

@@ -23,6 +23,7 @@ class ReportModel {
     required this.createdAt,
   });
 
+  /// ينشئ [ReportModel] من خريطة JSON.
   factory ReportModel.fromJson(Map<String, dynamic> json) {
     return ReportModel(
       id: json['id'],

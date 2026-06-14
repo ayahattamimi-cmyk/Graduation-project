@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+/// عنصر يعرض نقطة علامة ملونة مع تسمية لوسائل إيضاح الخريطة.
 class MapMarkerItem extends StatelessWidget {
   final Color color;
   final String label;

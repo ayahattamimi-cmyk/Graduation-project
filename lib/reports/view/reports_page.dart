@@ -7,11 +7,34 @@ import 'widgets/top_supervisors_widget.dart';
 import 'package:flutter/services.dart';
 import 'widgets/supervisor_filter_widget.dart';
 
-/// 🔹 مكتبات التصدير للويب
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:excel/excel.dart';
 import 'dart:html' as html;
+
+final RegExp _emojiRegex = RegExp(
+  r'[\u{1F600}-\u{1F64F}'
+  r'\u{1F300}-\u{1F5FF}'
+  r'\u{1F680}-\u{1F6FF}'
+  r'\u{1F780}-\u{1F7FF}'
+  r'\u{1F1E0}-\u{1F1FF}'
+  r'\u{2600}-\u{26FF}'
+  r'\u{2700}-\u{27BF}'
+  r'\u{FE00}-\u{FE0F}'
+  r'\u{1F900}-\u{1F9FF}'
+  r'\u{1FA00}-\u{1FA6F}'
+  r'\u{1FA70}-\u{1FAFF}'
+  r'\u{231A}-\u{23FF}'
+  r'\u{25AA}-\u{25FE}'
+  r'\u{2B05}-\u{2B55}'
+  r'\u{2B50}'
+  r'\u{200D}'
+  r'\u{20E3}'
+  r'\u{00A9}\u{00AE}'
+  r'\u{2122}'
+  r']',
+  unicode: true,
+);
 
 class ReportPage extends StatefulWidget {
   const ReportPage({super.key});
@@ -31,29 +54,33 @@ class _ReportPageState extends State<ReportPage> {
     });
   }
 
-  /// دالة مساعدة لاستخراج التاريخ بأمان
+  /// يستخرج جزء التاريخ من سلسلة التاريخ بشكل آمن.
   String _safeDate(String? dateStr) {
     if (dateStr == null || dateStr.trim().isEmpty) return '—';
-    return dateStr.contains('T') ? dateStr.split('T')[0] : dateStr;
+    String d = dateStr.contains('T') ? dateStr.split('T')[0] : dateStr;
+    d = d.replaceAll(_emojiRegex, '');
+    return d.trim().isEmpty ? '—' : d;
   }
 
-  /// دالة مساعدة للنصوص تمنع الأخطاء نهائياً وتضع شرطة للأماكن الفارغة
+  /// يحول قيمة ديناميكية إلى سلسلة عرض بشكل آمن، مع معالجة القيم الخالية والرموز التعبيرية.
   String _safeText(dynamic text) {
     if (text == null) return '—';
     String t = text.toString().trim();
     if (t.isEmpty || t == 'null' || t == '0') return '—';
     if (t.toLowerCase() == 'lifting') return 'رفع';
     if (t.toLowerCase() == 'sweeping') return 'كنس';
-    return t;
+    t = t.replaceAll(_emojiRegex, '');
+    t = t.trim();
+    return t.isEmpty ? '—' : t;
   }
 
-  /// دالة لتحويل الدقائق إلى تنسيق (ساعة ودقيقة) آمن ومحمي
+  /// ينسق الدقائق إلى سلسلة مدة قابلة للقراءة (مثال: "2 س 3 د").
   String _formatDuration(num? minutes) {
     if (minutes == null ||
         minutes.isNaN ||
         minutes.isInfinite ||
         minutes <= 0) {
-      return '—'; // إرجاع شرطة في حال عدم وجود بيانات زمنية
+      return '—';
     }
     int totalMinutes = minutes.round();
     if (totalMinutes < 60) return '$totalMinutes د';
@@ -63,8 +90,7 @@ class _ReportPageState extends State<ReportPage> {
     return '$h س $m د';
   }
 
-  /// ================= PDF EXPORT =================
-  /// ================= PDF EXPORT (النسخة النهائية المستقرة) =================
+  /// يصدر بيانات التقرير إلى ملف PDF ويبدأ التحميل.
   Future<void> exportToPDF(ReportViewModel vm, ExportMode mode) async {
     try {
       final pdf = pw.Document();
@@ -79,7 +105,6 @@ class _ReportPageState extends State<ReportPage> {
         fontWeight: pw.FontWeight.bold,
       );
 
-      // تجهيز البيانات
       final List<List<String>> reportRows =
           (mode == ExportMode.all || mode == ExportMode.reports)
               ? vm.filteredReports
@@ -260,12 +285,11 @@ class _ReportPageState extends State<ReportPage> {
         ..click();
       _showSuccess("تم تصدير ملف PDF بنجاح");
     } catch (e) {
-      debugPrint("❌ PDF Error: $e");
       _showError("فشل تصدير التقرير: $e");
     }
   }
 
-  /// ================= EXCEL EXPORT =================
+  /// يصدر بيانات التقرير إلى ملف Excel ويبدأ التحميل.
   void exportToExcel(ReportViewModel vm, ExportMode mode) {
     if (mode == ExportMode.reports && vm.filteredReports.isEmpty) return;
     if (mode == ExportMode.supervisors && vm.supervisorsPerformance.isEmpty) {
@@ -277,7 +301,6 @@ class _ReportPageState extends State<ReportPage> {
       final defaultSheet = excel.getDefaultSheet();
       final sheet = excel[defaultSheet ?? 'Sheet1'];
 
-      // === قسم البلاغات ===
       if (mode == ExportMode.all || mode == ExportMode.reports) {
         sheet.appendRow(["تقرير البلاغات - نظام البلاغات"]);
         sheet.appendRow(["عدد البلاغات", "${vm.filteredReports.length}"]);
@@ -307,7 +330,6 @@ class _ReportPageState extends State<ReportPage> {
         }
       }
 
-      // === قسم أداء المشرفين ===
       if (mode == ExportMode.all || mode == ExportMode.supervisors) {
         if (mode == ExportMode.all) {
           sheet.appendRow([]);
@@ -361,6 +383,7 @@ class _ReportPageState extends State<ReportPage> {
     }
   }
 
+  /// يعرض رسالة نجاح في شريط الإشعارات.
   void _showSuccess(String msg) {
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
@@ -368,6 +391,7 @@ class _ReportPageState extends State<ReportPage> {
     );
   }
 
+  /// يعرض رسالة خطأ في شريط الإشعارات.
   void _showError(String msg) {
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
@@ -388,7 +412,6 @@ class _ReportPageState extends State<ReportPage> {
           return ListView(
             padding: const EdgeInsets.all(20),
             children: [
-              /// --- HEADER SECTION ---
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -405,7 +428,7 @@ class _ReportPageState extends State<ReportPage> {
                       SizedBox(height: 4),
                       Text(
                         "متابعة أداء النظام والمشرفين والمربعات الجغرافية",
-                        style: TextStyle(color: Colors.grey),
+                        style: TextStyle(color: Color(0xFF616161)),
                       ),
                     ],
                   ),
@@ -465,6 +488,7 @@ class _ReportPageState extends State<ReportPage> {
     );
   }
 
+  /// ينشئ زر قائمة منبثقة لخيارات التصدير.
   Widget _buildExportMenu({
     required String title,
     required IconData icon,

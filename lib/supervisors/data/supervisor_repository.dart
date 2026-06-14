@@ -11,16 +11,15 @@ class SupervisorRepository {
 
   SupervisorRepository(this._service);
 
+  /// يجلب بيانات أداء المشرفين مصفاة حسب الاسم والنوع.
   Future<List<dynamic>> fetchSupervisorPerformance(
     String name,
     String type,
   ) async {
     try {
-      // إرسال type فقط إذا تم اختيار نوع محدد — إذا كان فارغاً نرسل الكل
       final Map<String, dynamic> params = {};
       if (name.isNotEmpty) params["name"] = name;
       if (type.isNotEmpty) {
-        // الـ API يتوقع lowercase: "lifting" أو "sweeping"
         if (type.toLowerCase() == "lifting" || type == "رفع") {
           params["type"] = "lifting";
         } else if (type.toLowerCase() == "sweeping" || type == "كنس") {
@@ -37,12 +36,11 @@ class SupervisorRepository {
       }
       return [];
     } catch (e) {
-      debugPrint("⚠️ Error fetching supervisor performance: $e");
       return [];
     }
   }
 
-  // تحويل بيانات المشرفين من JSON إلى List<SupervisorModel>
+  /// يجلب جميع المشرفين من الخادم.
   Future<List<SupervisorModel>> fetchAllSupervisors() async {
     final response = await _service.getAllSupervisors();
     return (response.data['data'] as List)
@@ -50,7 +48,7 @@ class SupervisorRepository {
         .toList();
   }
 
-  // تحويل المربعات إلى List<AreaDetailModel>
+  /// يجلب المناطق حسب النوع.
   Future<List<AreaDetailModel>> fetchAreas(String type) async {
     final response = await _service.getAreas(type);
     return (response.data['data'] as List)
@@ -58,26 +56,25 @@ class SupervisorRepository {
         .toList();
   }
 
-  // جلب الإحصائيات وتحويلها لموديل
+  /// يجلب إحصائيات المشرفين.
   Future<StatisticsModel> fetchStatistics() async {
     final response = await _service.getStatistics();
     return StatisticsModel.fromJson(response.data['data']);
   }
 
-  // تحديث البيانات والتأكد من نجاح العملية (باستخدام FormData كما يتطلب السيرفر)
+  /// يحدث بيانات مشرف ويعيد ما إذا نجح التحديث.
   Future<bool> updateSupervisorInfo(int id, Map<String, dynamic> data) async {
     try {
       final formData = FormData.fromMap(data);
       final response = await _service.updateSupervisor(id, formData);
       return response.data['status'] == 'success';
     } catch (e) {
-      debugPrint("❌ Error updating supervisor: $e");
       return false;
     }
   }
 
+  /// يضيف مشرفاً جديداً عبر API.
   Future<void> addSupervisor(SupervisorModel supervisor) async {
-    // نقوم بتحويل الموديل إلى Map (JSON) قبل الإرسال
     final response = await _service.addSupervisor(supervisor.toJson());
 
     if (response.statusCode != 200 && response.statusCode != 201) {
@@ -85,15 +82,12 @@ class SupervisorRepository {
     }
   }
 
-  // الخطوة الأولى: إنشاء/تسجيل دخول المشرف (عبر رابط login)
-  // نرجع خريطة تحتوي على الـ ID والتوكن الجديد
+  /// الخطوة 1: ينشئ حساب مستخدم على الخادم ويعيد المعرف والرمز المميز.
   Future<Map<String, dynamic>?> createAccountOnServer({
     required String idToken,
     required String name,
     required String role,
   }) async {
-    debugPrint("📤 [Step 1] Sending to login: Name: $name, Role: $role");
-
     final Map<String, dynamic> body = {
       "idToken": idToken,
       "name": name,
@@ -102,11 +96,9 @@ class SupervisorRepository {
 
     final response = await _service.createUser(body, extra: {'no-auth': true});
 
-    debugPrint("🌐 [Step 1] Login Response: ${response.data}");
-
     if (response.data['status'] == 'success') {
       final data = response.data['data'];
-      String? newToken = data?['token']; // استخراج التوكن الجديد (مثلاً 39|...)
+      String? newToken = data?['token'];
 
       if (data != null && data['user'] != null && data['user']['id'] != null) {
         return {
@@ -118,15 +110,15 @@ class SupervisorRepository {
     return null;
   }
 
-  // الخطوة الثانية: ربط المشرف بالمنطقة ونوع العمل (تتطلب توكن المشرف الجديد)
+  /// الخطوة 2: يحفظ بيانات المشرف (النوع، المنطقة) على الخادم.
   Future<bool> saveSupervisorDetails({
     required String type,
     required String areaId,
+    String? name,
     int? userId,
     String? firebaseToken,
     String? serverToken,
   }) async {
-    // التأكد من إرسال النوع بالإنجليزية كما يطلبه السيرفر
     String mappedType = type;
     if (type == "رفع") mappedType = "lifting";
     if (type == "كنس") mappedType = "sweeping";
@@ -134,20 +126,20 @@ class SupervisorRepository {
     final Map<String, dynamic> body = {
       "type": mappedType,
       "area_id": int.tryParse(areaId) ?? areaId,
-      "idToken": firebaseToken, // توكن فايربيس في الجسم
+      "idToken": firebaseToken,
     };
+    if (name != null) {
+      body["name"] = name;
+    }
 
     final formData = FormData.fromMap(body);
 
-    // توكن الباك إيند في العنوان
     final response = await _service.insertInformationUser(
       formData,
       headers:
           serverToken != null ? {'Authorization': 'Bearer $serverToken'} : null,
       extra: {'no-auth': true},
     );
-
-    debugPrint("🌐 [Step 2 - New Token Mode] Response: ${response.data}");
 
     return response.data['status'] == 'success';
   }

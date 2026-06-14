@@ -1,3 +1,4 @@
+/// يمثل بلاغاً بيئياً فردياً مع بيانات الموقع والحالة.
 class ReportModel {
   final int id;
   final double lat;
@@ -15,6 +16,7 @@ class ReportModel {
     required this.reporterName,
   });
 
+  /// ينشيء [ReportModel] من خريطة JSON مع قيم افتراضية احتياطية.
   factory ReportModel.fromJson(Map<String, dynamic> json) {
     return ReportModel(
       id: json['id'] ?? 0,
@@ -27,12 +29,14 @@ class ReportModel {
   }
 }
 
+/// يحمل بيانات الخريطة المجمّعة التي تحتوي على البلاغات والحاويات.
 class MapDataModel {
   final List<ReportModel> reports;
   final List<ContainerModel> containers;
 
   MapDataModel({required this.reports, required this.containers});
 
+  /// ينشيء [MapDataModel] من خريطة JSON، مع تحليل القوائم المتداخلة.
   factory MapDataModel.fromJson(Map<String, dynamic> json) {
     return MapDataModel(
       reports:
@@ -49,6 +53,7 @@ class MapDataModel {
   }
 }
 
+/// يمثل حاوية نفايات مع معلومات الموقع والنوع.
 class ContainerModel {
   final String id;
   final String locationName;
@@ -64,6 +69,7 @@ class ContainerModel {
     required this.type,
   });
 
+  /// ينشيء [ContainerModel] من خريطة JSON مع قيم افتراضية احتياطية.
   factory ContainerModel.fromJson(Map<String, dynamic> json) {
     return ContainerModel(
       id: json['id'].toString(),
@@ -75,6 +81,7 @@ class ContainerModel {
   }
 }
 
+/// يمثل منطقة مضلعة جغرافية مع اسم ونقاط إحداثيات.
 class AreaPolygon {
   final String name;
   final List<List<double>> points;

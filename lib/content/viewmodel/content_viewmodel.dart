@@ -6,18 +6,19 @@ import '../data/models/content_model.dart';
 class NewsTipsViewModel extends ChangeNotifier {
   final NewsRepository _repository;
 
+  /// ينشئ [NewsTipsViewModel] مع [NewsRepository] المحدد.
   NewsTipsViewModel(this._repository);
 
   List<ContentModel> contents = [];
   ContentStatsModel stats = ContentStatsModel.empty();
   bool isLoading = false;
 
+  /// يحمّل قائمة المحتوى والإحصائيات بالتوازي.
   Future<void> loadData() async {
     isLoading = true;
     notifyListeners();
 
     try {
-      // تشغيل جلب المحتوى وجلب الإحصائيات بالتوازي
       await Future.wait([
         _repository.getAllContent().then((value) {
           contents = value;
@@ -27,59 +28,59 @@ class NewsTipsViewModel extends ChangeNotifier {
         }),
       ]);
     } catch (e) {
-      debugPrint("❌ Error loading news/tips data: $e");
+      // التعامل مع الخطأ بصمت
     } finally {
       isLoading = false;
       notifyListeners();
     }
   }
 
-  // إضافة محتوى جديد مع دعم الصورة
+  /// يضيف محتوى جديداً مع إمكانية إضافة ملف صورة، ثم يحدّث البيانات.
   Future<void> addContent(ContentModel content, {dynamic imageFile}) async {
     try {
       await _repository.createContent(content, imageFile: imageFile);
       await loadData();
     } catch (e) {
-      debugPrint("Add Error: $e");
       rethrow;
     }
   }
 
+  /// يحذف عنصر محتوى بواسطة المعرف، ثم يحدّث البيانات.
   Future<void> deleteContent(int id) async {
     try {
       await _repository.deleteContent(id);
       await loadData();
-      debugPrint("Delete Success for ID: $id");
     } catch (e) {
-      debugPrint("Delete Error for ID $id: $e");
       rethrow;
     }
   }
 
-  // تعديل محتوى مع دعم تحديث الصورة
+  /// يعدّل عنصر محتوى موجود مع إمكانية إضافة صورة، ثم يحدّث البيانات.
   Future<void> editContent(ContentModel updated, {dynamic imageFile}) async {
     try {
       await _repository.updateContent(updated, imageFile: imageFile);
       await loadData();
-      debugPrint("Edit Success for ID: ${updated.id}");
     } catch (e) {
-      debugPrint("Edit Error: $e");
       rethrow;
     }
   }
 
-  // تبديل حالة النشر (Active/Inactive)
+  /// يبدّل حالة النشر لعنصر محتوى، ثم يحدّث البيانات.
   Future<void> togglePublish(int id, bool currentStatus) async {
     try {
       await _repository.toggleStatus(id, currentStatus);
       await loadData();
-      debugPrint("Toggle Success for ID: $id");
     } catch (e) {
-      debugPrint("Toggle Error for ID $id: $e");
+      // التعامل مع الخطأ بصمت
     }
   }
 
+  /// عدد النصائح من الإحصائيات.
   int get tipsCount => stats.tipsCount;
+
+  /// عدد الأخبار من الإحصائيات.
   int get newsCount => stats.newsCount;
+
+  /// العدد الإجمالي للمحتوى من الإحصائيات.
   int get totalCount => stats.totalContent;
 }

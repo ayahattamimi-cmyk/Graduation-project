@@ -3,29 +3,31 @@ import '../../core/network/api_service.dart';
 
 class ContainerService {
   final ApiService _apiService;
+
+  /// ينشئ [ContainerService] مع [ApiService] المحدد.
   ContainerService(this._apiService);
 
-  // جلب كل الحاويات (المفرزة كمربعات من السيرفر)
+  /// يجلب جميع الحاويات (مجمّعة كمناطق من الخادم).
   Future<Response> getAllContainers() async =>
       await _apiService.get('showAllContainers');
 
-  // إضافة حاوية جديدة باستخدام FormData
+  /// ينشئ حاوية جديدة باستخدام FormData.
   Future<Response> createContainer(Map<String, dynamic> data) async {
     final formData = FormData.fromMap(data);
     return await _apiService.post('createContainer', data: formData);
   }
 
-  // تحديث حاوية موجودة باستخدام FormData و POST حسب التوثيق
+  /// يحدّث حاوية موجودة باستخدام FormData.
   Future<Response> updateContainer(int id, Map<String, dynamic> data) async {
     final formData = FormData.fromMap(data);
     return await _apiService.post('updateContainer/$id', data: formData);
   }
 
-  // حذف حاوية
+  /// يحذف حاوية بواسطة [id].
   Future<Response> deleteContainer(int id) async =>
       await _apiService.delete('destroyContainer/$id');
 
-  // جلب الإحصائيات
+  /// يجلب إحصائيات الحاويات.
   Future<Response> getStatistics() async =>
       await _apiService.get('ContainersStatistics');
 }

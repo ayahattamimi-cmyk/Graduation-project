@@ -19,7 +19,6 @@ class _DropLocationsPageState extends State<DropLocationsPage> {
   @override
   void initState() {
     super.initState();
-    // طلب جلب البيانات من السيرفر فور فتح الصفحة
     Future.microtask(
       () => context.read<DropLocationsViewModel>().fetchContainersData(),
     );
@@ -29,7 +28,6 @@ class _DropLocationsPageState extends State<DropLocationsPage> {
   Widget build(BuildContext context) {
     final viewModel = context.watch<DropLocationsViewModel>();
 
-    // استماع للأخطاء وعرضها
     if (viewModel.errorMessage != null) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -42,16 +40,15 @@ class _DropLocationsPageState extends State<DropLocationsPage> {
     }
 
     return Scaffold(
-      backgroundColor: const Color(0xfff6f8fb), // متناسق مع لوحة التحكم
+      backgroundColor: const Color(0xfff6f8fb),
       body:
           viewModel.isLoading
               ? const Center(
                 child: CircularProgressIndicator(),
-              ) // عرض مؤشر تحميل
+              )
               : ListView(
                 padding: const EdgeInsets.all(16),
                 children: [
-                  /// زر الإضافة والقائمة العلوية
                   DropLocationsHeader(
                     onPageSelected: widget.onPageSelected,
                     onAdd: (data) {
@@ -70,7 +67,6 @@ class _DropLocationsPageState extends State<DropLocationsPage> {
                         startTime: data["start_time"],
                       );
 
-                      // استدعاء دالة الإضافة في الـ ViewModel
                       context.read<DropLocationsViewModel>().addContainer(
                         newContainer,
                       );
@@ -79,7 +75,6 @@ class _DropLocationsPageState extends State<DropLocationsPage> {
 
                   const SizedBox(height: 20),
 
-                  /// عرض المربعات الجغرافية/المناطق
                   if (viewModel.areas.isEmpty)
                     const Center(
                       child: Padding(
@@ -91,9 +86,7 @@ class _DropLocationsPageState extends State<DropLocationsPage> {
                     ...viewModel.areas.map(
                       (area) => AreaCard(
                         area: area,
-                        onPageSelected:
-                            widget
-                                .onPageSelected, // تم تمريرها هنا بأمان داخل الليست
+                        onPageSelected: widget.onPageSelected,
                       ),
                     ),
                 ],

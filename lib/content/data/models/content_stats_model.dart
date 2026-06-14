@@ -4,6 +4,7 @@ class ContentStatsModel {
   final int tipsCount;
   final int publishCount;
 
+  /// ينشئ [ContentStatsModel] يحمل إحصائيات المحتوى.
   ContentStatsModel({
     required this.totalContent,
     required this.newsCount,
@@ -11,7 +12,7 @@ class ContentStatsModel {
     required this.publishCount,
   });
 
-  // مصنع (Factory) لتحويل الـ JSON القادم من السيرفر إلى كائن فلاتر
+  /// ينشئ [ContentStatsModel] من خريطة JSON التي أرجعها API.
   factory ContentStatsModel.fromJson(Map<String, dynamic> json) {
     return ContentStatsModel(
       totalContent: _parseInt(json['total_content']),
@@ -28,7 +29,7 @@ class ContentStatsModel {
     return int.tryParse(value.toString()) ?? 0;
   }
 
-  // كائن افتراضي فارغ لاستخدامه قبل اكتمال التحميل من السيرفر
+  /// يعيد [ContentStatsModel] فارغاً بجميع القيم مضبوطة على صفر.
   factory ContentStatsModel.empty() {
     return ContentStatsModel(
       totalContent: 0,

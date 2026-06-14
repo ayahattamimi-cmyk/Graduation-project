@@ -6,6 +6,7 @@ import '../data/map_models.dart';
 import '../data/map_repository.dart';
 import '../utils/map_marker_helper.dart';
 
+/// ViewModel يدير حالة الخريطة والعلامات والمضلعات والمرشحات ووضع المنتقي.
 class WebMapViewModel extends ChangeNotifier {
   final WebMapRepository _repository;
   static const LatLng seiyunCenter = LatLng(15.9429, 48.7844);
@@ -17,7 +18,6 @@ class WebMapViewModel extends ChangeNotifier {
   bool _isLoading = false;
   bool get isLoading => _isLoading;
 
-  // Custom Icons
   BitmapDescriptor? reportIconPending;
   BitmapDescriptor? reportIconProcessing;
   BitmapDescriptor? reportIconSolved;
@@ -45,22 +45,20 @@ class WebMapViewModel extends ChangeNotifier {
   String? selectedZoneName;
   String? selectedZoneType;
 
-  // Focus Report ID (from assignment page)
   int? focusReportId;
 
-  // Picker Mode logic
   bool isPickerMode = false;
   LatLng? pickedLocation;
 
   WebMapViewModel(this._repository);
 
+  /// يهيئ الخريطة بتحميل الأيقونات والمناطق وبيانات الخريطة.
   Future<void> initWebMap({int? focusId}) async {
     _isLoading = true;
     focusReportId = focusId;
     notifyListeners();
 
     try {
-      // تم تعديل الأيقونات لتُحمل بالكامل أولاً كـ Canvas
       await _loadIcons();
       await _loadZones();
       await fetchMapData();
@@ -68,18 +66,17 @@ class WebMapViewModel extends ChangeNotifier {
       if (focusReportId != null) {
         focusOnReport(focusReportId!);
       }
-    } catch (e) {
-      debugPrint("Error initializing map: $e");
+    } catch (_) {
     } finally {
       _isLoading = false;
       notifyListeners();
     }
   }
 
+  /// يحمّل أيقونات العلامات المخصصة للبلاغات والحاويات.
   Future<void> _loadIcons() async {
-    const double iconSize = 45.0; // كبر الحجم قليلاً لتظهر الدبابيس بوضوح
+    const double iconSize = 45.0;
 
-    // 1. الحاويات: نريد لها خلفية دائرية بيضاء لتبرز (نضع hasBackground: true)
     containerIcon = await MapMarkerHelper.getMarkerIconFromIcon(
       Icons.delete_outline,
       const Color.fromARGB(255, 12, 100, 38),
@@ -87,7 +84,6 @@ class WebMapViewModel extends ChangeNotifier {
       hasBackground: true,
     );
 
-    // 2. البلاغات: دبابيس شفافة وبدون أي خلفية بيضاء (نتركها false الافتراضية)
     reportIconPending = await MapMarkerHelper.getMarkerIconFromIcon(
       Icons.location_on,
       Colors.orange,
@@ -113,6 +109,7 @@ class WebMapViewModel extends ChangeNotifier {
     );
   }
 
+  /// يحمّل مضلعات المناطق من أصول GeoJSON.
   Future<void> _loadZones() async {
     _polygons.clear();
     await _loadGeoJson('assets/json/boundary_sayun.json', isBoundary: true);
@@ -120,6 +117,7 @@ class WebMapViewModel extends ChangeNotifier {
     await _loadGeoJson('assets/json/sweep_zones.json', zoneType: "مربع كنس");
   }
 
+  /// يجلب بيانات الخريطة (البلاغات والحاويات) من المستودع.
   Future<void> fetchMapData() async {
     _isLoading = true;
     notifyListeners();
@@ -127,14 +125,14 @@ class WebMapViewModel extends ChangeNotifier {
     try {
       _mapData = await _repository.getMapData();
       _applyFiltersAndRefresh();
-    } catch (e) {
-      debugPrint("Error fetching map data: $e");
+    } catch (_) {
     } finally {
       _isLoading = false;
       notifyListeners();
     }
   }
 
+  /// يطبق إعدادات التصفية الحالية ويعيد بناء مجموعة العلامات.
   void _applyFiltersAndRefresh() {
     _markers.clear();
     if (_mapData == null) return;
@@ -146,11 +144,9 @@ class WebMapViewModel extends ChangeNotifier {
         if (focusReportId != null && report.id != focusReportId) continue;
         if (report.lat == 0.0 || report.lng == 0.0) continue;
 
-        // تنظيف الفراغات لضمان دقة الفلترة من الـ API
         final status = report.status.trim();
         BitmapDescriptor icon;
 
-        // اختيار الأيقونة بناءً على النص المنظف
         if (status.contains("تم الحل") || status.contains("إنجاز")) {
           icon =
               reportIconSolved ??
@@ -219,6 +215,7 @@ class WebMapViewModel extends ChangeNotifier {
     }
   }
 
+  /// يحوّك الكاميرا للتركيز على علامة بلاغ محددة.
   void focusOnReport(int id) {
     if (_mapData == null) return;
     try {
@@ -229,37 +226,42 @@ class WebMapViewModel extends ChangeNotifier {
         ),
       );
       mapController?.showMarkerInfoWindow(MarkerId("report_${report.id}"));
-    } catch (e) {
-      debugPrint("Report with id $id not found for focusing.");
+    } catch (_) {
     }
   }
 
+  /// يبدّل إظهار علامات البلاغات.
   void toggleReports() {
     _showReports = !_showReports;
     _applyFiltersAndRefresh();
     notifyListeners();
   }
 
+  /// يبدّل إظهار علامات الحاويات.
   void toggleContainers() {
     _showContainers = !_showContainers;
     _applyFiltersAndRefresh();
     notifyListeners();
   }
 
+  /// يبدّل إظهار مضلعات المناطق.
   void toggleZones() {
     _showZones = !_showZones;
     notifyListeners();
   }
 
+  /// يبدّل بين عرض الخريطة بالقمر الصناعي والعرض العادي.
   void toggleSatellite() {
     _isSatellite = !_isSatellite;
     notifyListeners();
   }
 
+  /// يخزّن مرجع متحكّم الخريطة عند إنشاء الخريطة.
   void onMapCreated(GoogleMapController controller) {
     mapController = controller;
   }
 
+  /// يحرّك الكاميرا إلى موضع المركز الافتراضي.
   void moveToCenter() {
     mapController?.animateCamera(
       CameraUpdate.newCameraPosition(
@@ -268,14 +270,17 @@ class WebMapViewModel extends ChangeNotifier {
     );
   }
 
+  /// يكبّر الخريطة بمستوى واحد.
   void zoomIn() {
     mapController?.animateCamera(CameraUpdate.zoomIn());
   }
 
+  /// يصفّر الخريطة بمستوى واحد.
   void zoomOut() {
     mapController?.animateCamera(CameraUpdate.zoomOut());
   }
 
+  /// يحمّل ملف GeoJSON ويحلل مضلعاته في مجموعة المضلعات.
   Future<void> _loadGeoJson(
     String path, {
     bool isBoundary = false,
@@ -325,11 +330,11 @@ class WebMapViewModel extends ChangeNotifier {
           );
         }
       }
-    } catch (e) {
-      debugPrint('Error loading GeoJSON $path: $e');
+    } catch (_) {
     }
   }
 
+  /// يُرجع لوناً فريداً محدداً بناءً على اسم المنطقة.
   Color _getUniqueColor(String name) {
     final List<Color> palette = [
       Colors.blue,
@@ -346,12 +351,14 @@ class WebMapViewModel extends ChangeNotifier {
     return palette[name.hashCode.abs() % palette.length];
   }
 
+  /// يمسح المنطقة المحددة حالياً.
   void clearSelectedZone() {
     selectedZoneName = null;
     selectedZoneType = null;
     notifyListeners();
   }
 
+  /// ينشّط وضع المنتقي لاختيار موقع على الخريطة.
   void enablePickerMode() async {
     isPickerMode = true;
     pickedLocation = null;
@@ -360,6 +367,7 @@ class WebMapViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// يلغي تنشيط وضع المنتقي ويمسح الموقع المختار.
   void disablePickerMode() async {
     isPickerMode = false;
     pickedLocation = null;
@@ -368,6 +376,7 @@ class WebMapViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// يحدّد الموقع المختار ويحدّث العلامات.
   void setPickedLocation(LatLng location) {
     if (!isPickerMode) return;
     pickedLocation = location;

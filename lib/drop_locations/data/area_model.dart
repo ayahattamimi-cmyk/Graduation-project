@@ -1,5 +1,5 @@
-///   يمثّل منطقة جغرافية واحدة تحتوي على قائمة بنود الجمع ([ContainerModel]).
-///   يُستخدم في صفحة مواقع التجميع.
+/// يمثل منطقة جغرافية واحدة تحتوي على قائمة من حاويات التجميع ([ContainerModel]).
+/// يُستخدم في صفحة مواقع الرفع.
 import 'container_model.dart';
 
 class AreaModel {
@@ -7,18 +7,19 @@ class AreaModel {
   final String areaDetails;
   final List<ContainerModel> containers;
 
+  /// ينشئ [AreaModel] بالمعرف وتفاصيل المنطقة والحاويات المحددة.
   AreaModel({
     required this.id,
     required this.areaDetails,
     required this.containers,
   });
 
+  /// ينشئ [AreaModel] من خريطة JSON.
+  /// يحاول حل معرف المنطقة من حقل 'id' أولاً؛ إذا كان مفقوداً،
+  /// يتراجع إلى 'area_id' من أول حاوية في القائمة.
   factory AreaModel.fromJson(Map<String, dynamic> json) {
     final containersList = (json['containers'] as List?) ?? [];
 
-    // محاولة ذكية لإيجاد ID المنطقة:
-    // 1. نبحث عنه في الحقل المباشر 'id'
-    // 2. إذا لم يوجد، نبحث عنه داخل أول حاوية في المنطقة 'area_id'
     int foundId = json['id'] ?? 0;
     if (foundId == 0 && containersList.isNotEmpty) {
       foundId = containersList.first['area_id'] ?? 0;

@@ -47,7 +47,6 @@ class _AreaCardState extends State<AreaCard> {
       ),
       child: Column(
         children: [
-          // رأس الكارد (Header)
           InkWell(
             onTap: () => setState(() => expanded = !expanded),
             borderRadius: BorderRadius.circular(16),
@@ -55,7 +54,6 @@ class _AreaCardState extends State<AreaCard> {
               padding: const EdgeInsets.all(16.0),
               child: Row(
                 children: [
-                  // أيقونة المنطقة مع خلفية فاتحة
                   Container(
                     padding: const EdgeInsets.all(10),
                     decoration: BoxDecoration(
@@ -70,7 +68,6 @@ class _AreaCardState extends State<AreaCard> {
                   ),
                   const SizedBox(width: 16),
 
-                  // اسم المنطقة
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -95,7 +92,6 @@ class _AreaCardState extends State<AreaCard> {
                     ),
                   ),
 
-                  // أيقونة السهم
                   Icon(
                     expanded
                         ? Icons.expand_less_rounded
@@ -108,7 +104,6 @@ class _AreaCardState extends State<AreaCard> {
             ),
           ),
 
-          // المحتوى عند التوسيع
           if (expanded)
             Padding(
               padding: const EdgeInsets.only(bottom: 16),

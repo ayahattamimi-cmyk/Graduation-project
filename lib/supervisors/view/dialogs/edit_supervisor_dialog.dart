@@ -20,23 +20,21 @@ class EditSupervisorDialog extends StatefulWidget {
 class _EditSupervisorDialogState extends State<EditSupervisorDialog> {
   late TextEditingController nameController;
   int? selectedAreaId;
+  late String workType;
 
   @override
   void initState() {
     super.initState();
     final s = widget.supervisor;
     nameController = TextEditingController(text: s.name);
+    workType = s.type;
 
-    // محاولة استخراج المعرف الحالي للمربع من البيانات
-    // بما أن الـ supervisor model قد لا يحتوي على الـ area_id مباشرة في الـ root
-    // سنحاول استخراجه من الـ area_details إذا وجد
     if (s.areaDetails.isNotEmpty) {
       selectedAreaId = s.areaDetails[0].id;
     }
 
-    // تحميل المربعات المتاحة بناءً على نوع عمل المشرف الحالي
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<SupervisorViewModel>().loadAreas(s.type);
+      context.read<SupervisorViewModel>().loadAreas(workType);
     });
   }
 
@@ -65,7 +63,7 @@ class _EditSupervisorDialogState extends State<EditSupervisorDialog> {
             children: [
               const Text(
                 "اسم المشرف",
-                style: TextStyle(fontSize: 13, color: Colors.grey),
+                style: TextStyle(fontSize: 13, color: Color(0xFF616161)),
               ),
               const SizedBox(height: 8),
               TextField(
@@ -80,21 +78,18 @@ class _EditSupervisorDialogState extends State<EditSupervisorDialog> {
                   ),
                 ),
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: 20),
 
               const Text(
-                "تعيين المربع الجغرافي",
-                style: TextStyle(fontSize: 13, color: Colors.grey),
+                "نوع العمل",
+                style: TextStyle(fontSize: 13, color: Color(0xFF616161)),
               ),
               const SizedBox(height: 8),
 
-              DropdownButtonFormField<int>(
-                value:
-                    vm.areas.any((a) => a.id == selectedAreaId)
-                        ? selectedAreaId
-                        : null,
+              DropdownButtonFormField<String>(
+                value: workType,
                 decoration: InputDecoration(
-                  prefixIcon: const Icon(Icons.grid_view, size: 20),
+                  prefixIcon: const Icon(Icons.work_outline, size: 20),
                   filled: true,
                   fillColor: Colors.grey.shade50,
                   border: OutlineInputBorder(
@@ -102,31 +97,63 @@ class _EditSupervisorDialogState extends State<EditSupervisorDialog> {
                     borderSide: BorderSide(color: Colors.grey.shade300),
                   ),
                 ),
-                items:
-                    vm.areas.map((area) {
-                      return DropdownMenuItem<int>(
-                        value: area.id,
-                        child: Text(
-                          area.label ?? area.name ?? "مربع ${area.id}",
-                        ),
-                      );
-                    }).toList(),
+                items: const [
+                  DropdownMenuItem(value: "sweeping", child: Text("كنس")),
+                  DropdownMenuItem(value: "lifting", child: Text("رفع")),
+                ],
                 onChanged: (value) {
                   setState(() {
-                    selectedAreaId = value;
+                    workType = value!;
+                    selectedAreaId = null;
                   });
+                  context.read<SupervisorViewModel>().loadAreas(workType);
                 },
-                hint: const Text("اختر المربع"),
               ),
-              const SizedBox(height: 10),
-              Text(
-                "نوع العمل الحالي: ${widget.supervisor.type == 'sweeping' ? 'كنس' : 'رفع'}",
-                style: TextStyle(
-                  fontSize: 11,
-                  color: Colors.blue.shade700,
-                  fontWeight: FontWeight.w500,
+
+              const SizedBox(height: 20),
+
+              const Text(
+                "تعيين المربع الجغرافي",
+                style: TextStyle(fontSize: 13, color: Color(0xFF616161)),
+              ),
+              const SizedBox(height: 8),
+
+              if (vm.isLoadingAreas)
+                const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 16),
+                  child: Center(child: CircularProgressIndicator()),
+                )
+              else
+                DropdownButtonFormField<int>(
+                  value: selectedAreaId != null &&
+                          vm.areas.any((a) => a.id == selectedAreaId)
+                      ? selectedAreaId
+                      : null,
+                  decoration: InputDecoration(
+                    prefixIcon: const Icon(Icons.grid_view, size: 20),
+                    filled: true,
+                    fillColor: Colors.grey.shade50,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide(color: Colors.grey.shade300),
+                    ),
+                  ),
+                  items:
+                      vm.areas.map((area) {
+                        return DropdownMenuItem<int>(
+                          value: area.id,
+                          child: Text(
+                            area.label ?? area.name ?? "مربع ${area.id}",
+                          ),
+                        );
+                      }).toList(),
+                  onChanged: (value) {
+                    setState(() {
+                      selectedAreaId = value;
+                    });
+                  },
+                  hint: const Text("اختر المربع"),
                 ),
-              ),
             ],
           ),
         ),
@@ -135,7 +162,7 @@ class _EditSupervisorDialogState extends State<EditSupervisorDialog> {
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(context),
-          child: const Text("إلغاء", style: TextStyle(color: Colors.grey)),
+          child: const Text("إلغاء", style: TextStyle(color: Color(0xFF616161))),
         ),
         const SizedBox(width: 8),
         ElevatedButton(
@@ -164,6 +191,7 @@ class _EditSupervisorDialogState extends State<EditSupervisorDialog> {
                     final Map<String, dynamic> data = {
                       "name": nameController.text,
                       "area_id": selectedAreaId,
+                      "type": workType,
                     };
 
                     bool success = await vm.updateSupervisor(
@@ -201,6 +229,7 @@ class _EditSupervisorDialogState extends State<EditSupervisorDialog> {
     );
   }
 
+  /// يعرض شريط إشعارات بالرسالة واللون المحددين.
   void _showSnack(String msg, Color color) {
     ScaffoldMessenger.of(
       context,

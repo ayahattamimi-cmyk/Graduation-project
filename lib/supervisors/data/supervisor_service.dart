@@ -5,41 +5,42 @@ class SupervisorService {
 
   SupervisorService(this._apiService);
 
-  // جلب جميع المشرفين
+  /// يجلب جميع المشرفين.
   Future<dynamic> getAllSupervisors() async {
     return await _apiService.get('showSupervisors');
   }
 
-  // جلب المربعات حسب النوع (كنس أو رفع)
+  /// يجلب المناطق حسب النوع (رفع أو كنس).
   Future<dynamic> getAreas(String type) async {
     return await _apiService.get('showAreas/$type');
   }
 
-  // تحديث بيانات مشرف معين
+  /// يحدث بيانات مشرف حسب المعرف.
   Future<dynamic> updateSupervisor(int id, dynamic data) async {
     return await _apiService.post('updateSupervisors/$id', data: data);
   }
 
-  // جلب الإحصائيات (SupervisorsStatistics)
+  /// يجلب إحصائيات المشرفين.
   Future<dynamic> getStatistics() async {
     return await _apiService.get('SupervisorsStatistics');
   }
 
-  // جلب مشرفي الرفع فقط
+  /// يجلب مشرفي الرفع.
   Future<dynamic> getLiftingSupervisors() async {
     return await _apiService.get('getLiftingSupervisors');
   }
 
-  // جلب مشرفي الكنس فقط
+  /// يجلب مشرفي الكنس.
   Future<dynamic> getSweepingSupervisors() async {
     return await _apiService.get('getSweepingSupervisors');
   }
 
+  /// يضيف مشرفاً جديداً.
   Future<dynamic> addSupervisor(Map<String, dynamic> data) async {
     return await _apiService.post('addSupervisors', data: data);
   }
 
-  // الخطوة الأولى: إنشاء مستخدم جديد وربطه بالفايربيس (تم تعديله ليكون عبر رابط login)
+  /// الخطوة 1: ينشئ مستخدماً عبر نقطة نهاية تسجيل الدخول.
   Future<dynamic> createUser(
     dynamic data, {
     Map<String, dynamic>? headers,
@@ -53,7 +54,7 @@ class SupervisorService {
     );
   }
 
-  // الخطوة الثانية: إكمال بيانات المشرف (المنطقة والنوع)
+  /// الخطوة 2: يُدرج معلومات المشرف (المنطقة والنوع).
   Future<dynamic> insertInformationUser(
     dynamic data, {
     Map<String, dynamic>? headers,
@@ -67,6 +68,7 @@ class SupervisorService {
     );
   }
 
+  /// يجلب تقرير أداء المشرف.
   Future<dynamic> getSupervisorPerformanceReport(dynamic data) async {
     return await _apiService.post('supervisor-report', data: data);
   }

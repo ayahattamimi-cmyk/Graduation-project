@@ -19,6 +19,7 @@ class _AddContentDialogState extends State<AddContentDialog> {
   final TextEditingController titleController = TextEditingController();
   final TextEditingController contentController = TextEditingController();
 
+  /// يختار صورة من معرض الجهاز.
   Future<void> pickImage() async {
     final picker = ImagePicker();
     final picked = await picker.pickImage(source: ImageSource.gallery);
@@ -50,11 +51,10 @@ class _AddContentDialogState extends State<AddContentDialog> {
             const SizedBox(height: 6),
             const Text(
               "نشر محتوى توعوي للمواطنين",
-              style: TextStyle(color: Colors.grey),
+              style: TextStyle(color: Color(0xFF616161)),
             ),
             const SizedBox(height: 25),
 
-            /// نوع المحتوى
             DropdownButtonFormField<ContentType>(
               value: selectedType,
               decoration: InputDecoration(
@@ -81,7 +81,6 @@ class _AddContentDialogState extends State<AddContentDialog> {
 
             const SizedBox(height: 18),
 
-            /// حقل العنوان
             TextField(
               controller: titleController,
               decoration: InputDecoration(

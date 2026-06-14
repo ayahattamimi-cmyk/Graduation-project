@@ -6,11 +6,12 @@ class LoginViewModel extends ChangeNotifier {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final AuthService _authService;
 
+  /// ينشئ [LoginViewModel] مع [AuthService] المحدد.
   LoginViewModel(this._authService);
 
   bool isLoading = false;
 
-  // --- تسجيل الدخول ---
+  /// يسجّل الدخول بـ [email] و [password] عبر Firebase، ثم يُوثّق مع خلفية Laravel.
   Future<User?> signIn(String email, String password) async {
     try {
       isLoading = true;
@@ -37,7 +38,7 @@ class LoginViewModel extends ChangeNotifier {
     }
   }
 
-  // --- إنشاء حساب جديد (نحتاجه لإضافة المشرفين) ---
+  /// ينشئ مستخدم Firebase جديد بـ [email] و [password]، ثم يُوثّق مع Laravel.
   Future<User?> signUp(String email, String password) async {
     try {
       isLoading = true;
@@ -49,13 +50,11 @@ class LoginViewModel extends ChangeNotifier {
       );
 
       if (result.user != null) {
-        // بعد إنشاء حساب فايربيس، نكلم لارفل ليثبته عنده ويعطينا توكن
         bool success = await _authService.loginToLaravel();
         if (success) return result.user;
       }
       return null;
     } catch (e) {
-      debugPrint("❌ SIGN UP ERROR: $e");
       rethrow;
     } finally {
       isLoading = false;
@@ -63,7 +62,7 @@ class LoginViewModel extends ChangeNotifier {
     }
   }
 
-  // --- تسجيل الخروج ---
+  /// يسجّل خروج المستخدم الحالي من Firebase.
   Future<void> signOut() async {
     await _auth.signOut();
   }

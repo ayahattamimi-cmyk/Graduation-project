@@ -1,17 +1,3 @@
-/// ============================================================
-/// 📁 content_service.dart — طبقة الشبكة (Network Layer)
-/// ============================================================
-/// المسؤولية:
-///   يتعامل مباشرةً مع الـ API لتنفيذ عمليات المحتوى البيئي
-///   (الأخبار والنصائح). يستخدم مكتبة Dio لإرسال الطلبات.
-///
-/// العمليات المدعومة:
-///   - جلب قائمة المحتوى (GET)
-///   - إضافة محتوى جديد (POST - FormData)
-///   - تعديل محتوى (POST - FormData)
-///   - تفعيل/تعطيل محتوى (POST)
-///   - جلب إحصائيات المحتوى
-/// ============================================================
 import 'dart:convert';
 import 'dart:typed_data';
 import 'package:dio/dio.dart';
@@ -23,31 +9,28 @@ import 'models/content_model.dart';
 class ContentService {
   final ApiService _apiService;
 
+  /// ينشئ [ContentService] مع [ApiService] المحدد.
   ContentService(this._apiService);
 
-  /// جلب الأخبار والنصائح
+  /// يجلب قائمة عناصر المحتوى (أخبار/نصائح) من API.
   Future<List<ContentModel>> fetchContents() async {
     try {
       final response = await _apiService.get('ShowTip');
-      debugPrint(
-        "📚 [CountStatistics.fetchContents] Status: ${response.statusCode}, Data: ${response.data}",
-      );
 
       if (response.statusCode == 200 && response.data != null) {
         final List data = response.data['data'] ?? [];
         return data.map((json) => ContentModel.fromJson(json)).toList();
       }
     } catch (e) {
-      debugPrint("❌ [ContentService.fetchContents] Error: $e");
+      // إرجاع قائمة فارغة بصمت عند الفشل
     }
     return [];
   }
 
-  /// إضافة محتوى جديد (مع دعم الصور)
+  /// يضيف محتوى جديداً مع دعم اختياري للصورة.
   Future<void> addContent(ContentModel content, {dynamic imageFile}) async {
     final Map<String, dynamic> data = content.toJson();
 
-    // التعامل مع صورة Base64 إذا وجدت
     if (data['image'] != null &&
         data['image'] is String &&
         (data['image'] as String).length > 200) {
@@ -60,23 +43,22 @@ class ContentService {
     }
 
     if (imageFile != null) {
-      data['image'] = imageFile; // يفترض أن يكون MultipartFile
+      data['image'] = imageFile;
     }
 
     final formData = FormData.fromMap(data);
     await _apiService.post('addNewTip', data: formData);
   }
 
-  /// حذف محتوى
+  /// يحذف عنصر محتوى بواسطة معرفه.
   Future<void> deleteContent(int id) async {
     await _apiService.delete('DestroyTip/$id');
   }
 
-  /// تحديث محتوى موجود
+  /// يحدّث عنصر محتوى موجود، مع إمكانية إضافة صورة جديدة.
   Future<void> updateContent(ContentModel content, {dynamic imageFile}) async {
     final Map<String, dynamic> data = content.toJson();
 
-    // التعامل مع صورة Base64 إذا وجدت
     if (data['image'] != null &&
         data['image'] is String &&
         (data['image'] as String).length > 200) {
@@ -96,19 +78,16 @@ class ContentService {
     await _apiService.post('UpdateTip/${content.id}', data: formData);
   }
 
-  /// تغيير حالة النشر (نشر / إلغاء نشر)
+  /// يبدّل حالة النشر/إلغاء النشر لعنصر محتوى.
   Future<void> toggleStatus(int id, bool currentStatus) async {
     final formData = FormData.fromMap({'is_active': currentStatus ? 0 : 1});
     await _apiService.patch('TipStatusPublish/$id', data: formData);
   }
 
-  /// جلب الإحصائيات
+  /// يجلب إحصائيات المحتوى من API.
   Future<ContentStatsModel> fetchStats() async {
     try {
       final response = await _apiService.get('EnvironmentalStatistics');
-      debugPrint(
-        "📊 [ContentService.fetchStats] Status: ${response.statusCode}, Data: ${response.data}",
-      );
 
       if (response.statusCode == 200 && response.data != null) {
         final data = response.data;
@@ -118,7 +97,7 @@ class ContentService {
         }
       }
     } catch (e) {
-      debugPrint("❌ [ContentService.fetchStats] Error: $e");
+      // إرجاع إحصائيات فارغة عند الفشل
     }
 
     return ContentStatsModel.empty();

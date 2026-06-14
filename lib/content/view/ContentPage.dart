@@ -24,6 +24,7 @@ class _ContentPageState extends State<ContentPage> {
     });
   }
 
+  /// يعرض رسالة snackbar للمستخدم.
   void _showMessage(String msg) {
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
@@ -45,11 +46,10 @@ class _ContentPageState extends State<ContentPage> {
           const SizedBox(height: 8),
           const Text(
             'نشر محتوى توعوي للمواطنين عبر تجميع المحتوى في أقسام واضحة',
-            style: TextStyle(color: Colors.grey),
+            style: TextStyle(color: Color(0xFF616161)),
           ),
           const SizedBox(height: 24),
 
-          /// زر الإضافة
           ElevatedButton.icon(
             onPressed: () async {
               final result = await showDialog<ContentModel>(
@@ -78,7 +78,6 @@ class _ContentPageState extends State<ContentPage> {
 
           const SizedBox(height: 30),
 
-          /// بطاقات الإحصائيات
           Row(
             children: [
               Expanded(
@@ -120,7 +119,6 @@ class _ContentPageState extends State<ContentPage> {
           else if (vm.contents.isEmpty)
             const Center(child: Text("لا يوجد محتوى حالياً"))
           else ...[
-            // قسم الأخبار
             _buildContentSection(
               title: " الأخبار  ",
               items:
@@ -131,7 +129,6 @@ class _ContentPageState extends State<ContentPage> {
 
             const SizedBox(height: 20),
 
-            // قسم النصائح
             _buildContentSection(
               title: " النصائح والإرشادات التوعوية",
               items:
@@ -145,6 +142,7 @@ class _ContentPageState extends State<ContentPage> {
     );
   }
 
+  /// يبني قسماً معنوناً من بطاقات المحتوى مرشّحاً حسب النوع.
   Widget _buildContentSection({
     required String title,
     required List<ContentModel> items,

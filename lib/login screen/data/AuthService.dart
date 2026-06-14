@@ -6,17 +6,19 @@ import 'package:web2/core/services/shared_pref.dart';
 
 class AuthService {
   final ApiService _apiService;
+
+  /// ينشئ [AuthService] مع [ApiService] المحدد.
   AuthService(this._apiService);
 
+  /// يُوثّق مع خلفية Laravel باستخدام رمز مستخدم Firebase الحالي.
+  /// يعيد true عند النجاح.
   Future<bool> loginToLaravel() async {
     try {
-      // 1. الحصول على التوكن من فايربيس
       User? user = FirebaseAuth.instance.currentUser;
       String? firebaseToken = await user?.getIdToken();
 
       if (firebaseToken == null) return false;
 
-      // 2. إرسال التوكن إلى لارفل باستخدام FormData
       FormData formData = FormData.fromMap({'idToken': firebaseToken});
 
       final response = await _apiService.post('login', data: formData);
@@ -29,7 +31,6 @@ class AuthService {
 
       return false;
     } catch (e) {
-      debugPrint("❌ Login Error: $e");
       return false;
     }
   }

@@ -1,7 +1,3 @@
-///   يمثّل كائن المحتوى البيئي الواحد (خبر أو نصيحة) القادم
-///   من الـ API. يحتوي على دالة [fromJson] لتحويل JSON إلى
-///   كائن Dart، ودالة [toFormData] لإرسال البيانات عبر FormData.
-///
 enum ContentType { news, tips }
 
 class ContentModel {
@@ -15,6 +11,7 @@ class ContentModel {
   final String? adminName;
   final bool isPublished;
 
+  /// ينشئ [ContentModel] يمثل عنصر خبر أو نصيحة.
   ContentModel({
     this.id,
     required this.title,
@@ -27,6 +24,7 @@ class ContentModel {
     this.isPublished = true,
   });
 
+  /// يعيد نسخة من هذا النموذج مع استبدال الحقول المحددة.
   ContentModel copyWith({
     int? id,
     String? title,
@@ -51,6 +49,7 @@ class ContentModel {
     );
   }
 
+  /// ينشئ [ContentModel] من خريطة JSON التي أرجعها API.
   factory ContentModel.fromJson(Map<String, dynamic> json) {
     return ContentModel(
       id: json['id'],
@@ -91,6 +90,7 @@ class ContentModel {
     return "https://images.weserv.nl/?url=$finalUrl";
   }
 
+  /// يحوّل هذا النموذج إلى خريطة JSON لاستخدامها في طلبات API.
   Map<String, dynamic> toJson() {
     return {
       'title': title,

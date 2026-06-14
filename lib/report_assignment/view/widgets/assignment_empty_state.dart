@@ -42,7 +42,7 @@ class AssignmentEmptyState extends StatelessWidget {
             const Text(
               "ميزة التوجيه التلقائي للمشرفين تتطلب تحديد بلاغ معين أولاً لدراسة موقعه الجغرافي واقتراح المشرف الأنسب.",
               textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 14, color: Colors.grey, height: 1.5),
+              style: TextStyle(fontSize: 14, color: Color(0xFF616161), height: 1.5),
             ),
             const SizedBox(height: 32),
             const Text(

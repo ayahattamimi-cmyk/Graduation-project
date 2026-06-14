@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+/// بطاقة لوحة سفلية تعرض معلومات موجزة عن البلاغ مع زر تنقل.
 class MapInfoBottomSheet extends StatelessWidget {
   final String title;
   final String status;
@@ -41,15 +42,11 @@ class MapInfoBottomSheet extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // الرأس: الحالة وزر الإغلاق
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 10,
-                  vertical: 4,
-                ),
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(
                   color:
                       isUrgent
@@ -74,8 +71,6 @@ class MapInfoBottomSheet extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 10),
-
-          // عنوان البلاغ
           Text(
             title,
             style: const TextStyle(
@@ -88,8 +83,6 @@ class MapInfoBottomSheet extends StatelessWidget {
           const SizedBox(height: 12),
           const Divider(),
           const SizedBox(height: 8),
-
-          // تفاصيل إضافية (المبلغ والتاريخ)
           Row(
             children: [
               const Icon(Icons.person_outline, size: 16, color: Colors.grey),
@@ -99,7 +92,7 @@ class MapInfoBottomSheet extends StatelessWidget {
                 style: const TextStyle(
                   fontFamily: 'Cairo',
                   fontSize: 13,
-                  color: Colors.black54,
+                  color: const Color(0xFF616161),
                 ),
               ),
             ],
@@ -114,21 +107,17 @@ class MapInfoBottomSheet extends StatelessWidget {
                 style: const TextStyle(
                   fontFamily: 'Cairo',
                   fontSize: 13,
-                  color: Colors.black54,
+                  color: const Color(0xFF616161),
                 ),
               ),
             ],
           ),
           const SizedBox(height: 16),
-
-          // زر التوجيه الكامل لمعاينة تفاصيل البلاغ
           SizedBox(
             width: double.infinity,
             child: ElevatedButton(
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(
-                  0xFF13B97D,
-                ), // اللون الأخضر الأساسي المتناسق مع الهوية
+                backgroundColor: const Color(0xFF13B97D),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8),
                 ),

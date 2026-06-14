@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+/// بطاقة إحصائيات تعرض مقياساً واحداً مع أيقونة ولون.
 class NotificationStat extends StatelessWidget {
   final String title;
   final String value;
@@ -40,7 +41,7 @@ class NotificationStat extends StatelessWidget {
               children: [
                 Text(
                   title,
-                  style: const TextStyle(color: Colors.black54, fontSize: 14),
+                  style: const TextStyle(color: Color(0xFF616161), fontSize: 14),
                 ),
                 const SizedBox(height: 4),
                 Text(

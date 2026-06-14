@@ -19,6 +19,7 @@ class Sidebar extends StatelessWidget {
   final AppPage currentPage;
   final Function(AppPage) onPageSelected;
 
+  /// ينشئ [Sidebar] مع الصفحة المحددة حالياً ودالة استدعاء لتغيير الصفحة.
   const Sidebar({
     super.key,
     required this.currentPage,
@@ -27,7 +28,6 @@ class Sidebar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // الاستماع لبيانات الإشعارات لعرض العداد
     final notificationVM = context.watch<NotificationsViewModel>();
 
     return Container(
@@ -75,7 +75,7 @@ class Sidebar extends StatelessWidget {
                               'الإدارة المركزية',
                               style: TextStyle(
                                 fontSize: 11,
-                                color: Colors.grey.shade500,
+                                color: const Color(0xFF616161),
                                 fontWeight: FontWeight.w500,
                               ),
                             ),
@@ -91,8 +91,7 @@ class Sidebar extends StatelessWidget {
                       'الإشعارات',
                       Icons.notifications,
                       AppPage.notifications,
-                      badgeCount:
-                          notificationVM.unreadCount, // تمرير عدد الإشعارات
+                      badgeCount: notificationVM.unreadCount,
                     ),
 
                     _item(
@@ -131,12 +130,13 @@ class Sidebar extends StatelessWidget {
     );
   }
 
+  /// يبني عنصر تنقل جانبي واحد مع شارة اختيارية وتنسيق تسجيل الخروج.
   Widget _item(
     String title,
     IconData icon,
     AppPage page, {
     bool isLogout = false,
-    int badgeCount = 0, // إضافة متغير العداد
+    int badgeCount = 0,
   }) {
     final bool active = !isLogout && currentPage == page;
 
@@ -219,7 +219,6 @@ class Sidebar extends StatelessWidget {
                       ),
                     ),
                   ),
-                  // رص العارضة (Badge) إذا كان هناك إشعارات
                   if (badgeCount > 0 && !isLogout)
                     Container(
                       padding: const EdgeInsets.symmetric(

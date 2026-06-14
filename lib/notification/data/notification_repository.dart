@@ -1,17 +1,15 @@
-///   يعمل كوسيط بين [NotificationService] والـ ViewModel.
-///   يتولى تحويل بيانات الإشعارات وتفاصيل البلاغات إلى
-///   نماذج Dart قابلة للعرض مع معالجة آمنة للأخطاء.
-
-import 'package:flutter/foundation.dart';
 import 'package:web2/notification/data/models/notification_model.dart';
 import 'package:web2/notification/data/models/report_details_model.dart';
 import 'package:web2/notification/data/models/statistics_model.dart';
 import 'notification_service.dart';
 
+/// مستودع يربط بين [NotificationService] و ViewModel،
+/// ويحوّل استجابات API الخام إلى نماذج Dart مع معالجة الأخطاء.
 class NotificationRepository {
   final NotificationService _service;
   NotificationRepository(this._service);
 
+  /// يجلب ويحلل الإشعارات من API، مع استخراج عدد الإشعارات غير المقروءة.
   Future<Map<String, dynamic>> fetchNotifications() async {
     final response = await _service.getNotifications();
 
@@ -41,35 +39,30 @@ class NotificationRepository {
         if (element is Map<String, dynamic>) {
           notifications.add(NotificationModel.fromJson(element));
         }
-      } catch (e) {
-        debugPrint(
-          "⚠️ Failed to parse notification element: $element, error: $e",
-        );
+      } catch (_) {
       }
     }
 
     return {'unread_count': unreadCount, 'notifications': notifications};
   }
 
+  /// يعلّم الإشعار كمقروء بواسطة معرفه.
   Future<void> setRead(String id) async {
     await _service.markAsRead(id);
   }
 
+  /// يجلب ويحلل بيانات البلاغ التفصيلية لمعرّف بلاغ معين.
   Future<ReportDetailsModel> fetchReportDetails(int id) async {
     final response = await _service.getReportDetails(id);
-    debugPrint("=== Debug Report Details RAW Response ===");
-    debugPrint(response.data.toString());
 
     dynamic reportData;
     if (response.data is Map) {
       final body = response.data as Map<String, dynamic>;
-      // البحث في المفاتيح الشائعة التي قد يرسلها Laravel
       if (body.containsKey('data')) {
         reportData = body['data'];
       } else if (body.containsKey('report')) {
         reportData = body['report'];
       } else {
-        // إذا كانت البيانات في الـ root مباشرة
         reportData = body;
       }
     }
@@ -77,15 +70,31 @@ class NotificationRepository {
     if (reportData != null && reportData is Map<String, dynamic>) {
       return ReportDetailsModel.fromJson(reportData);
     } else {
-      throw Exception("بنية بيانات غير صالحة لتفاصيل البلاغ");
+      throw Exception("Invalid data structure for report details");
     }
   }
 
-  Future<void> publish(int id) async => await _service.publishReport(id);
+  /// ينشر أو يلغي نشر بلاغ، ويعيد الحالة الفعلية من استجابة السيرفر.
+  Future<bool> publish(int id, bool isPublished) async {
+    final response = await _service.publishReport(id, isPublished);
+    try {
+      if (response.data is Map) {
+        final body = response.data as Map<String, dynamic>;
+        final data = body['data'] ?? body;
+        if (data is Map) {
+          final val = data['is_published'] ?? data['is_publish'];
+          if (val != null) return _parseBool(val);
+        }
+      }
+    } catch (_) {}
+    return isPublished;
+  }
 
+  /// يلغي بلاغاً بسبب معين.
   Future<void> cancel(int id, String reason) async =>
       await _service.cancelReport(id, reason);
 
+  /// يجلب ويحلل إحصائيات البلاغات من API.
   Future<StatisticModel> fetchStatistics() async {
     try {
       final response = await _service.getStatistics();
@@ -106,10 +115,9 @@ class NotificationRepository {
       if (statsData != null) {
         return StatisticModel.fromJson(statsData);
       } else {
-        throw Exception("فشل في قراءة بيانات الإحصائيات");
+        throw Exception("Failed to read statistics data");
       }
-    } catch (e) {
-      debugPrint("fetchStatistics error: $e");
+    } catch (_) {
       return StatisticModel(
         total: 0,
         active: 0,
@@ -119,9 +127,19 @@ class NotificationRepository {
     }
   }
 
+  /// يحلل عدداً صحيحاً بأمان من قيمة ديناميكية.
   int _parseInt(dynamic v) {
     if (v == null) return 0;
     if (v is int) return v;
     return int.tryParse(v.toString()) ?? 0;
+  }
+
+  /// يحلل قيمة منطقية (Boolean) بأمان من أنواع مختلفة.
+  bool _parseBool(dynamic value) {
+    if (value == null) return false;
+    if (value is bool) return value;
+    if (value is int) return value == 1;
+    final str = value.toString().toLowerCase();
+    return str == '1' || str == 'true';
   }
 }

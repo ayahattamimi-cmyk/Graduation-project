@@ -19,6 +19,7 @@ class _ReportTableState extends State<ReportTable> {
     super.dispose();
   }
 
+  /// يعيد لوناً بناءً على حالة البلاغ.
   Color getStatusColor(String status) {
     status = status.toLowerCase();
     if (status.contains("محلول") ||
@@ -56,7 +57,6 @@ class _ReportTableState extends State<ReportTable> {
       ),
       child: Column(
         children: [
-          /// العنوان
           const Align(
             alignment: Alignment.centerRight,
             child: Text(
@@ -67,7 +67,6 @@ class _ReportTableState extends State<ReportTable> {
 
           const SizedBox(height: 20),
 
-          /// الهيدر
           Container(
             padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
             decoration: BoxDecoration(
@@ -87,14 +86,13 @@ class _ReportTableState extends State<ReportTable> {
           ),
           const Divider(thickness: 1),
 
-          /// البيانات
           if (widget.reports.isEmpty)
             const Padding(
               padding: EdgeInsets.all(40.0),
               child: Center(
                 child: Text(
                   "لا توجد بلاغات لعرضها حالياً",
-                  style: TextStyle(color: Colors.grey),
+                  style: TextStyle(color: Color(0xFF616161)),
                 ),
               ),
             )
@@ -136,7 +134,6 @@ class _ReportTableState extends State<ReportTable> {
                                 ),
                               ),
 
-                              /// النوع
                               Expanded(
                                 flex: 2,
                                 child: Align(
@@ -162,7 +159,6 @@ class _ReportTableState extends State<ReportTable> {
                                 ),
                               ),
 
-                              /// الحالة
                               Expanded(
                                 flex: 2,
                                 child: Align(
@@ -190,7 +186,6 @@ class _ReportTableState extends State<ReportTable> {
                                 ),
                               ),
 
-                              /// المواطن
                               Expanded(
                                 flex: 3,
                                 child: Text(
@@ -214,6 +209,7 @@ class _ReportTableState extends State<ReportTable> {
     );
   }
 
+  /// ينشئ خلية رأس جدول.
   Widget _headerItem(String title, int flex) {
     return Expanded(
       flex: flex,

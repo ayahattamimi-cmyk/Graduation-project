@@ -15,17 +15,19 @@ class SupervisorModel {
     required this.areaDetails,
     
   });
+
+  /// يحول هذا النموذج إلى خريطة JSON لطلبات API.
   Map<String, dynamic> toJson() {
     return {
       'id': id,
       'name': name,
       'type': type,
       'area': area,
-      'area_details':
-          areaDetails, // تأكد أن الاسم يطابق ما يتوقعه الـ Backend (Laravel)
+      'area_details': areaDetails,
     };
   }
 
+  /// ينشئ [SupervisorModel] من خريطة JSON.
   factory SupervisorModel.fromJson(Map<String, dynamic> json) {
     return SupervisorModel(
       id: json['id'],

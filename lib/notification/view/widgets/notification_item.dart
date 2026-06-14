@@ -4,6 +4,7 @@ import '../../viewmodel/notification_viewmodel.dart';
 import '../notification_details_page.dart';
 import '../../../dashboard/view/widgets/sidebar.dart';
 
+/// عنصر قائمة يمثل إشعاراً مفرداً مع ألوان الحالة.
 class NotificationItem extends StatelessWidget {
   final String id;
   final int reportId;
@@ -70,10 +71,10 @@ class NotificationItem extends StatelessWidget {
       borderColor = const Color(0xffC8E6C9);
       indicatorColor = Colors.green.shade600;
     } else if (isProcessing) {
-      borderColor = const Color(0xffBBDEFB); // أزرق للمعالجة
+      borderColor = const Color(0xffBBDEFB);
       indicatorColor = Colors.blue.shade600;
     } else if (!isRead) {
-      borderColor = const Color(0xffFFE0B2); // برتقالي للجديد
+      borderColor = const Color(0xffFFE0B2);
       indicatorColor = Colors.orange.shade600;
     } else {
       borderColor = const Color(0xffE0E0E0);
@@ -149,7 +150,7 @@ class NotificationItem extends StatelessWidget {
                                     isCancelled
                                         ? Colors.red.shade700
                                         : (isRead && !isResolved
-                                            ? Colors.black54
+                                            ? const Color(0xFF616161)
                                             : const Color(0xFF1F2937)),
                               ),
                             ),
@@ -202,7 +203,7 @@ class NotificationItem extends StatelessWidget {
                             Text(
                               days,
                               style: const TextStyle(
-                                color: Colors.grey,
+                                color: Color(0xFF616161),
                                 fontSize: 12,
                               ),
                             ),
@@ -276,6 +277,7 @@ class NotificationItem extends StatelessWidget {
     );
   }
 
+  /// يبني شريحة علامة صغيرة ملونة لعرض الحالة/التسمية.
   Widget _tagChip(String text, Color bg, Color color) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),

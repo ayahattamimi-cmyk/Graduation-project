@@ -13,28 +13,25 @@ class AddSupervisorDialog extends StatefulWidget {
 }
 
 class _AddSupervisorDialogState extends State<AddSupervisorDialog> {
-  int currentStep = 1; // 1: Account, 2: Details
+  int currentStep = 1;
 
-  // Step 1 Controllers
   final TextEditingController nameController = TextEditingController();
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
   bool isPasswordVisible = false;
 
-  // Step 2 Controllers
   String workType = "sweeping";
   AreaDetailModel? selectedArea;
   String? selectedAreaName;
 
   bool internalLoading = false;
-  int? newSupervisorId; // سنحفظ الـ ID هنا للخطوة الثانية
-  String? newSupervisorServerToken; // توكن الباك إيند (Laravel)
-  String? newSupervisorFirebaseToken; // توكن فايربيس
+  int? newSupervisorId;
+  String? newSupervisorServerToken;
+  String? newSupervisorFirebaseToken;
 
   @override
   void initState() {
     super.initState();
-    // جلب المناطق مسبقاً للخطوة الثانية
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<SupervisorViewModel>().loadAreas(workType);
     });
@@ -52,7 +49,6 @@ class _AddSupervisorDialogState extends State<AddSupervisorDialog> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Header with Stepper Indicator
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -88,12 +84,10 @@ class _AddSupervisorDialogState extends State<AddSupervisorDialog> {
             ),
             const Divider(height: 32),
 
-            // Dialog Content based on Step
             if (currentStep == 1) _buildStep1() else _buildStep2(),
 
             const SizedBox(height: 32),
 
-            // Actions
             SizedBox(
               width: double.infinity,
               height: 50,
@@ -137,6 +131,7 @@ class _AddSupervisorDialogState extends State<AddSupervisorDialog> {
     );
   }
 
+  /// ينشئ نموذج الخطوة 1 (حقول إنشاء الحساب).
   Widget _buildStep1() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -154,6 +149,7 @@ class _AddSupervisorDialogState extends State<AddSupervisorDialog> {
     );
   }
 
+  /// ينشئ نموذج الخطوة 2 (اختيار نوع العمل والمنطقة).
   Widget _buildStep2() {
     final viewModel = context.watch<SupervisorViewModel>();
     return Column(
@@ -185,28 +181,28 @@ class _AddSupervisorDialogState extends State<AddSupervisorDialog> {
           style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
         ),
         const SizedBox(height: 8),
-        DropdownButtonFormField<AreaDetailModel>(
-          value: selectedArea,
-          hint: const Text("اختر المنطقة"),
-          decoration: _inputDecoration(Icons.location_on_outlined),
-          items:
-              viewModel.areas.map((area) {
-                return DropdownMenuItem<AreaDetailModel>(
-                  value: area,
-                  child: Text(area.label ?? area.name ?? area.id.toString()),
-                );
-              }).toList(),
-          onChanged: (value) {
-            setState(() => selectedArea = value);
-            if (value != null) {
-              debugPrint(
-                "📍 Selected Area: ID=${value.id}, Name=${value.squareName}, Start=${value.startTime}, Period=${value.period}",
-              );
-            }
-          },
-        ),
+        if (viewModel.isLoadingAreas)
+          const Padding(
+            padding: EdgeInsets.symmetric(vertical: 16),
+            child: Center(child: CircularProgressIndicator()),
+          )
+        else
+          DropdownButtonFormField<AreaDetailModel>(
+            value: selectedArea,
+            hint: const Text("اختر المنطقة"),
+            decoration: _inputDecoration(Icons.location_on_outlined),
+            items:
+                viewModel.areas.map((area) {
+                  return DropdownMenuItem<AreaDetailModel>(
+                    value: area,
+                    child: Text(area.label ?? area.name ?? area.id.toString()),
+                  );
+                }).toList(),
+            onChanged: (value) {
+              setState(() => selectedArea = value);
+            },
+          ),
 
-        // عرض تفاصيل المربع المختار تلقائياً
         if (selectedArea != null) ...[
           const SizedBox(height: 16),
           Container(
@@ -248,7 +244,7 @@ class _AddSupervisorDialogState extends State<AddSupervisorDialog> {
                       : "الفترة: ${selectedArea!.period ?? '-'} \nالوقت: ${selectedArea!.startTime?.substring(0, 5) ?? '-'} - ${selectedArea!.endTime?.substring(0, 5) ?? '-'}",
                   style: TextStyle(
                     fontSize: 13,
-                    color: Colors.grey.shade700,
+                    color: const Color(0xFF4B5563),
                     height: 1.5,
                   ),
                 ),
@@ -260,6 +256,7 @@ class _AddSupervisorDialogState extends State<AddSupervisorDialog> {
     );
   }
 
+  /// ينشئ حقل نص معنون بأيقونة.
   Widget _buildTextField(
     String label,
     TextEditingController controller,
@@ -278,6 +275,7 @@ class _AddSupervisorDialogState extends State<AddSupervisorDialog> {
     );
   }
 
+  /// ينشئ حقل كلمة المرور مع مفتاح إظهار/إخفاء.
   Widget _buildPasswordField() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -305,6 +303,7 @@ class _AddSupervisorDialogState extends State<AddSupervisorDialog> {
     );
   }
 
+  /// يعيد تنسيق إدخال متناسق مع الأيقونة المعطاة.
   InputDecoration _inputDecoration(IconData icon) {
     return InputDecoration(
       prefixIcon: Icon(icon, size: 20, color: const Color(0xFF10B981)),
@@ -326,7 +325,7 @@ class _AddSupervisorDialogState extends State<AddSupervisorDialog> {
     );
   }
 
-  // تنفيذ الخطوة الأولى (Firebase + createUser API)
+  /// يعالج الخطوة 1: ينشئ حساب Firebase ومستخدم الخادم.
   Future<void> _handleStep1() async {
     if (nameController.text.isEmpty ||
         emailController.text.isEmpty ||
@@ -337,7 +336,6 @@ class _AddSupervisorDialogState extends State<AddSupervisorDialog> {
 
     setState(() => internalLoading = true);
     try {
-      // 1. استخدام Firebase App ثانوي لإنشاء الحساب دون تسجيل خروج الآدمن
       FirebaseApp secondaryApp;
       try {
         secondaryApp = Firebase.app('SecondaryAdd');
@@ -350,17 +348,14 @@ class _AddSupervisorDialogState extends State<AddSupervisorDialog> {
 
       final secondaryAuth = FirebaseAuth.instanceFor(app: secondaryApp);
 
-      // إنشاء الحساب
       final userCredential = await secondaryAuth.createUserWithEmailAndPassword(
         email: emailController.text.trim(),
         password: passwordController.text.trim(),
       );
 
-      // 2. الحصول على ID Token للمشرف الجديد
       final idToken = await userCredential.user!.getIdToken();
       newSupervisorFirebaseToken = idToken;
 
-      // 3. API login (الذي ينشئ المشرف ويرجع التوكن)
       if (mounted) {
         final result = await context
             .read<SupervisorViewModel>()
@@ -369,8 +364,7 @@ class _AddSupervisorDialogState extends State<AddSupervisorDialog> {
         if (result != null) {
           setState(() {
             newSupervisorId = result['id'];
-            newSupervisorServerToken =
-                result['token']; // هذا هو توكن الباك إيند المهم
+            newSupervisorServerToken = result['token'];
             currentStep = 2;
             internalLoading = false;
           });
@@ -380,19 +374,17 @@ class _AddSupervisorDialogState extends State<AddSupervisorDialog> {
         }
       }
 
-      // تسجيل الخروج من التطبيق الثانوي فوراً لتنظيف الجلسة
       await secondaryAuth.signOut();
     } on FirebaseAuthException catch (e) {
       _showError("خطأ في Firebase: ${e.message}");
       setState(() => internalLoading = false);
     } catch (e) {
-      debugPrint("❌ Error in Step 1: $e");
       _showError("حدث خطأ غير متوقع: $e");
       setState(() => internalLoading = false);
     }
   }
 
-  // تنفيذ الخطوة الثانية (insertInformationUser API)
+  /// يعالج الخطوة 2: يحفظ بيانات المشرف على الخادم.
   Future<void> _handleStep2() async {
     if (selectedArea == null) {
       _showError("يرجى تحديد المنطقة");
@@ -406,6 +398,7 @@ class _AddSupervisorDialogState extends State<AddSupervisorDialog> {
           .completeSupervisorData(
             workType,
             selectedArea!.id.toString(),
+            name: nameController.text.trim(),
             userId: newSupervisorId,
             firebaseToken: newSupervisorFirebaseToken,
             serverToken: newSupervisorServerToken,
@@ -428,6 +421,7 @@ class _AddSupervisorDialogState extends State<AddSupervisorDialog> {
     }
   }
 
+  /// يعرض رسالة خطأ في شريط الإشعارات.
   void _showError(String msg) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text(msg), backgroundColor: Colors.redAccent),

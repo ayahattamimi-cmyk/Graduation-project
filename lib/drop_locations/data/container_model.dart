@@ -13,6 +13,7 @@ class ContainerModel {
   final double? lat;
   final double? lng;
 
+  /// ينشئ [ContainerModel] بالخصائص المحددة.
   ContainerModel({
     this.id,
     required this.locationName,
@@ -29,6 +30,7 @@ class ContainerModel {
     this.lng,
   });
 
+  /// يعيد نسخة من هذا [ContainerModel] مع استبدال الحقول المحددة.
   ContainerModel copyWith({
     int? id,
     String? locationName,
@@ -61,6 +63,8 @@ class ContainerModel {
     );
   }
 
+  /// ينشئ [ContainerModel] من خريطة JSON.
+  /// يعالج [collection_day] عندما يكون قائمة بربط القيم.
   factory ContainerModel.fromJson(Map<String, dynamic> json) {
     String collectionDayValue;
     if (json['collection_day'] is List) {
@@ -86,6 +90,7 @@ class ContainerModel {
     );
   }
 
+  /// يسلسل هذا [ContainerModel] إلى خريطة JSON.
   Map<String, dynamic> toJson() {
     return {
       'location_name': locationName,

@@ -38,7 +38,6 @@ class _AddLocationDialogState extends State<AddLocationDialog> {
   String? selectedAreaDetail;
   int? selectedAreaId;
 
-  // أيام الرفع
   bool isDaily = false;
   List<String> selectedDays = [];
   final List<String> weekDays = [
@@ -82,7 +81,6 @@ class _AddLocationDialogState extends State<AddLocationDialog> {
       selectedAreaId = c.areaId;
       period = c.period;
       frequency = c.collectionFrequency;
-      // تحليل الأيام المختارة
       if (c.collectionDay.contains("يومياً")) {
         isDaily = true;
         selectedDays = List.from(weekDays);
@@ -100,7 +98,6 @@ class _AddLocationDialogState extends State<AddLocationDialog> {
       frequency = 2;
       selectedDays = ["الاثنين", "الأحد"];
 
-      // اختيار أول منطقة تلقائياً لتجنب إرسال معرف خاطئ
       if (widget.existingAreas.isNotEmpty) {
         selectedAreaId = widget.existingAreas.first.id;
         selectedAreaDetail = widget.existingAreas.first.areaDetails;
@@ -108,6 +105,7 @@ class _AddLocationDialogState extends State<AddLocationDialog> {
     }
   }
 
+  /// يبدّل تحديد يوم واحد.
   void _toggleDay(String day) {
     setState(() {
       if (selectedDays.contains(day)) {
@@ -120,6 +118,7 @@ class _AddLocationDialogState extends State<AddLocationDialog> {
     });
   }
 
+  /// يبدّل خيار "كل يوم"، ليحدد أو يمسح جميع الأيام.
   void _toggleDaily(bool? value) {
     setState(() {
       isDaily = value ?? false;
@@ -167,7 +166,7 @@ class _AddLocationDialogState extends State<AddLocationDialog> {
                   widget.initialContainer == null
                       ? "أدخل بيانات موقع الرفع الجديد بدقة لتجنب التعارض"
                       : "قم بتعديل البيانات المطلوبة ثم اضغط على زر التحديث",
-                  style: const TextStyle(color: Colors.grey, fontSize: 13),
+                  style: const TextStyle(color: Color(0xFF616161), fontSize: 13),
                 ),
                 const SizedBox(height: 24),
 
@@ -253,7 +252,6 @@ class _AddLocationDialogState extends State<AddLocationDialog> {
                   onChanged: (v) {
                     setState(() {
                       selectedAreaDetail = v;
-                      // جلب المعرف الحقيقي للمنطقة من القائمة
                       final area = widget.existingAreas.firstWhere(
                         (a) => a.areaDetails == v,
                       );
@@ -281,7 +279,6 @@ class _AddLocationDialogState extends State<AddLocationDialog> {
                 ),
                 const SizedBox(height: 16),
 
-                // خيار يومياً
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 12),
                   decoration: BoxDecoration(
@@ -300,11 +297,10 @@ class _AddLocationDialogState extends State<AddLocationDialog> {
                 const SizedBox(height: 16),
                 const Text(
                   "اختر أيام الرفع المحدد",
-                  style: TextStyle(fontSize: 13, color: Colors.grey),
+                  style: const TextStyle(fontSize: 13, color: Color(0xFF616161)),
                 ),
                 const SizedBox(height: 8),
 
-                // شبكة الأيام
                 Wrap(
                   spacing: 12,
                   runSpacing: 12,
@@ -540,6 +536,7 @@ class _AddLocationDialogState extends State<AddLocationDialog> {
     );
   }
 
+  /// ينشئ عنصر واجهة تسمية لحقول النموذج.
   Widget _buildLabel(String label) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 6),
@@ -550,6 +547,7 @@ class _AddLocationDialogState extends State<AddLocationDialog> {
     );
   }
 
+  /// ينشئ حقل نص نموذج مع التحقق.
   Widget _buildTextField(TextEditingController controller, String hint) {
     return TextFormField(
       controller: controller,
@@ -558,6 +556,7 @@ class _AddLocationDialogState extends State<AddLocationDialog> {
     );
   }
 
+  /// ينشئ حقل قائمة منسدلة للنموذج.
   Widget _buildDropdown<T>(T value, List<T> options, Function(T?) onChanged) {
     return DropdownButtonFormField<T>(
       value: value,
@@ -572,6 +571,7 @@ class _AddLocationDialogState extends State<AddLocationDialog> {
     );
   }
 
+  /// يعيد [InputDecoration] قياسي مع نص التلميح المحدد.
   InputDecoration _inputDecoration(String? hint) {
     return InputDecoration(
       hintText: hint,

@@ -23,7 +23,6 @@ class DropLocationsHeader extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        /// title + button
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
@@ -37,7 +36,7 @@ class DropLocationsHeader extends StatelessWidget {
                 SizedBox(height: 4),
                 Text(
                   "إضافة وتحديث مواقع الحاويات والرفع",
-                  style: TextStyle(color: Colors.grey),
+                  style: TextStyle(color: Color(0xFF616161)),
                 ),
               ],
             ),
@@ -74,7 +73,6 @@ class DropLocationsHeader extends StatelessWidget {
 
         const SizedBox(height: 20),
 
-        /// cards
         Row(
           children: [
             Expanded(

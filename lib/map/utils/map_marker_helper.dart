@@ -2,20 +2,20 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
+/// فئة مساعدة لتوليد أيقونات علامات خريطة مخصصة من بيانات الأيقونة.
 class MapMarkerHelper {
+  /// ينشيء [BitmapDescriptor] من [IconData] مع خلفية بيضاء اختيارية.
   static Future<BitmapDescriptor> getMarkerIconFromIcon(
     IconData iconData,
     Color color,
     double size, {
-    bool hasBackground = false, // ميزة جديدة: التحكم بالخلفية البيضاء
+    bool hasBackground = false,
   }) async {
     final ui.PictureRecorder pictureRecorder = ui.PictureRecorder();
     final Canvas canvas = Canvas(pictureRecorder);
     final double iconSize = size;
 
-    // إذا كان المطلوب خلفية (مثل الحاويات)، يتم رسم الدائرة البيضاء والإطار
     if (hasBackground) {
-      // رسم دائرة بيضاء كخلفية للأيقونة لتبرز على الخريطة
       final Paint paint = Paint()..color = Colors.white;
       canvas.drawCircle(
         Offset(iconSize / 2, iconSize / 2),
@@ -23,7 +23,6 @@ class MapMarkerHelper {
         paint,
       );
 
-      // رسم إطار دائري ملون
       final Paint borderPaint =
           Paint()
             ..color = color
@@ -42,7 +41,6 @@ class MapMarkerHelper {
     textPainter.text = TextSpan(
       text: String.fromCharCode(iconData.codePoint),
       style: TextStyle(
-        // إذا لم تكن هناك خلفية، نكبر حجم الأيقونة قليلاً ليأخذ المساحة كاملة
         fontSize: hasBackground ? iconSize * 0.6 : iconSize,
         fontFamily: iconData.fontFamily,
         color: color,
@@ -53,7 +51,6 @@ class MapMarkerHelper {
 
     textPainter.layout();
 
-    // وضع الأيقونة في المنتصف تماماً
     textPainter.paint(
       canvas,
       Offset(

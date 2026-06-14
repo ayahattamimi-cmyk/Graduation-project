@@ -32,7 +32,6 @@ class _SupervisorPageState extends State<SupervisorPage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          /// العنوان + زر الإضافة
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -48,7 +47,7 @@ class _SupervisorPageState extends State<SupervisorPage> {
 
                   Text(
                     "عرض وإدارة بيانات جميع المشرفين",
-                    style: TextStyle(color: Colors.grey),
+                    style: TextStyle(color: Color(0xFF616161)),
                   ),
                 ],
               ),
@@ -85,7 +84,6 @@ class _SupervisorPageState extends State<SupervisorPage> {
 
           const SizedBox(height: 25),
 
-          /// الإحصائيات
           Row(
             children: [
               Expanded(
@@ -122,7 +120,6 @@ class _SupervisorPageState extends State<SupervisorPage> {
 
           const SizedBox(height: 30),
 
-          /// الفلتر
           Container(
             height: 36,
             padding: const EdgeInsets.symmetric(horizontal: 10),
@@ -161,7 +158,6 @@ class _SupervisorPageState extends State<SupervisorPage> {
 
           const SizedBox(height: 20),
 
-          /// الجدول
           Expanded(
             child: Container(
               decoration: BoxDecoration(
@@ -172,7 +168,6 @@ class _SupervisorPageState extends State<SupervisorPage> {
 
               child: Column(
                 children: [
-                  /// Header
                   Container(
                     padding: const EdgeInsets.symmetric(
                       horizontal: 20,
@@ -193,7 +188,7 @@ class _SupervisorPageState extends State<SupervisorPage> {
                             "الاسم",
                             style: TextStyle(
                               fontWeight: FontWeight.bold,
-                              color: Colors.grey,
+                              color: Color(0xFF616161),
                             ),
                           ),
                         ),
@@ -204,7 +199,7 @@ class _SupervisorPageState extends State<SupervisorPage> {
                             "نوع العمل",
                             style: TextStyle(
                               fontWeight: FontWeight.bold,
-                              color: Colors.grey,
+                              color: Color(0xFF616161),
                             ),
                           ),
                         ),
@@ -215,7 +210,7 @@ class _SupervisorPageState extends State<SupervisorPage> {
                             "المربع",
                             style: TextStyle(
                               fontWeight: FontWeight.bold,
-                              color: Colors.grey,
+                              color: Color(0xFF616161),
                             ),
                           ),
                         ),
@@ -226,7 +221,7 @@ class _SupervisorPageState extends State<SupervisorPage> {
                             "تفاصيل العمل",
                             style: TextStyle(
                               fontWeight: FontWeight.bold,
-                              color: Colors.grey,
+                              color: Color(0xFF616161),
                             ),
                           ),
                         ),
@@ -236,7 +231,6 @@ class _SupervisorPageState extends State<SupervisorPage> {
                     ),
                   ),
 
-                  /// rows
                   Expanded(
                     child: ListView.builder(
                       itemCount: vm.filteredSupervisors.length,

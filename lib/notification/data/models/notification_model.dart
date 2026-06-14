@@ -1,5 +1,4 @@
-///   يمثّل إشعار واحدًا مرتبطًا ببلاغ بيئي، ويحتوي على
-///   معلومات الحالة والتوقيت ونوع البلاغ.
+/// يمثل إشعاراً مفرداً مرتبطاً ببلاغ بيئي.
 class NotificationModel {
   final String id;
   final String title;
@@ -29,11 +28,11 @@ class NotificationModel {
     this.note,
   });
 
+  /// ينشيء [NotificationModel] من خريطة JSON، مع استنتاج الحالة من
+  /// البيانات المتداخلة أو نوع الإشعار عندما لا تكون محدّدة صراحةً.
   factory NotificationModel.fromJson(Map<String, dynamic> json) {
-    // محاولة جلب الحالة الحقيقية للبلاغ من البيانات المتداخلة
     String currentStatus = json['status']?.toString() ?? '';
 
-    // فحص إذا كانت الحالة موجودة داخل حقل report أو data (في إشعارات Laravel)
     if (json['data'] != null &&
         json['data'] is Map &&
         json['data']['status'] != null) {
@@ -44,7 +43,6 @@ class NotificationModel {
       currentStatus = json['report']['status'].toString();
     }
 
-    // إذا لم توجد حالة صريحة، نستنتجها من نوع الإشعار (type)
     if (currentStatus.isEmpty) {
       final String type = json['type']?.toString() ?? '';
       if (type == 'report_cancelled') {
@@ -66,22 +64,31 @@ class NotificationModel {
       status: currentStatus,
       image: _formatImageUrl(json['image'] ?? json['image_url']),
       isRead: json['is_read'] ?? false,
-      isPublished:
-          _parseInt(
-            json['is_published'] ?? json['is_publish'] ?? json['isPublished'],
-          ) ==
-          1,
+      isPublished: _parseBool(
+        json['is_published'] ?? json['is_publish'] ?? json['isPublished'],
+      ),
       supervisor: json['supervisor'],
       note: json['note'],
     );
   }
 
+  /// يحلل قيمة منطقية (Boolean) بأمان من أنواع مختلفة.
+  static bool _parseBool(dynamic value) {
+    if (value == null) return false;
+    if (value is bool) return value;
+    if (value is int) return value == 1;
+    final str = value.toString().toLowerCase();
+    return str == '1' || str == 'true';
+  }
+
+  /// يحلل عدداً صحيحاً من قيمة ديناميكية بأمان.
   static int _parseInt(dynamic value) {
     if (value == null) return 0;
     if (value is int) return value;
     return int.tryParse(value.toString()) ?? 0;
   }
 
+  /// ينسّق رابط الصورة، مع تمريرها عبر weserv لـ HTTPS إذا لزم الأمر.
   static String _formatImageUrl(dynamic path) {
     if (path == null || path.toString().isEmpty) return "";
     String url = path.toString();
@@ -95,10 +102,12 @@ class NotificationModel {
 
     String baseUrl = "https://medicalhouse-ye.net";
 
-    String finalUrl = "";
     if (url.startsWith('uploads/') || url.startsWith('storage/')) {
-      finalUrl = "$baseUrl/$url";
-    } else if (!url.contains('/')) {
+      return "https://images.weserv.nl/?url=$baseUrl/$url";
+    }
+
+    String finalUrl = "";
+    if (!url.contains('/')) {
       finalUrl = "$baseUrl/storage/$url";
     } else {
       finalUrl = "$baseUrl/$url";

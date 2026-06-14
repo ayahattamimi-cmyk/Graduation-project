@@ -1,23 +1,10 @@
-/// ============================================================
-/// 📁 dashboard_model.dart — نماذج بيانات لوحة التحكم (Dashboard Models)
-/// ============================================================
-/// المسؤولية:
-///   يحتوي على جميع نماذج البيانات الخاصة بلوحة التحكم،
-///   وتشمل إحصائيات البلاغات والتصنيفات والبيانات الشهرية.
-///
-/// الكلاسات الموجودة:
-///   - [DashboardModel]      : النموذج الرئيسي (غلاف لكل البيانات)
-///   - [StatisticsModel]     : إحصائيات إجمالية
-///   - [ClassificationModel] : توزيع البلاغات حسب النوع
-///   - [MonthlyStatModel]    : إحصائيات شهرية
-///   - [TopAreaModel]        : أكثر المناطق بلاغاتً
-/// ============================================================
 class DashboardModel {
   final StatisticsModel statistics;
   final List<ClassificationModel> classifications;
   final List<MonthlyStatModel> monthlyStats;
   final List<TopAreaModel> topAreas;
 
+  /// ينشئ [DashboardModel] الرئيسي الذي يغلّف جميع بيانات لوحة التحكم.
   DashboardModel({
     required this.statistics,
     required this.classifications,
@@ -25,6 +12,7 @@ class DashboardModel {
     required this.topAreas,
   });
 
+  /// ينشئ [DashboardModel] من خريطة JSON التي أرجعها API.
   factory DashboardModel.fromJson(Map<String, dynamic> json) {
     return DashboardModel(
       statistics: StatisticsModel.fromJson(json['statistics'] ?? {}),
@@ -53,6 +41,7 @@ class StatisticsModel {
   final StatDetail inProgress;
   final StatDetail pending;
 
+  /// ينشئ [StatisticsModel] يحمل إحصائيات البلاغات الإجمالية.
   StatisticsModel({
     required this.totalReports,
     required this.resolved,
@@ -60,6 +49,7 @@ class StatisticsModel {
     required this.pending,
   });
 
+  /// ينشئ [StatisticsModel] من خريطة JSON.
   factory StatisticsModel.fromJson(Map<String, dynamic> json) {
     return StatisticsModel(
       totalReports: _parseInt(json['total_reports']),
@@ -72,10 +62,12 @@ class StatisticsModel {
 
 class StatDetail {
   final int count;
-  final double percentage; // Changed to double for safety
+  final double percentage;
 
+  /// ينشئ [StatDetail] بعدد ونسبة مئوية.
   StatDetail({required this.count, required this.percentage});
 
+  /// ينشئ [StatDetail] من خريطة JSON.
   factory StatDetail.fromJson(Map<String, dynamic> json) {
     return StatDetail(
       count: _parseInt(json['count']),
@@ -89,12 +81,14 @@ class ClassificationModel {
   final int count;
   final double percentage;
 
+  /// ينشئ [ClassificationModel] لتوزيع أنواع البلاغات.
   ClassificationModel({
     required this.type,
     required this.count,
     required this.percentage,
   });
 
+  /// ينشئ [ClassificationModel] من خريطة JSON.
   factory ClassificationModel.fromJson(Map<String, dynamic> json) {
     return ClassificationModel(
       type: json['type']?.toString() ?? '',
@@ -108,8 +102,10 @@ class MonthlyStatModel {
   final String month;
   final int count;
 
+  /// ينشئ [MonthlyStatModel] لإحصائيات البلاغات الشهرية.
   MonthlyStatModel({required this.month, required this.count});
 
+  /// ينشئ [MonthlyStatModel] من خريطة JSON.
   factory MonthlyStatModel.fromJson(Map<String, dynamic> json) {
     return MonthlyStatModel(
       month: json['month']?.toString() ?? '',
@@ -122,8 +118,10 @@ class TopAreaModel {
   final String name;
   final int count;
 
+  /// ينشئ [TopAreaModel] لأكثر المناطق تفاعلاً.
   TopAreaModel({required this.name, required this.count});
 
+  /// ينشئ [TopAreaModel] من خريطة JSON.
   factory TopAreaModel.fromJson(Map<String, dynamic> json) {
     return TopAreaModel(
       name: json['name']?.toString() ?? '',
@@ -132,7 +130,6 @@ class TopAreaModel {
   }
 }
 
-// Helpers
 int _parseInt(dynamic v) {
   if (v == null) return 0;
   if (v is int) return v;

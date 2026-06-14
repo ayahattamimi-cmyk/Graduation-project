@@ -53,7 +53,7 @@ class _ReportAssignmentPageState extends State<ReportAssignmentPage> {
                     SizedBox(height: 6),
                     Text(
                       "تعيين البلاغات للمشرفين حسب المربعات الجغرافية",
-                      style: TextStyle(color: Colors.grey),
+                      style: TextStyle(color: Color(0xFF616161)),
                     ),
                   ],
                 ),

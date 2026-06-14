@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import 'widgets/notification_item.dart';
 import 'package:web2/dashboard/view/widgets/stat_card.dart';
 
+/// صفحة تعرض جميع الإشعارات مجمّعة حسب فئات الحالة.
 class NotificationsPage extends StatefulWidget {
   final Function(AppPage) onPageSelected;
 
@@ -48,7 +49,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
                       ),
                       const Text(
                         'جميع التحديثات والبلاغات الواردة من المواطنين بشكل مباشر',
-                        style: TextStyle(color: Colors.grey),
+                        style: TextStyle(color: Color(0xFF616161)),
                       ),
                       const SizedBox(height: 32),
 
@@ -98,14 +99,13 @@ class _NotificationsPageState extends State<NotificationsPage> {
                             child: Text(
                               "لا توجد إشعارات أو بلاغات مسجلة حالياً.",
                               style: TextStyle(
-                                color: Colors.grey,
+                                color: Color(0xFF616161),
                                 fontSize: 16,
                               ),
                             ),
                           ),
                         )
                       else ...[
-                        // قسم البلاغات الجديدة / قيد الانتظار
                         _buildNotificationSection(
                           context,
                           ' بلاغات جديدة (قيد الانتظار)',
@@ -115,8 +115,6 @@ class _NotificationsPageState extends State<NotificationsPage> {
                           widget.onPageSelected,
                           Colors.orange,
                         ),
-
-                        // قسم البلاغات قيد المعالجة
                         _buildNotificationSection(
                           context,
                           ' بلاغات قيد المعالجة',
@@ -126,8 +124,6 @@ class _NotificationsPageState extends State<NotificationsPage> {
                           widget.onPageSelected,
                           Colors.blue,
                         ),
-
-                        // قسم البلاغات المنجزة
                         _buildNotificationSection(
                           context,
                           ' بلاغات منجزة  ',
@@ -141,8 +137,6 @@ class _NotificationsPageState extends State<NotificationsPage> {
                           widget.onPageSelected,
                           Colors.green,
                         ),
-
-                        // قسم البلاغات الملغية
                         _buildNotificationSection(
                           context,
                           ' بلاغات ملغية',
@@ -160,6 +154,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
     );
   }
 
+  /// يبني رأس القسم وقائمة لفئة حالة الإشعارات.
   Widget _buildNotificationSection(
     BuildContext context,
     String title,

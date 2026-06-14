@@ -44,13 +44,11 @@ class _ContentCardState extends State<ContentCard> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          /// الصف العلوي
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Row(
                 children: [
-                  /// أيقونة حسب النوع
                   Icon(
                     widget.content.type == ContentType.news
                         ? Icons.article_outlined
@@ -61,8 +59,6 @@ class _ContentCardState extends State<ContentCard> {
                             : Colors.orange,
                   ),
                   const SizedBox(width: 8),
-
-                  /// حالة النشر
                   Container(
                     padding: const EdgeInsets.symmetric(
                       horizontal: 12,
@@ -122,11 +118,9 @@ class _ContentCardState extends State<ContentCard> {
 
           const SizedBox(height: 16),
 
-          /// المحتوى (نص + صورة) بتصميم حديث
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // النص
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -154,7 +148,6 @@ class _ContentCardState extends State<ContentCard> {
                 ),
               ),
 
-              // الصورة (إذا وجدت)
               if (widget.content.image != null &&
                   widget.content.image!.isNotEmpty) ...[
                 const SizedBox(width: 20),
@@ -209,7 +202,6 @@ class _ContentCardState extends State<ContentCard> {
           const Divider(height: 1),
           const SizedBox(height: 16),
 
-          /// التذييل (التاريخ + الناشر)
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -230,7 +222,7 @@ class _ContentCardState extends State<ContentCard> {
                   const SizedBox(width: 8),
                   Text(
                     widget.content.publishDate ?? "غير محدد",
-                    style: const TextStyle(fontSize: 12, color: Colors.grey),
+                    style: const TextStyle(fontSize: 12, color: Color(0xFF616161)),
                   ),
                   const SizedBox(width: 20),
                   Container(
@@ -248,7 +240,7 @@ class _ContentCardState extends State<ContentCard> {
                   const SizedBox(width: 8),
                   Text(
                     "بواسطة: ${widget.content.adminName ?? 'الإدارة'}",
-                    style: const TextStyle(fontSize: 12, color: Colors.grey),
+                    style: const TextStyle(fontSize: 12, color: Color(0xFF616161)),
                   ),
                 ],
               ),
@@ -259,7 +251,7 @@ class _ContentCardState extends State<ContentCard> {
     );
   }
 
-  /// ================= تعديل =================
+  /// يعرض حوار تعديل لتغيير عنصر المحتوى.
   void _showEditDialog(BuildContext context) {
     final titleController = TextEditingController(text: widget.content.title);
     final contentController = TextEditingController(
@@ -292,7 +284,6 @@ class _ContentCardState extends State<ContentCard> {
                       ),
                       const SizedBox(height: 20),
 
-                      // زر اختيار صورة جديدة
                       OutlinedButton.icon(
                         onPressed: () async {
                           final picker = ImagePicker();
@@ -367,10 +358,8 @@ class _ContentCardState extends State<ContentCard> {
                               ? base64Encode(newImageBytes!)
                               : widget.content.image,
                     );
-                    Navigator.pop(
-                      context,
-                    ); // نغلق النافذة أولاً لتجنب مشاكل الـ Hit Test
-                    widget.onEdit(updated); // ثم نقوم بعملية التحديث
+                    Navigator.pop(context);
+                    widget.onEdit(updated);
                   },
                   child: const Text('حفظ'),
                 ),

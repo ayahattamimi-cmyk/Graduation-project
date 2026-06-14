@@ -1,6 +1,8 @@
 import 'dart:io';
 import 'package:pdf/widgets.dart' as pw;
 
+/// نص برمجي اختباري يُنشئ مستند PDF نموذجي بجدول RTL
+/// باستخدام خط Tajawal للتحقق من عرض النص العربي.
 void main() async {
   final pdf = pw.Document();
   final fontData = File('assets/fonts/Tajawal-Regular.ttf').readAsBytesSync();
@@ -36,8 +38,7 @@ void main() async {
       ),
     );
     await pdf.save();
-    print("Success 7");
   } catch (e) {
-    print("Error 7: \$e");
+    // معالجة الأخطاء بصمت في النص البرمجي الاختباري
   }
 }

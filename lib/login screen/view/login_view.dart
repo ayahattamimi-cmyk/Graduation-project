@@ -42,15 +42,14 @@ class _LoginScreenState extends State<LoginScreen> {
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
               colors: [
-                Color(0xFF064E3B), // Deep Emerald
-                Color.fromARGB(255, 5, 63, 49), // Darker Emerald
+                Color(0xFF064E3B),
+                Color.fromARGB(255, 5, 63, 49),
                 Color(0xFF064E3B),
               ],
             ),
           ),
           child: Stack(
             children: [
-              /// تأثير دوائر ضوئية خفيفة في الخلفية
               Positioned(
                 top: -100,
                 right: -100,
@@ -82,10 +81,9 @@ class _LoginScreenState extends State<LoginScreen> {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      /// العنوان العلوي
                       Image.asset(
-                        'assets/images/lorem.png',
-                        height: 120, // حجم مناسب للتصميم
+                        'assets/images/Logo_copy.png',
+                        height: 120,
                         fit: BoxFit.contain,
                         errorBuilder:
                             (context, error, stackTrace) => const Icon(
@@ -105,7 +103,6 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                       const SizedBox(height: 24),
 
-                      /// بطاقة تسجيل الدخول
                       Container(
                         width:
                             MediaQuery.of(context).size.width > 600
@@ -153,7 +150,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               Text(
                                 "يرجى إدخال بياناتك للمتابعة",
                                 style: TextStyle(
-                                  color: Colors.grey.shade500,
+                                  color: const Color(0xFF616161),
                                   fontSize: 13,
                                 ),
                               ),
@@ -220,6 +217,7 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
+  /// يتحقق من صحة النموذج ويعالج عملية المصادقة.
   Future<void> _processAuth() async {
     if (!_formKey.currentState!.validate()) return;
 

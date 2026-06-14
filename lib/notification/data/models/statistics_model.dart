@@ -1,5 +1,4 @@
-///   يمثّل ملخص إحصائيات البلاغات للعرض في بطاقات صفحة
-
+/// يحمل ملخصاً لإحصائيات البلاغات للعرض في بطاقات لوحة القيادة.
 class StatisticModel {
   final int total;
   final int active;
@@ -13,6 +12,7 @@ class StatisticModel {
     required this.resolutionRate,
   });
 
+  /// ينشيء [StatisticModel] من خريطة JSON.
   factory StatisticModel.fromJson(Map<String, dynamic> json) {
     return StatisticModel(
       total: _parseInt(json['total']),
@@ -22,6 +22,7 @@ class StatisticModel {
     );
   }
 
+  /// يحلل عدداً صحيحاً من قيمة ديناميكية بأمان.
   static int _parseInt(dynamic value) {
     if (value == null) return 0;
     if (value is int) return value;

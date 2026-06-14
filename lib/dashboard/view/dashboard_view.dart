@@ -68,6 +68,7 @@ class _DashboardViewState extends State<DashboardView> {
     );
   }
 
+  /// يبني منطقة المحتوى بناءً على [AppPage] المحدد حالياً.
   Widget _buildMainContent(DashboardViewModel vm) {
     switch (currentPage) {
       case AppPage.dashboard:
@@ -102,6 +103,7 @@ class _DashboardViewState extends State<DashboardView> {
     }
   }
 
+  /// يبني تخطيط لوحة التحكم الرئيسي مع بطاقات الإحصائيات والرسوم البيانية.
   Widget _dashboardLayout(DashboardViewModel vm) {
     return SingleChildScrollView(
       child: Column(
@@ -163,17 +165,11 @@ class _DashboardViewState extends State<DashboardView> {
                                 vm.dashboardData?.classifications.map((item) {
                                   Color sectionColor;
                                   if (item.type.contains("رفع")) {
-                                    sectionColor = const Color(
-                                      0xFF10B981,
-                                    ); // Green
+                                    sectionColor = const Color(0xFF10B981);
                                   } else if (item.type.contains("كنس")) {
-                                    sectionColor = const Color(
-                                      0xFF3B82F6,
-                                    ); // Blue
+                                    sectionColor = const Color(0xFF3B82F6);
                                   } else {
-                                    sectionColor = const Color(
-                                      0xFFF59E0B,
-                                    ); // Orange
+                                    sectionColor = const Color(0xFFF59E0B);
                                   }
 
                                   return PieChartSectionData(
@@ -447,6 +443,7 @@ class _DashboardViewState extends State<DashboardView> {
     );
   }
 
+  /// يبني عنصر وسيلة إيضاح مرمّز بالألوان للرسم البياني الدائري.
   Widget _buildLegendItem(String label, Color color) {
     return Row(
       children: [
@@ -458,7 +455,7 @@ class _DashboardViewState extends State<DashboardView> {
         const SizedBox(width: 8),
         Text(
           label,
-          style: const TextStyle(fontSize: 12, color: Colors.black54),
+          style: const TextStyle(fontSize: 12, color: Color(0xFF616161)),
         ),
       ],
     );

@@ -13,27 +13,23 @@ class ReportViewModel extends ChangeNotifier {
 
   ReportViewModel(this._reportRepository, this._supervisorRepository);
 
-  // --- البيانات الحقيقية ---
   List<ReportModel> reports = [];
   List<SupervisorPerformanceModel> supervisorsPerformance = [];
   List<AreaDetailModel> areaObjects = [];
   ReportStatisticsModel? generalStats;
-  bool isLoadingReports = false; // حالة تحميل البلاغات بشكل مستقل
-  bool isLoadingSupervisors = false; // حالة تحميل المشرفين بشكل مستقل
+  bool isLoadingReports = false;
+  bool isLoadingSupervisors = false;
 
   bool get isLoading => isLoadingReports || isLoadingSupervisors;
 
-  // --- فلاتر البلاغات الرئيسية ---
   String selectedArea = "جميع المناطق";
   String selectedType = "جميع الأنواع";
   String selectedStatus = "جميع الحالات";
-  String selectedPeriod = "جميع الفترات"; // افتراضياً: بدون فلتر فترة زمنية
+  String selectedPeriod = "جميع الفترات";
 
-  // --- فلاتر أداء المشرفين المصححة ---
   String selectedSupervisor = "جميع المشرفين";
   String selectedSupType = "جميع الأنواع";
 
-  // قوائم الاختيارات للـ Dropdowns
   List<String> areas = ["جميع المناطق"];
   List<String> types = ["جميع الأنواع", "رفع", "كنس"];
   List<String> status = [
@@ -54,7 +50,7 @@ class ReportViewModel extends ChangeNotifier {
   ];
   List<String> supervisors = ["جميع المشرفين"];
 
-  // دالة التهيئة الشاملة عند فتح الصفحة
+  /// يحمل جميع البيانات عند تهيئة الصفحة.
   void loadAllData() {
     fetchReports();
     fetchSupervisorsNames();
@@ -63,32 +59,31 @@ class ReportViewModel extends ChangeNotifier {
     fetchSupervisorStats();
   }
 
-  // جلب المناطق من السيرفر
+  /// يجلب المناطق من الخادم، ويدمج مناطق الرفع والكنس.
   Future<void> fetchAreas() async {
     try {
-      final result = await _supervisorRepository.fetchAreas("lifting");
-      areaObjects = result;
+      final liftingAreas = await _supervisorRepository.fetchAreas("lifting");
+      final sweepingAreas = await _supervisorRepository.fetchAreas("sweeping");
+      areaObjects = [...liftingAreas, ...sweepingAreas];
       areas = [
         "جميع المناطق",
-        ...result.map((e) => e.label ?? e.name ?? e.id.toString()),
+        ...areaObjects.map((e) => e.label ?? e.name ?? e.id.toString()),
       ];
       notifyListeners();
     } catch (e) {
-      debugPrint("❌ خطأ جلب المناطق: $e");
     }
   }
 
-  // جلب الإحصائيات العامة للبلاغات
+  /// يجلب إحصائيات التقارير العامة.
   Future<void> fetchGeneralStats() async {
     try {
       generalStats = await _reportRepository.getGeneralStats();
       notifyListeners();
     } catch (e) {
-      debugPrint("❌ خطأ جلب الإحصائيات العامة: $e");
     }
   }
 
-  // 1. جلب بلاغات التقارير (مع معالجة "جميع المناطق")
+  /// يجلب التقارير المصفاة من المستودع.
   Future<void> fetchReports() async {
     isLoadingReports = true;
     notifyListeners();
@@ -106,7 +101,6 @@ class ReportViewModel extends ChangeNotifier {
         areaParam = areaObj.id.toString();
       }
 
-      // تحويل القيم العربية إلى القيم التي يتوقعها الباك أند (English)
       String? mappedStatus;
       if (selectedStatus == "تم الحل")
         mappedStatus = "Solved";
@@ -121,15 +115,10 @@ class ReportViewModel extends ChangeNotifier {
       else if (selectedType == "كنس")
         mappedType = "Sweeping";
 
-      // إرسال period فقط إذا تم اختيار فترة محددة
       final String? periodParam =
           (selectedPeriod == "جميع الفترات")
               ? null
               : _mapPeriodToApi(selectedPeriod);
-
-      debugPrint(
-        "🔎 [VM] Fetching reports: area=$areaParam status=$mappedStatus type=$mappedType period=$periodParam",
-      );
 
       reports = await _reportRepository.getFilteredReports(
         areaId: areaParam,
@@ -137,28 +126,24 @@ class ReportViewModel extends ChangeNotifier {
         reportType: mappedType,
         period: periodParam,
       );
-
-      debugPrint("✅ [VM] Reports loaded: ${reports.length} items");
     } catch (e) {
-      debugPrint("❌ [Reports] Error: $e");
     } finally {
       isLoadingReports = false;
       notifyListeners();
     }
   }
 
-  // 2. جلب أسماء المشرفين للقائمة المنسدلة
+  /// يجلب أسماء المشرفين للقائمة المنسدلة.
   Future<void> fetchSupervisorsNames() async {
     try {
       final all = await _supervisorRepository.fetchAllSupervisors();
       supervisors = ["جميع المشرفين", ...all.map((s) => s.name)];
       notifyListeners();
     } catch (e) {
-      debugPrint("❌ خطأ جلب أسماء المشرفين: $e");
     }
   }
 
-  // 3. جلب أداء المشرفين بناءً على الفلاتر الخاصة بهم
+  /// يجلب بيانات أداء المشرفين بناءً على الفلاتر.
   Future<void> fetchSupervisorStats() async {
     isLoadingSupervisors = true;
     notifyListeners();
@@ -177,46 +162,48 @@ class ReportViewModel extends ChangeNotifier {
       supervisorsPerformance =
           result.map((e) => SupervisorPerformanceModel.fromJson(e)).toList();
     } catch (e) {
-      debugPrint("❌ خطأ جلب أداء المشرف: $e");
     } finally {
       isLoadingSupervisors = false;
       notifyListeners();
     }
   }
 
-  // دوال الـ Setters المحدثة لضمان استدعاء الـ API الصحيح تلقائياً فور التغيير
+  /// يحدد فلتر المنطقة ويعيد جلب التقارير.
   void setArea(String v) {
     selectedArea = v;
     fetchReports();
   }
 
+  /// يحدد فلتر النوع ويعيد جلب التقارير.
   void setType(String v) {
     selectedType = v;
     fetchReports();
   }
 
+  /// يحدد فلتر الحالة ويعيد جلب التقارير.
   void setStatus(String v) {
     selectedStatus = v;
     fetchReports();
   }
 
+  /// يحدد فلتر الفترة ويعيد جلب التقارير.
   void setPeriod(String v) {
     selectedPeriod = v;
     fetchReports();
   }
 
-  // دوال فلاتر قسم المشرفين لكي لا تتداخل مع فلاتر البلاغات
+  /// يحدد فلتر المشرف لقسم أداء المشرفين.
   void setSupervisor(String v) {
     selectedSupervisor = v;
     fetchSupervisorStats();
   }
 
+  /// يحدد فلتر نوع عمل المشرف لقسم الأداء.
   void setSupType(String v) {
     selectedSupType = v;
     fetchSupervisorStats();
   }
 
-  // حسابات الإحصائيات الذكية للبلاغات الحالية
   int get total => reports.length;
   int get solved =>
       reports.where((e) {
@@ -228,6 +215,7 @@ class ReportViewModel extends ChangeNotifier {
       }).length;
   int get pending => total - solved;
 
+  /// يربط تسمية الفترة العربية بقيمة معامل API.
   String _mapPeriodToApi(String p) {
     switch (p) {
       case "اليوم":
@@ -249,12 +237,11 @@ class ReportViewModel extends ChangeNotifier {
     }
   }
 
-  // أفضل 3 مشرفين بناءً على حساب نسبة الإنجاز
+  /// يعيد أفضل 3 مشرفين مرتبين حسب نسبة الإنجاز.
   List<String> get topSupervisors {
     if (supervisorsPerformance.isEmpty) return [];
     List<SupervisorPerformanceModel> sorted = List.from(supervisorsPerformance);
 
-    // ترتيب تنازلي حسب نسبة الإنجاز النصية (مثل تحويل "85%" إلى رقم ومقارنته)
     sorted.sort((a, b) {
       double rateA =
           double.tryParse(a.completionRate.replaceAll('%', '')) ?? 0.0;
@@ -265,12 +252,12 @@ class ReportViewModel extends ChangeNotifier {
     return sorted.take(3).map((s) => s.name).toList();
   }
 
-  // إلغاء البلاغ وتحديث القائمة
+  /// يلغي بلاغاً ويحدث القائمة والإحصائيات.
   Future<bool> cancelReport(int id, String reason) async {
     final success = await _reportRepository.cancelReport(id, reason);
     if (success) {
-      await fetchReports(); // تحديث القائمة فوراً بعد الإلغاء
-      await fetchGeneralStats(); // تحديث الإحصائيات أيضاً
+      await fetchReports();
+      await fetchGeneralStats();
     }
     return success;
   }

@@ -1,36 +1,35 @@
-///   يتولى إرسال طلبات HTTP مباشرةً لنقطة نهاية البلاغات.
-
 import '../../core/network/api_service.dart';
-import 'package:flutter/foundation.dart';
 import 'package:dio/dio.dart';
 
+/// خدمة تعالج طلبات HTTP لنقاط نهاية الإشعارات والبلاغات.
 class NotificationService {
   final ApiService _apiService;
   NotificationService(this._apiService);
 
-  // جلب الإشعارات
+  /// يجلب جميع الإشعارات من الخادم.
   Future<dynamic> getNotifications() async {
     return await _apiService.post('notifications');
   }
 
-  // تحديث كمقروء
+  /// يعلّم إشعاراً محدّداً كمقروء.
   Future<dynamic> markAsRead(String id) async {
     return await _apiService.post('notifications/$id/read');
   }
 
-  // جلب تفاصيل البلاغ
+  /// يجلب معلومات تفصيلية لبلاغ محدّد.
   Future<dynamic> getReportDetails(int id) async {
-    debugPrint('[NotificationService] Fetching report details for id: $id');
     return await _apiService.post('reports/$id');
   }
 
-  // نشر البلاغ
-  Future<dynamic> publishReport(int id) async => await _apiService.patch(
-    'reports/$id/publish',
-    data: FormData.fromMap({'is_published': 1}),
-  );
+  /// ينشر أو يلغي نشر بلاغ بقيمة صريحة.
+  Future<dynamic> publishReport(int id, bool isPublished) async {
+    return await _apiService.patch(
+      'reports/$id/publish',
+      data: FormData.fromMap({'is_published': isPublished ? 1 : 0}),
+    );
+  }
 
-  // إلغاء البلاغ
+  /// يلغي بلاغاً مع سبب.
   Future<dynamic> cancelReport(int id, String reason) async {
     return await _apiService.post(
       'reports/$id/cancel',
@@ -38,7 +37,7 @@ class NotificationService {
     );
   }
 
-  // جلب الإحصائيات
+  /// يجلب إحصائيات البلاغات من الخادم.
   Future<dynamic> getStatistics() async =>
       await _apiService.get('reports/statistics');
 }

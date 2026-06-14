@@ -36,23 +36,20 @@ import 'map/data/map_service.dart';
 import 'map/viewmodel/map_viewmodel.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+/// نقطة الدخول للتطبيق. تهيئ Firebase، وتتحقق من حالة تسجيل الدخول،
+/// وتنصب شجرة حقن التبعيات باستخدام [MultiProvider].
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   final String? token = await SharedPrefsService.getToken();
-  debugPrint("🔑 Startup Token: $token");
   final bool isLoggedIn = token != null && token.isNotEmpty;
-  debugPrint("✅ Is User Logged In: $isLoggedIn");
 
   final dioClient = DioClient();
-
-  //  نقوم بإنشاء نسخة الـ ApiService الموحدة هنا باستخدام الـ dioClient المجهز للمشروع بالكامل
   final apiService = ApiService(dioClient);
 
   runApp(
     MultiProvider(
       providers: [
-        // 1. حقن الـ ApiService الموحد ليكون متاحاً لكل الفيو مودلز بالأسفل
         Provider<ApiService>.value(value: apiService),
 
         ChangeNotifierProvider(
@@ -85,7 +82,6 @@ void main() async {
               ),
         ),
 
-        // --- قسم المشرفين ---
         ChangeNotifierProvider(
           create:
               (context) => SupervisorViewModel(
@@ -130,8 +126,12 @@ void main() async {
   );
 }
 
+/// واجهة [StatelessWidget] جذرية تهيئ سمة Material والاتجاه RTL،
+/// وتتنقل إما إلى [DashboardView] أو [LoginScreen] بناءً على حالة تسجيل الدخول.
 class MyApp extends StatelessWidget {
   final bool isLoggedIn;
+
+  /// تنشئ [MyApp] مع حالة تسجيل دخول المستخدم.
   const MyApp({super.key, required this.isLoggedIn});
 
   @override

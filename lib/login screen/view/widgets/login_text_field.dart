@@ -28,7 +28,7 @@ class LoginTextField extends StatelessWidget {
       style: const TextStyle(fontSize: 15),
       decoration: InputDecoration(
         hintText: hint,
-        hintStyle: TextStyle(color: Colors.grey.shade400, fontSize: 14),
+        hintStyle: TextStyle(color: const Color(0xFF757575), fontSize: 14),
         filled: true,
         fillColor: const Color(0xfff8fafc),
         contentPadding: const EdgeInsets.symmetric(

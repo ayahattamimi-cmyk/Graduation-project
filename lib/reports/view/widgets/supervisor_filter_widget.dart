@@ -19,6 +19,7 @@ class _SupervisorFilterWidgetState extends State<SupervisorFilterWidget> {
     super.dispose();
   }
 
+  /// ينشئ حقل قائمة منسدلة منسق.
   Widget _dropdown(
     String value,
     List<String> items,
@@ -48,7 +49,7 @@ class _SupervisorFilterWidgetState extends State<SupervisorFilterWidget> {
     );
   }
 
-  /// تحويل وقت الدقائق إلى نص مقروء (مثل: 2 ساعة 3 دقيقة)
+  /// يحول الدقائق إلى صيغة قابلة للقراءة (مثال: "2 س 3 د").
   String _formatMinutes(num? minutes) {
     if (minutes == null || minutes == 0) return '—';
     final int total = minutes.round();
@@ -58,7 +59,7 @@ class _SupervisorFilterWidgetState extends State<SupervisorFilterWidget> {
     return m == 0 ? '$h س' : '$h س $m د';
   }
 
-  /// لون حسب نسبة الإنجاز
+  /// يعيد لوناً بناءً على نسبة الإنجاز.
   Color _rateColor(String rate) {
     final v = double.tryParse(rate.replaceAll('%', '')) ?? 0;
     if (v >= 75) return Colors.green;
@@ -66,7 +67,7 @@ class _SupervisorFilterWidgetState extends State<SupervisorFilterWidget> {
     return Colors.red;
   }
 
-  /// ترجمة نوع العمل من الإنجليزية
+  /// يترجم نوع العمل من الإنجليزية إلى العربية.
   String _translateType(String type) {
     switch (type.toLowerCase()) {
       case 'lifting':
@@ -99,7 +100,6 @@ class _SupervisorFilterWidgetState extends State<SupervisorFilterWidget> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          /// 🔹 العنوان
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -107,13 +107,12 @@ class _SupervisorFilterWidgetState extends State<SupervisorFilterWidget> {
                 children: const [
                   Icon(Icons.supervisor_account_rounded, color: Colors.blue),
                   SizedBox(width: 8),
-                  const Text(
+                  Text(
                     'أداء المشرفين',
                     style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                   ),
                 ],
               ),
-              // عداد النتائج
               if (vm.supervisorsPerformance.isNotEmpty)
                 Container(
                   padding: const EdgeInsets.symmetric(
@@ -138,7 +137,6 @@ class _SupervisorFilterWidgetState extends State<SupervisorFilterWidget> {
 
           const SizedBox(height: 20),
 
-          /// 🔹 صف الفلاتر
           Row(
             children: [
               Expanded(
@@ -147,7 +145,7 @@ class _SupervisorFilterWidgetState extends State<SupervisorFilterWidget> {
                   children: [
                     const Text(
                       'نوع العمل',
-                      style: TextStyle(fontSize: 12, color: Colors.grey),
+                      style: TextStyle(fontSize: 12, color: Color(0xFF616161)),
                     ),
                     const SizedBox(height: 6),
                     _dropdown(vm.selectedSupType, vm.types, vm.setSupType),
@@ -161,7 +159,7 @@ class _SupervisorFilterWidgetState extends State<SupervisorFilterWidget> {
                   children: [
                     const Text(
                       'المشرف',
-                      style: TextStyle(fontSize: 12, color: Colors.grey),
+                      style: TextStyle(fontSize: 12, color: Color(0xFF616161)),
                     ),
                     const SizedBox(height: 6),
                     _dropdown(
@@ -179,12 +177,10 @@ class _SupervisorFilterWidgetState extends State<SupervisorFilterWidget> {
           const Divider(height: 1),
           const SizedBox(height: 12),
 
-          /// 🔹 هيدر الجدول
           _buildTableHeader(),
 
           const SizedBox(height: 8),
 
-          /// 🔹 محتوى الجدول
           if (vm.isLoadingSupervisors)
             const Padding(
               padding: EdgeInsets.all(30),
@@ -204,7 +200,7 @@ class _SupervisorFilterWidgetState extends State<SupervisorFilterWidget> {
                     const SizedBox(height: 8),
                     Text(
                       'لا توجد بيانات للمشرفين بهذه الفلترة',
-                      style: TextStyle(color: Colors.grey.shade500),
+                      style: TextStyle(color: Color(0xFF616161)),
                     ),
                   ],
                 ),
@@ -212,7 +208,7 @@ class _SupervisorFilterWidgetState extends State<SupervisorFilterWidget> {
             )
           else
             SizedBox(
-              height: 400, // ارتفاع ثابت لمنطقة تمرير المشرفين
+              height: 400,
               child: Scrollbar(
                 controller: _scrollController,
                 thumbVisibility: true,
@@ -230,7 +226,7 @@ class _SupervisorFilterWidgetState extends State<SupervisorFilterWidget> {
     );
   }
 
-  /// هيدر الجدول
+  /// ينشئ صف رأس الجدول.
   Widget _buildTableHeader() {
     const style = TextStyle(
       fontWeight: FontWeight.bold,
@@ -284,7 +280,7 @@ class _SupervisorFilterWidgetState extends State<SupervisorFilterWidget> {
     );
   }
 
-  /// صف بيانات مشرف
+  /// ينشئ صف بيانات واحداً لمشرف.
   Widget _buildTableRow(SupervisorPerformanceModel s) {
     final rateColor = _rateColor(s.completionRate);
 
@@ -298,7 +294,6 @@ class _SupervisorFilterWidgetState extends State<SupervisorFilterWidget> {
       ),
       child: Row(
         children: [
-          /// الاسم
           Expanded(
             flex: 3,
             child: Text(
@@ -308,7 +303,6 @@ class _SupervisorFilterWidgetState extends State<SupervisorFilterWidget> {
             ),
           ),
 
-          /// نوع العمل
           Expanded(
             flex: 2,
             child: Container(
@@ -335,7 +329,6 @@ class _SupervisorFilterWidgetState extends State<SupervisorFilterWidget> {
             ),
           ),
 
-          /// المستلم
           Expanded(
             flex: 1,
             child: Text(
@@ -345,7 +338,6 @@ class _SupervisorFilterWidgetState extends State<SupervisorFilterWidget> {
             ),
           ),
 
-          /// المنجز
           Expanded(
             flex: 1,
             child: Text(
@@ -355,7 +347,6 @@ class _SupervisorFilterWidgetState extends State<SupervisorFilterWidget> {
             ),
           ),
 
-          /// نسبة الإنجاز
           Expanded(
             flex: 2,
             child: Center(
@@ -381,23 +372,21 @@ class _SupervisorFilterWidgetState extends State<SupervisorFilterWidget> {
             ),
           ),
 
-          /// وقت الاستجابة
           Expanded(
             flex: 2,
             child: Text(
               _formatMinutes(s.avgResponseTime),
               textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+              style: TextStyle(fontSize: 12, color: Color(0xFF4B5563)),
             ),
           ),
 
-          /// وقت المعالجة
           Expanded(
             flex: 2,
             child: Text(
               _formatMinutes(s.avgProcessingTime),
               textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+              style: TextStyle(fontSize: 12, color: Color(0xFF4B5563)),
             ),
           ),
         ],

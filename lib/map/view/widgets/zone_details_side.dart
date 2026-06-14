@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+/// لوحة جانبية تعرض اسم ونوع المنطقة المحددة على الخريطة.
 class ZoneDetailsSide extends StatelessWidget {
   final String zoneName;
   final String zoneType;
@@ -69,7 +70,7 @@ class ZoneDetailsSide extends StatelessWidget {
             "هذا المربع يمثل نطاق جغرافي لمتابعة أعمال النظافة والرفع اليومي. يمكنك تتبع الحاويات والبلاغات ضمن هذا المحيط.",
             style: TextStyle(
               fontSize: 13,
-              color: Colors.black54,
+              color: Color(0xFF616161),
               fontFamily: 'Cairo',
               height: 1.5,
             ),

@@ -25,7 +25,6 @@ class SupervisorRow extends StatelessWidget {
 
       child: Row(
         children: [
-          /// الاسم
           Expanded(
             flex: 4,
             child: Row(
@@ -42,7 +41,6 @@ class SupervisorRow extends StatelessWidget {
             ),
           ),
 
-          /// نوع العمل
           Expanded(
             flex: 2,
             child: Align(
@@ -79,7 +77,6 @@ class SupervisorRow extends StatelessWidget {
             ),
           ),
 
-          /// المربع
           Expanded(
             flex: 4,
             child: Row(
@@ -102,7 +99,6 @@ class SupervisorRow extends StatelessWidget {
             ),
           ),
 
-          /// تفاصيل العمل (شوارع للكنس / وقت للرفع)
           Expanded(
             flex: 4,
             child: Row(
@@ -121,14 +117,13 @@ class SupervisorRow extends StatelessWidget {
                             : "${supervisor.areaDetails[0].period ?? '-'} (${supervisor.areaDetails[0].startTime?.substring(0, 5) ?? '-'} - ${supervisor.areaDetails[0].endTime?.substring(0, 5) ?? '-'})")
                         : "-",
                     overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(color: Colors.grey, fontSize: 13),
+                    style: const TextStyle(color: Color(0xFF616161), fontSize: 13),
                   ),
                 ),
               ],
             ),
           ),
 
-          /// زر التعديل
           SizedBox(
             width: 70,
 

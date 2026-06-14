@@ -44,7 +44,7 @@ class StatCard extends StatelessWidget {
                 if (subtitle != null)
                   Text(
                     subtitle!,
-                    style: TextStyle(fontSize: 12, color: Colors.grey.shade500),
+                    style: TextStyle(fontSize: 12, color: Color(0xFF616161)),
                   ),
               ],
             ),
@@ -53,7 +53,7 @@ class StatCard extends StatelessWidget {
               title,
               style: TextStyle(
                 fontSize: 14,
-                color: Colors.grey.shade600,
+                color: Color(0xFF4B5563),
                 fontWeight: FontWeight.w500,
               ),
             ),

@@ -7,6 +7,7 @@ class ReportRepository {
   final ReportService _service;
   ReportRepository(this._service);
 
+  /// يجلب التقارير المصفاة حسب المنطقة والحالة والنوع والفترة الاختيارية.
   Future<List<ReportModel>> getFilteredReports({
     String? areaId,
     String? status,
@@ -23,7 +24,6 @@ class ReportRepository {
 
       final data = response.data;
 
-      // تحقق من نوع الاستجابة
       if (data == null) {
         return [];
       }
@@ -38,9 +38,6 @@ class ReportRepository {
           if (innerData is List) {
             reportsData = innerData;
           } else {
-            debugPrint(
-              "⚠️ [Repo] reportsData not found. innerData = $innerData",
-            );
             return [];
           }
         }
@@ -50,35 +47,29 @@ class ReportRepository {
         return [];
       }
     } catch (e, st) {
-      debugPrint("❌ [Repo] Exception: $e");
-      debugPrint("❌ [Repo] StackTrace: $st");
       return [];
     }
   }
 
-  // جلب الإحصائيات العامة للبلاغات
+  /// يجلب إحصائيات التقارير العامة.
   Future<ReportStatisticsModel?> getGeneralStats() async {
     try {
-      // سنفترض أن الرابط هو reports-statistics أو مشابه، أو نستخدم الرابط الذي يوفره الباك أند
-      // ملاحظة: إذا كان الرابط هو CountStatistics، يجب التأكد من تطابق البيانات
       final response = await _service.getGeneralReportStats();
       if (response.data['status'] == 'success') {
         return ReportStatisticsModel.fromJson(response.data['data']);
       }
       return null;
     } catch (e) {
-      debugPrint("❌ [Repo] Error fetching stats: $e");
       return null;
     }
   }
 
-  // إلغاء البلاغ
+  /// يلغي بلاغاً بالمعرف والسبب المحددين.
   Future<bool> cancelReport(int id, String reason) async {
     try {
       final response = await _service.cancelReport(id, reason);
       return response.data['status'] == 'success';
     } catch (e) {
-      debugPrint("❌ [Repo] Error cancelling report: $e");
       return false;
     }
   }

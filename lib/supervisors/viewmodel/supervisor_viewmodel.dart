@@ -15,9 +15,11 @@ class SupervisorViewModel extends ChangeNotifier {
   StatisticsModel? statistics;
 
   bool isLoading = false;
+  bool isLoadingAreas = false;
   String filter = "all";
   String? errorMessage;
 
+  /// يحمل جميع المشرفين من المستودع.
   Future<void> loadSupervisors() async {
     _setLoading(true);
     try {
@@ -30,18 +32,15 @@ class SupervisorViewModel extends ChangeNotifier {
     }
   }
 
+  /// يضيف مشرفاً جديداً ويحدث القائمة.
   Future<void> addSupervisor(SupervisorModel supervisor) async {
     isLoading = true;
     notifyListeners();
 
     try {
-      // إرسال البيانات إلى Laravel API
       await _repository.addSupervisor(supervisor);
-
-      // ✅ إعادة جلب القائمة مباشرة من السيرفر لضمان مزامنة الـ ID والبيانات بدقة
       await loadSupervisors();
     } catch (e) {
-      debugPrint("Error adding supervisor: $e");
       rethrow;
     } finally {
       isLoading = false;
@@ -49,25 +48,36 @@ class SupervisorViewModel extends ChangeNotifier {
     }
   }
 
+  /// يحمل إحصائيات المشرفين.
   Future<void> loadStatistics() async {
     try {
       statistics = await _repository.fetchStatistics();
       notifyListeners();
     } catch (e) {
-      debugPrint("خطأ في جلب الإحصائيات: $e");
     }
   }
 
-  // جلب المربعات ديناميكياً بحسب نوع العمل المختار
+  int _loadAreasCounter = 0;
+
+  /// يحمل المناطق حسب النوع، متجاهلاً الاستجابات القديمة من الاستدعاءات السابقة.
   Future<void> loadAreas(String type) async {
+    _loadAreasCounter++;
+    final int callId = _loadAreasCounter;
+    isLoadingAreas = true;
+    notifyListeners();
     try {
-      areas = await _repository.fetchAreas(type);
-      notifyListeners();
+      final result = await _repository.fetchAreas(type);
+      if (callId == _loadAreasCounter) {
+        areas = result;
+      }
     } catch (e) {
-      debugPrint("خطأ في جلب المربعات: $e");
+    } finally {
+      isLoadingAreas = false;
+      notifyListeners();
     }
   }
 
+  /// يحدث مشرفاً ويجدد القائمة عند النجاح.
   Future<bool> updateSupervisor(int id, Map<String, dynamic> data) async {
     _setLoading(true);
     try {
@@ -84,6 +94,7 @@ class SupervisorViewModel extends ChangeNotifier {
     }
   }
 
+  /// يعيد المشرفين المصفاة حسب قيمة الفلتر الحالية.
   List<SupervisorModel> get filteredSupervisors {
     if (filter == "sweeping") {
       return supervisors.where((e) => e.type == "sweeping").toList();
@@ -97,6 +108,7 @@ class SupervisorViewModel extends ChangeNotifier {
       supervisors.where((e) => e.type == "sweeping").length;
   int get liftingCount => supervisors.where((e) => e.type == "lifting").length;
 
+  /// يغير الفلتر الحالي ويخطر المستمعين.
   void changeFilter(String f) {
     filter = f;
     notifyListeners();
@@ -107,6 +119,7 @@ class SupervisorViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// يجلب تقرير الأداء لاسم مشرف ونوع معينين.
   Future<void> fetchPerformanceReport(String name, String type) async {
     isLoading = true;
     notifyListeners();
@@ -119,14 +132,13 @@ class SupervisorViewModel extends ChangeNotifier {
       supervisorsPerformance = result;
       errorMessage = null;
     } catch (e) {
-      debugPrint("❌ فشل جلب الأداء: $e");
     } finally {
       isLoading = false;
       notifyListeners();
     }
   }
 
-  // الخطوة الأولى: إنشاء حساب المستخدم (يرجع الـ ID والتوكن الجديد)
+  /// الخطوة 1: ينشئ حساب خادم ويعيد المعرف والرمز المميز.
   Future<Map<String, dynamic>?> createServerAccount(
     String idToken,
     String name,
@@ -146,9 +158,11 @@ class SupervisorViewModel extends ChangeNotifier {
     }
   }
 
+  /// الخطوة 2: يكمل بيانات المشرف (النوع والمنطقة) على الخادم.
   Future<bool> completeSupervisorData(
     String type,
     String areaId, {
+    String? name,
     int? userId,
     String? firebaseToken,
     String? serverToken,
@@ -158,16 +172,16 @@ class SupervisorViewModel extends ChangeNotifier {
       bool success = await _repository.saveSupervisorDetails(
         type: type,
         areaId: areaId,
+        name: name,
         userId: userId,
         firebaseToken: firebaseToken,
         serverToken: serverToken,
       );
       if (success) {
-        await loadSupervisors(); // تحديث القائمة فوراً
+        await loadSupervisors();
       }
       return success;
     } catch (e) {
-      debugPrint("Error completing supervisor data: $e");
       return false;
     } finally {
       _setLoading(false);
