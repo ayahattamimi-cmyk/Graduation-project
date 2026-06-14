@@ -7,7 +7,6 @@ class TopSupervisorsWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // إذا لم تكن هناك بيانات بعد، نعرض رسالة بسيطة أو مساحة فارغة
     if (supervisors.isEmpty) {
       return const SizedBox.shrink();
     }
@@ -15,7 +14,6 @@ class TopSupervisorsWidget extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.end,
       children: [
-        /// 🔹 العنوان
         const Align(
           alignment: Alignment.centerRight,
           child: Text(
@@ -26,7 +24,6 @@ class TopSupervisorsWidget extends StatelessWidget {
 
         const SizedBox(height: 12),
 
-        /// 🔹 عرض القائمة الحقيقية
         ...supervisors.asMap().entries.map((entry) {
           final index = entry.key;
           final name = entry.value;
@@ -48,7 +45,6 @@ class TopSupervisorsWidget extends StatelessWidget {
             ),
             child: Row(
               children: [
-                /// رقم الترتيب (1 - 2 - 3)
                 Container(
                   width: 32,
                   height: 32,
@@ -68,12 +64,10 @@ class TopSupervisorsWidget extends StatelessWidget {
 
                 const SizedBox(width: 12),
 
-                /// أيقونة المشرف
                 Icon(Icons.person_pin_rounded, color: _getRankColor(index)),
 
                 const SizedBox(width: 10),
 
-                /// الاسم الحقيقي من السيرفر
                 Expanded(
                   child: Text(
                     name,
@@ -84,7 +78,6 @@ class TopSupervisorsWidget extends StatelessWidget {
                   ),
                 ),
 
-                // وسام صغير للمركز الأول
                 if (index == 0)
                   const Icon(Icons.stars, color: Colors.amber, size: 20),
               ],
@@ -95,11 +88,11 @@ class TopSupervisorsWidget extends StatelessWidget {
     );
   }
 
-  // دالة مساعدة لتغيير اللون حسب الترتيب (ذهبي للمركز الأول مثلاً)
+  /// يعيد لوناً بناءً على مركز الترتيب.
   Color _getRankColor(int index) {
     switch (index) {
       case 0:
-        return Colors.orange; // الذهبي/البرتقالي للمركز الأول
+        return Colors.orange;
       case 1:
         return Colors.blue;
       case 2:

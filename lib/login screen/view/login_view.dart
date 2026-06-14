@@ -3,25 +3,8 @@ import 'package:provider/provider.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:web2/dashboard/view/dashboard_view.dart';
 import '../viewmodel/login_viewmodel.dart';
-import '../../supervisors/viewmodel/supervisor_viewmodel.dart';
-import '../../supervisors/data/model/supervisor_model.dart';
-
-class LoginScreen extends StatefulWidget {
-  final bool isSignup; // نتحكم من خلالها هل الشاشة للدخول أم لإنشاء مشرف
-  final String? supervisorName;
-  final String? supervisorType;
-  final String? supervisorArea;
-
-  const LoginScreen({
-    super.key,
-    this.isSignup = false,
-    this.supervisorName,
-    this.supervisorType,
-    this.supervisorArea,
-  });
-
-const primaryGreen = Color(0xFF13A8CA);
-const primaryBrown = Color(0xFF497B93);
+import 'widgets/login_text_field.dart';
+import 'widgets/auth_button.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -38,209 +21,212 @@ class _LoginScreenState extends State<LoginScreen> {
   final passwordController = TextEditingController();
 
   @override
+  void dispose() {
+    emailController.dispose();
+    passwordController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final authVM = context.watch<LoginViewModel>();
-    final screenHeight = MediaQuery.of(context).size.height;
 
     return Directionality(
-      textDirection: TextDirection.ltr,
+      textDirection: TextDirection.rtl,
       child: Scaffold(
-        body: Stack(
-          children: [
-            Container(
-              decoration: const BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [Color(0xFF20859F), Color(0xFF195268)],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-              ),
+        body: Container(
+          width: double.infinity,
+          height: double.infinity,
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                Color(0xFF064E3B),
+                Color.fromARGB(255, 5, 63, 49),
+                Color(0xFF064E3B),
+              ],
             ),
-
-            /// الحاوية
-            Align(
-              alignment: Alignment.bottomCenter,
-              child: Container(
-                height: screenHeight * 0.8,
-                width: double.infinity,
-                decoration: const BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.only(
-                    topLeft: Radius.circular(40),
-                    topRight: Radius.circular(40),
+          ),
+          child: Stack(
+            children: [
+              Positioned(
+                top: -100,
+                right: -100,
+                child: Container(
+                  width: 300,
+                  height: 300,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: Colors.white.withOpacity(0.03),
                   ),
                 ),
+              ),
+              Positioned(
+                bottom: -50,
+                left: -50,
+                child: Container(
+                  width: 250,
+                  height: 250,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: const Color(0xFF10B981).withOpacity(0.05),
+                  ),
+                ),
+              ),
+
+              Center(
                 child: SingleChildScrollView(
-                  padding: const EdgeInsets.all(30),
-                  child: Form(
-                    key: _formKey,
-                    child: Column(
-                      children: [
-                        const Icon(
-                          Icons.forest_rounded,
-                          size: 50,
-                          color: Color(0xFF13A8CA),
-                        ),
-                        const SizedBox(height: 10),
-                        Text(
-                          isSignupMode ? "Create Account" : "Welcome Back",
-                          style: const TextStyle(
-                            fontSize: 28,
-                            fontWeight: FontWeight.bold,
-                            color: Color(0xFF13A8CA),
-                          ),
-                        ),
-                        const SizedBox(height: 30),
-
-                        if (isSignupMode) ...[
-                          buildTextField(
-                            controller: nameController,
-                            label: "Full Name",
-                            hint: "Enter name",
-                          ),
-                          const SizedBox(height: 20),
-                        ],
-                        buildTextField(
-                          controller: emailController,
-                          label: "Email",
-                          hint: "Enter email",
-                          isEmail: true,
-                        ),
-                        const SizedBox(height: 20),
-
-                        /// Password
-                        buildTextField(
-                          controller: passwordController,
-                          label: "Password",
-                          hint: "Enter password",
-                          isPassword: true,
-                        ),
-                        const SizedBox(height: 30),
-
-                        SizedBox(
-                          width: double.infinity,
-                          height: 55,
-                          child: ElevatedButton(
-
-                            onPressed: authVM.isLoading
-                                ? null
-                                : () async {
-
-                              if (!_formKey.currentState!.validate()) return;
-
-                              final user = await context
-                                  .read<LoginViewModel>()
-                                  .signIn(
-                                emailController.text.trim(),
-                                passwordController.text.trim(),
-                              );
-
-                              if (user != null && context.mounted) {
-
-                                Navigator.pushReplacement(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (_) => const DashboardView(),
-                                  ),
-                                );
-
-                              } else {
-
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                    content: Text("فشل تسجيل الدخول"),
-                                  ),
-                                );
-                              }
-                            },
-
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFF497B93),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(15),
-                              ),
+                  padding: const EdgeInsets.symmetric(vertical: 20),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Image.asset(
+                        'assets/images/Logo_copy.png',
+                        height: 120,
+                        fit: BoxFit.contain,
+                        errorBuilder:
+                            (context, error, stackTrace) => const Icon(
+                              Icons.eco_rounded,
+                              size: 80,
+                              color: Color(0xFF34D399),
                             ),
+                      ),
+                      const SizedBox(height: 12),
+                      const Text(
+                        "نظام إدارة البلاغات",
+                        style: TextStyle(
+                          fontSize: 28,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      ),
+                      const SizedBox(height: 24),
 
-                            child: authVM.isLoading
-                                ? const CircularProgressIndicator(
-                              color: Colors.white,
-                            )
-                                : const Text(
-                              "Sign In",
-                              style: TextStyle(
-                                fontSize: 18,
-                                color: Colors.white,
-                              ),
+                      Container(
+                        width:
+                            MediaQuery.of(context).size.width > 600
+                                ? 480
+                                : double.infinity,
+                        margin: const EdgeInsets.symmetric(horizontal: 24),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 32,
+                          vertical: 32,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(28),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.2),
+                              blurRadius: 30,
+                              offset: const Offset(0, 15),
                             ),
-                            child:
-                                authVM.isLoading
-                                    ? const CircularProgressIndicator(
-                                      color: Colors.white,
-                                    )
-                                    : Text(
-                                      isSignupMode ? "Sign Up" : "Sign In",
-                                      style: const TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 18,
-                                      ),
+                          ],
+                        ),
+                        child: Form(
+                          key: _formKey,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  const Text(
+                                    "تسجيل الدخول",
+                                    style: TextStyle(
+                                      fontSize: 22,
+                                      fontWeight: FontWeight.bold,
+                                      color: Color(0xFF064E3B),
                                     ),
-                          ),
-                        ),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  const Text(
+                                    "🌿",
+                                    style: TextStyle(fontSize: 22),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                "يرجى إدخال بياناتك للمتابعة",
+                                style: TextStyle(
+                                  color: const Color(0xFF616161),
+                                  fontSize: 13,
+                                ),
+                              ),
+                              const SizedBox(height: 24),
 
-                        const SizedBox(height: 20),
-                        // زر التبديل بين الدخول والإنشاء
-                        TextButton(
-                          onPressed:
-                              () =>
-                                  setState(() => isSignupMode = !isSignupMode),
-                          child: Text(
-                            isSignupMode
-                                ? "Already have an account? Sign In"
-                                : "Don't have an account? Sign Up",
+                              const Text(
+                                "البريد الإلكتروني",
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w600,
+                                  color: Color(0xFF374151),
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              LoginTextField(
+                                controller: emailController,
+                                label: "",
+                                hint: "admin@environment.gov",
+                                isEmail: true,
+                              ),
+
+                              const SizedBox(height: 20),
+
+                              const Text(
+                                "كلمة المرور",
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w600,
+                                  color: Color(0xFF374151),
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              LoginTextField(
+                                controller: passwordController,
+                                label: "",
+                                hint: "••••••••",
+                                isPassword: true,
+                                isObscure: _isObscure,
+                                onToggleObscure:
+                                    () => setState(
+                                      () => _isObscure = !_isObscure,
+                                    ),
+                              ),
+
+                              const SizedBox(height: 32),
+
+                              AuthButton(
+                                isLoading: authVM.isLoading,
+                                text: "دخول للنظام",
+                                onPressed: _processAuth,
+                              ),
+                            ],
                           ),
                         ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
   }
 
+  /// يتحقق من صحة النموذج ويعالج عملية المصادقة.
   Future<void> _processAuth() async {
     if (!_formKey.currentState!.validate()) return;
 
     try {
       final authVM = context.read<LoginViewModel>();
-      final supervisorVM = context.read<SupervisorViewModel>();
-      User? user;
-
-      if (isSignupMode) {
-        user = await authVM.signUp(
-          emailController.text.trim(),
-          passwordController.text.trim(),
-        );
-        if (user != null) {
-          // إضافة بيانات المشرف لـ لارفل/فايربيس
-          final supervisor = SupervisorModel(
-            id: DateTime.now().millisecondsSinceEpoch,
-            name: widget.supervisorName ?? nameController.text,
-            type: widget.supervisorType ?? "",
-            area: widget.supervisorArea ?? "",
-            areaDetails: [],
-          );
-          await supervisorVM.addSupervisor(supervisor);
-        }
-      } else {
-        user = await authVM.signIn(
-          emailController.text.trim(),
-          passwordController.text.trim(),
-        );
-      }
+      User? user = await authVM.signIn(
+        emailController.text.trim(),
+        passwordController.text.trim(),
+      );
 
       if (user != null && mounted) {
         Navigator.pushReplacement(
@@ -249,88 +235,14 @@ class _LoginScreenState extends State<LoginScreen> {
         );
       }
     } catch (e) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(e.toString())));
-    }
-  }
-
-  Widget buildTextField({
-    required TextEditingController controller,
-    required String label,
-    required String hint,
-    bool isPassword = false,
-    bool isEmail = false,
-  }) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(label, style: const TextStyle(fontWeight: FontWeight.bold)),
-        const SizedBox(height: 8),
-        TextFormField(
-          controller: controller,
-          obscureText: isPassword ? _isObscure : false,
-          decoration: InputDecoration(
-            hintText: hint,
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(15)),
-            suffixIcon:
-                isPassword
-                    ? IconButton(
-                      icon: Icon(
-                        _isObscure ? Icons.visibility_off : Icons.visibility,
-                      ),
-                      onPressed: () => setState(() => _isObscure = !_isObscure),
-                    )
-                    : null,
-
-          validator: (value) {
-
-            if (value == null || value.isEmpty) {
-              return "يجب تعبئة الحقل";
-            }
-
-            if (isEmail) {
-              final emailRegex =
-              RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w]{2,4}$');
-
-              if (!emailRegex.hasMatch(value)) {
-                return "اكتب ايميل صحيح";
-              }
-            }
-
-            if (isPassword && value.length < 6) {
-              return "كلمة المرور ضعيفة";
-            }
-
-            return null;
-          },
-
-          decoration: InputDecoration(
-            hintText: hint,
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(15),
-            ),
-
-            suffixIcon: isPassword
-                ? IconButton(
-              icon: Icon(
-                _isObscure
-                    ? Icons.visibility_off
-                    : Icons.visibility,
-              ),
-              onPressed: () {
-                setState(() {
-                  _isObscure = !_isObscure;
-                });
-              },
-            )
-                : null,
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text("فشل تسجيل الدخول: ${e.toString()}"),
+            backgroundColor: Colors.redAccent,
           ),
-          validator:
-              (value) =>
-                  (value == null || value.isEmpty) ? "Field required" : null,
-        ),
-      ],
-    );
+        );
+      }
+    }
   }
 }

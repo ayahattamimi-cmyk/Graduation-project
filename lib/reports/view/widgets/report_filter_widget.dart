@@ -32,17 +32,24 @@ class ReportFilterWidget extends StatelessWidget {
     required this.periods,
   });
 
-  /// شكل الـ dropdown
+  /// ينشئ حقل قائمة منسدلة منسق.
   Widget _dropdown(
-      String value,
-      List<String> items,
-      Function(String) onChanged,
-      ) {
+    String value,
+    List<String> items,
+    Function(String) onChanged,
+  ) {
     return DropdownButtonFormField<String>(
       value: value,
-      items: items
-          .map((e) => DropdownMenuItem(value: e, child: Text(e)))
-          .toList(),
+      isExpanded: true,
+      items:
+          items
+              .map(
+                (e) => DropdownMenuItem(
+                  value: e,
+                  child: Text(e, overflow: TextOverflow.ellipsis),
+                ),
+              )
+              .toList(),
       onChanged: (v) => onChanged(v!),
       icon: const Icon(Icons.keyboard_arrow_down),
       decoration: InputDecoration(
@@ -72,8 +79,6 @@ class ReportFilterWidget extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-
-          /// العنوان
           Align(
             alignment: Alignment.centerRight,
             child: Row(
@@ -91,7 +96,6 @@ class ReportFilterWidget extends StatelessWidget {
 
           const SizedBox(height: 20),
 
-          /// الليبلات
           Row(
             children: const [
               Expanded(child: Text("المنطقة")),
@@ -106,16 +110,19 @@ class ReportFilterWidget extends StatelessWidget {
 
           const SizedBox(height: 8),
 
-          /// الدروب داون
           Row(
             children: [
               Expanded(child: _dropdown(selectedArea, areas, onAreaChanged)),
               const SizedBox(width: 10),
               Expanded(child: _dropdown(selectedType, types, onTypeChanged)),
               const SizedBox(width: 10),
-              Expanded(child: _dropdown(selectedStatus, statuses, onStatusChanged)),
+              Expanded(
+                child: _dropdown(selectedStatus, statuses, onStatusChanged),
+              ),
               const SizedBox(width: 10),
-              Expanded(child: _dropdown(selectedPeriod, periods, onPeriodChanged)),
+              Expanded(
+                child: _dropdown(selectedPeriod, periods, onPeriodChanged),
+              ),
             ],
           ),
         ],

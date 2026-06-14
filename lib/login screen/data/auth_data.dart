@@ -1,11 +1,10 @@
 import 'package:firebase_auth/firebase_auth.dart';
 
 class AuthData {
-
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
+  /// يسجّل دخول مستخدم بـ [email] و [password] عبر Firebase.
   Future<User?> login(String email, String password) async {
-
     final result = await _auth.signInWithEmailAndPassword(
       email: email,
       password: password,
@@ -13,5 +12,4 @@ class AuthData {
 
     return result.user;
   }
-
 }

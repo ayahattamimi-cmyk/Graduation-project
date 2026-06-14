@@ -23,6 +23,7 @@ class AreaDetailModel {
     this.endTime,
   });
 
+  /// ينشئ [AreaDetailModel] من خريطة JSON.
   factory AreaDetailModel.fromJson(Map<String, dynamic> json) {
     return AreaDetailModel(
       id: json['id'],

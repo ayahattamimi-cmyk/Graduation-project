@@ -1,14 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../../../dashboard/view/sidebar.dart';
+import '../../../dashboard/view/widgets/sidebar.dart';
+import 'package:web2/dashboard/view/widgets/stat_card.dart';
+
 import '../add_location_dialog.dart';
 import '../../viewmodel/drop_locations_viewmodel.dart';
 
 class DropLocationsHeader extends StatelessWidget {
   final Function(Map data) onAdd;
   final Function(AppPage) onPageSelected;
-  const DropLocationsHeader({super.key,required this.onPageSelected, required this.onAdd, });
+  const DropLocationsHeader({
+    super.key,
+    required this.onPageSelected,
+    required this.onAdd,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -17,7 +23,6 @@ class DropLocationsHeader extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        /// title + button
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
@@ -26,27 +31,24 @@ class DropLocationsHeader extends StatelessWidget {
               children: const [
                 Text(
                   "إدارة مواقع الرفع",
-                  style: TextStyle(
-                    fontSize: 22,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
                 ),
                 SizedBox(height: 4),
                 Text(
                   "إضافة وتحديث مواقع الحاويات والرفع",
-                  style: TextStyle(
-                    color: Colors.grey,
-                  ),
+                  style: TextStyle(color: Color(0xFF616161)),
                 ),
               ],
             ),
             ElevatedButton.icon(
               onPressed: () async {
+                final viewModel = context.read<DropLocationsViewModel>();
                 final result = await showDialog(
                   context: context,
-                  builder: (_) => AddLocationDialog(
-                    onPageSelected:onPageSelected,
-                  ),
+                  builder:
+                      (_) => AddLocationDialog(
+                        existingAreas: viewModel.referenceAreas,
+                      ),
                 );
 
                 if (result != null) {
@@ -71,31 +73,33 @@ class DropLocationsHeader extends StatelessWidget {
 
         const SizedBox(height: 20),
 
-        /// cards
         Row(
           children: [
             Expanded(
-              child: _StatCard(
-                title: "المحتوى التفاعلي",
-                number: "${stats?.dynamicCount ?? 0}",
+              child: StatCard(
+                title: "مواقع مستحدثة",
+                value: "${stats?.dynamicCount ?? 0}",
+                subtitle: "مواقع تم تحديثها مؤخراً",
                 color: Colors.orange,
                 icon: Icons.location_on_outlined,
               ),
             ),
-            const SizedBox(width: 12),
+            const SizedBox(width: 16),
             Expanded(
-              child: _StatCard(
-                title: "المحتوى الثابت",
-                number: "${stats?.staticCount ?? 0}",
+              child: StatCard(
+                title: "حاويات ثابتة",
+                value: "${stats?.staticCount ?? 0}",
+                subtitle: "مواقع الحاويات المسجلة",
                 color: Colors.purple,
                 icon: Icons.place_outlined,
               ),
             ),
-            const SizedBox(width: 12),
+            const SizedBox(width: 16),
             Expanded(
-              child: _StatCard(
+              child: StatCard(
                 title: "إجمالي المواقع",
-                number: "${stats?.totalContent ?? 0}",
+                value: "${stats?.totalContent ?? 0}",
+                subtitle: "جميع نقاط الرفع المضافة",
                 color: Colors.blue,
                 icon: Icons.widgets_outlined,
               ),
@@ -103,55 +107,6 @@ class DropLocationsHeader extends StatelessWidget {
           ],
         ),
       ],
-    );
-  }
-}
-
-class _StatCard extends StatelessWidget {
-  final String title;
-  final String number;
-  final Color color;
-  final IconData icon;
-
-  const _StatCard({
-    required this.title,
-    required this.number,
-    required this.color,
-    required this.icon,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      height: 110,
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: Colors.grey.shade200),
-      ),
-      child: Row(
-        children: [
-          Icon(icon, color: color, size: 28),
-          const Spacer(),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(title, style: const TextStyle(fontSize: 13)),
-              const SizedBox(height: 6),
-              Text(
-                number,
-                style: TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold,
-                  color: color,
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
     );
   }
 }

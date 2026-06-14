@@ -13,12 +13,13 @@ class AddContentDialog extends StatefulWidget {
 
 class _AddContentDialogState extends State<AddContentDialog> {
   ContentType selectedType = ContentType.news;
-  String? tipCategory;
   bool publishNow = true;
   Uint8List? imageBytes;
 
-  final TextEditingController controller = TextEditingController();
+  final TextEditingController titleController = TextEditingController();
+  final TextEditingController contentController = TextEditingController();
 
+  /// يختار صورة من معرض الجهاز.
   Future<void> pickImage() async {
     final picker = ImagePicker();
     final picked = await picker.pickImage(source: ImageSource.gallery);
@@ -35,9 +36,7 @@ class _AddContentDialogState extends State<AddContentDialog> {
   Widget build(BuildContext context) {
     return Dialog(
       backgroundColor: const Color(0xffffffff),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(20),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       child: Container(
         width: 600,
         padding: const EdgeInsets.all(28),
@@ -52,11 +51,10 @@ class _AddContentDialogState extends State<AddContentDialog> {
             const SizedBox(height: 6),
             const Text(
               "نشر محتوى توعوي للمواطنين",
-              style: TextStyle(color: Colors.grey),
+              style: TextStyle(color: Color(0xFF616161)),
             ),
             const SizedBox(height: 25),
 
-            /// نوع المحتوى
             DropdownButtonFormField<ContentType>(
               value: selectedType,
               decoration: InputDecoration(
@@ -65,9 +63,14 @@ class _AddContentDialogState extends State<AddContentDialog> {
                   selectedType == ContentType.news
                       ? Icons.newspaper
                       : Icons.lightbulb,
-                  color: selectedType == ContentType.news ? Colors.blue : Colors.orange,
+                  color:
+                      selectedType == ContentType.news
+                          ? Colors.blue
+                          : Colors.orange,
                 ),
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
               ),
               items: const [
                 DropdownMenuItem(value: ContentType.news, child: Text("خبر")),
@@ -78,31 +81,31 @@ class _AddContentDialogState extends State<AddContentDialog> {
 
             const SizedBox(height: 18),
 
-            if (selectedType == ContentType.tips)
-              DropdownButtonFormField<String>(
-                decoration: InputDecoration(
-                  labelText: "تصنيف النصيحة",
-                  prefixIcon: const Icon(Icons.category),
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+            TextField(
+              controller: titleController,
+              decoration: InputDecoration(
+                labelText: "العنوان",
+                hintText:
+                    "أدخل عنوان ${selectedType == ContentType.news ? 'الخبر' : 'النصيحة'}...",
+                prefixIcon: const Icon(Icons.title),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
                 ),
-                items: const [
-                  DropdownMenuItem(value: 'النفايات', child: Text('النفايات')),
-                  DropdownMenuItem(value: 'إعادة التدوير', child: Text('إعادة التدوير')),
-                  DropdownMenuItem(value: 'البيئة', child: Text('البيئة')),
-                ],
-                onChanged: (value) => tipCategory = value,
               ),
+            ),
 
             const SizedBox(height: 18),
 
             TextField(
-              controller: controller,
+              controller: contentController,
               maxLines: 4,
               onChanged: (_) => setState(() {}),
               decoration: InputDecoration(
                 hintText: "اكتب المحتوى هنا...",
                 prefixIcon: const Icon(Icons.edit_note),
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
               ),
             ),
 
@@ -111,8 +114,13 @@ class _AddContentDialogState extends State<AddContentDialog> {
             if (selectedType == ContentType.news)
               OutlinedButton.icon(
                 style: OutlinedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: 14,
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                 ),
                 onPressed: pickImage,
                 icon: const Icon(Icons.image_outlined),
@@ -123,7 +131,11 @@ class _AddContentDialogState extends State<AddContentDialog> {
               const SizedBox(height: 10),
               ClipRRect(
                 borderRadius: BorderRadius.circular(12),
-                child: Image.memory(imageBytes!, height: 120, fit: BoxFit.cover),
+                child: Image.memory(
+                  imageBytes!,
+                  height: 120,
+                  fit: BoxFit.cover,
+                ),
               ),
             ],
 
@@ -147,27 +159,35 @@ class _AddContentDialogState extends State<AddContentDialog> {
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xff2563EB),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                 ),
-                onPressed: controller.text.trim().isEmpty
-                    ? null
-                    : () {
-                        final newContent = ContentModel(
-                          id: DateTime.now().millisecondsSinceEpoch,
-                          title: selectedType == ContentType.tips
-                              ? tipCategory ?? 'نصيحة'
-                              : 'خبر',
-                          content: controller.text,
-                          type: selectedType,
-                          image: imageBytes != null ? base64Encode(imageBytes!) : null,
-                          publishDate: DateTime.now().toIso8601String(),
-                          isPublished: publishNow,
-                          category: tipCategory,
-                          adminName: 'المشرف',
-                        );
-                        Navigator.pop(context, newContent);
-                      },
-                child: const Text("إضافة المحتوى", style: TextStyle(fontSize: 16, color: Colors.white)),
+                onPressed:
+                    contentController.text.trim().isEmpty ||
+                            titleController.text.trim().isEmpty
+                        ? null
+                        : () {
+                          final newContent = ContentModel(
+                            id: DateTime.now().millisecondsSinceEpoch,
+                            title: titleController.text.trim(),
+                            content: contentController.text.trim(),
+                            type: selectedType,
+                            image:
+                                imageBytes != null
+                                    ? base64Encode(imageBytes!)
+                                    : null,
+                            publishDate: DateTime.now().toIso8601String(),
+                            isPublished: publishNow,
+                            category: null,
+                            adminName: 'المشرف',
+                          );
+                          Navigator.pop(context, newContent);
+                        },
+                child: const Text(
+                  "إضافة المحتوى",
+                  style: TextStyle(fontSize: 16, color: Colors.white),
+                ),
               ),
             ),
           ],

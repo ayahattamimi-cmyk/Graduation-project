@@ -1,61 +1,84 @@
 import 'package:dio/dio.dart';
 import 'dio_client.dart';
 
+/// غلاف مركزي لعميل HTTP يوفر وسائط مكتوبة
+/// (GET, POST, PUT, DELETE, PATCH) على مثيل مشترك من [Dio].
 class ApiService {
   final Dio _dio;
 
+  /// ينشئ [ApiService] مدعومًا بالـ [DioClient] المقدم.
   ApiService(DioClient dioClient) : _dio = dioClient.dio;
 
-  /// دالة لجلب البيانات 
-  Future<Response> get(String path, {
+  /// يرسل طلب GET إلى [path] المحدد مع بارامترات استعلام ورؤوس اختيارية.
+  Future<Response> get(
+    String path, {
     Map<String, dynamic>? query,
-    Map<String, dynamic>? headers, 
+    Map<String, dynamic>? headers,
   }) async {
     return await _dio.get(
-      path, 
+      path,
       queryParameters: query,
-      options: Options(headers: headers), 
+      options: Options(headers: headers),
     );
   }
 
-  /// دالة لإرسال بيانات جديدة 
-  /// تدعم إرسال النصوص (JSON) أو الملفات (FormData)
-  Future<Response> post(String path, {
-    dynamic data, 
-    Map<String, dynamic>? headers, 
+  /// يرسل طلب POST. يدعم حمولات JSON و [FormData].
+  Future<Response> post(
+    String path, {
+    dynamic data,
+    Map<String, dynamic>? headers,
+    Map<String, dynamic>? extra,
   }) async {
     return await _dio.post(
-      path, 
-      data: data, 
+      path,
+      data: data,
       options: Options(
         headers: headers,
-        // تحديد نوع المحتوى تلقائياً بناءً على البيانات المرسلة
-        contentType: data is FormData ? 'multipart/form-data' : 'application/json',
-      ), 
+        extra: extra,
+        contentType:
+            data is FormData ? 'multipart/form-data' : 'application/json',
+      ),
     );
   }
 
-  /// دالة لتعديل بيانات موجودة 
-  Future<Response> put(String path, {
-    dynamic data, 
-    Map<String, dynamic>? headers, 
+  /// يرسل طلب PUT لتحديث مورد موجود.
+  Future<Response> put(
+    String path, {
+    dynamic data,
+    Map<String, dynamic>? headers,
   }) async {
-    return await _dio.put(
-      path, 
-      data: data, 
-      options: Options(headers: headers), 
-    );
+    return await _dio.put(path, data: data, options: Options(headers: headers));
   }
 
-  /// دالة لحذف بيانات 
-  Future<Response> delete(String path, {
+  /// يرسل طلب DELETE لحذف مورد.
+  Future<Response> delete(
+    String path, {
     Map<String, dynamic>? data,
-    Map<String, dynamic>? headers, 
+    Map<String, dynamic>? headers,
   }) async {
     return await _dio.delete(
-      path, 
+      path,
       data: data,
-      options: Options(headers: headers), 
+      options: Options(headers: headers),
+    );
+  }
+
+  /// يرسل طلب PATCH للتحديثات الجزئية.
+  Future<Response> patch(
+    String path, {
+    dynamic data,
+    Map<String, dynamic>? headers,
+    Map<String, dynamic>? extra,
+  }) async {
+    return await _dio.patch(
+      path,
+      data: data,
+      options: Options(
+        headers: headers,
+        extra: extra,
+        contentType:
+            data is FormData ? 'multipart/form-data' : 'application/json',
+      ),
     );
   }
 }

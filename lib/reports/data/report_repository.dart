@@ -1,6 +1,5 @@
 import 'package:web2/reports/data/models/report_model.dart';
 import 'package:flutter/foundation.dart';
-import 'package:web2/reports/data/models/report_model.dart';
 import 'package:web2/reports/data/models/report_statistics_model.dart';
 import 'package:web2/reports/data/report_service.dart';
 
@@ -8,6 +7,7 @@ class ReportRepository {
   final ReportService _service;
   ReportRepository(this._service);
 
+  /// يجلب التقارير المصفاة حسب المنطقة والحالة والنوع والفترة الاختيارية.
   Future<List<ReportModel>> getFilteredReports({
     String? areaId,
     String? status,
@@ -22,35 +22,55 @@ class ReportRepository {
         period: period,
       );
 
-      debugPrint("📡 [Repo] Raw Response: ${response.data}");
+      final data = response.data;
 
-      if (response.data['status'] == 'success') {
-        List reportsData = response.data['data']['reports'];
-        return reportsData.map((e) => ReportModel.fromJson(e)).toList();
-      } else {
-        debugPrint("⚠️ [Repo] Status was not success: ${response.data['message']}");
+      if (data == null) {
         return [];
       }
-    } catch (e) {
-      debugPrint("❌ [Repo] Exception: $e");
+
+      final responseStatus = data['status']?.toString();
+
+      if (responseStatus == 'success') {
+        final innerData = data['data'];
+
+        List? reportsData = innerData?['reports'] ?? innerData?['data'];
+        if (reportsData == null) {
+          if (innerData is List) {
+            reportsData = innerData;
+          } else {
+            return [];
+          }
+        }
+
+        return reportsData.map((e) => ReportModel.fromJson(e)).toList();
+      } else {
+        return [];
+      }
+    } catch (e, st) {
       return [];
     }
   }
 
-  // جلب الإحصائيات العامة للبلاغات
+  /// يجلب إحصائيات التقارير العامة.
   Future<ReportStatisticsModel?> getGeneralStats() async {
     try {
-      // سنفترض أن الرابط هو reports-statistics أو مشابه، أو نستخدم الرابط الذي يوفره الباك أند
-      // ملاحظة: إذا كان الرابط هو CountStatistics، يجب التأكد من تطابق البيانات
       final response = await _service.getGeneralReportStats();
       if (response.data['status'] == 'success') {
         return ReportStatisticsModel.fromJson(response.data['data']);
       }
       return null;
     } catch (e) {
-      debugPrint("❌ [Repo] Error fetching stats: $e");
       return null;
     }
   }
 
+  /// يلغي بلاغاً بالمعرف والسبب المحددين.
+  Future<bool> cancelReport(int id, String reason) async {
+    try {
+      final response = await _service.cancelReport(id, reason);
+      return response.data['status'] == 'success';
+    } catch (e) {
+      return false;
+    }
+  }
 }

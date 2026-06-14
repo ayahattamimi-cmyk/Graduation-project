@@ -11,6 +11,7 @@ class ContentModel {
   final String? adminName;
   final bool isPublished;
 
+  /// ينشئ [ContentModel] يمثل عنصر خبر أو نصيحة.
   ContentModel({
     this.id,
     required this.title,
@@ -23,6 +24,7 @@ class ContentModel {
     this.isPublished = true,
   });
 
+  /// يعيد نسخة من هذا النموذج مع استبدال الحقول المحددة.
   ContentModel copyWith({
     int? id,
     String? title,
@@ -47,13 +49,14 @@ class ContentModel {
     );
   }
 
+  /// ينشئ [ContentModel] من خريطة JSON التي أرجعها API.
   factory ContentModel.fromJson(Map<String, dynamic> json) {
     return ContentModel(
       id: json['id'],
       title: json['title'] ?? '',
       content: json['content'] ?? '',
       type: json['type'] == 'news' ? ContentType.news : ContentType.tips,
-      image: json['image'],
+      image: _formatImageUrl(json['image']),
       category: json['category'],
       publishDate: json['publish_date'],
       adminName: json['admin_name'],
@@ -62,12 +65,40 @@ class ContentModel {
     );
   }
 
+  static String _formatImageUrl(dynamic path) {
+    if (path == null || path.toString().isEmpty) return "";
+    String url = path.toString();
+    if (url.startsWith('http')) {
+      return "https://images.weserv.nl/?url=$url";
+    }
+
+    String baseUrl = "https://medicalhouse-ye.net";
+
+    while (url.startsWith('/')) {
+      url = url.substring(1);
+    }
+
+    String finalUrl = "";
+    if (url.startsWith('uploads/') || url.startsWith('storage/')) {
+      finalUrl = "$baseUrl/$url";
+    } else if (!url.contains('/')) {
+      finalUrl = "$baseUrl/storage/$url";
+    } else {
+      finalUrl = "$baseUrl/$url";
+    }
+
+    return "https://images.weserv.nl/?url=$finalUrl";
+  }
+
+  /// يحوّل هذا النموذج إلى خريطة JSON لاستخدامها في طلبات API.
   Map<String, dynamic> toJson() {
     return {
       'title': title,
       'content': content,
       'type': type == ContentType.news ? 'news' : 'tips',
+      'category': category,
       'is_active': isPublished ? 1 : 0,
+      'image': image,
     };
   }
 }

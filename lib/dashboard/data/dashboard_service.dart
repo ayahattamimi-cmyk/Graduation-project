@@ -1,11 +1,13 @@
-import 'package:dio/dio.dart';
+import '../../core/network/api_service.dart';
 
 class DashboardService {
-  final Dio _dio;
-  DashboardService(this._dio);
+  final ApiService _apiService;
 
-  Future<Response> getDashboardData() async {
-    // بما أن Postman نجح مع GET، سنستخدم GET هنا
-    return await _dio.get('admin/dashboard-stats');
+  /// ينشئ [DashboardService] مع [ApiService] المحدد.
+  DashboardService(this._apiService);
+
+  /// يجلب بيانات لوحة التحكم الخام من نقطة نهاية API.
+  Future<dynamic> getDashboardData() async {
+    return await _apiService.get('admin/dashboard-stats');
   }
 }

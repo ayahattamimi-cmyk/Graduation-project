@@ -1,4 +1,3 @@
-import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:web2/supervisors/data/supervisor_repository.dart';
 import '../data/model/supervisor_model.dart';
@@ -10,19 +9,17 @@ class SupervisorViewModel extends ChangeNotifier {
 
   SupervisorViewModel(this._repository);
 
-  // البيانات
   List<SupervisorModel> supervisors = [];
   List<AreaDetailModel> areas = [];
-  // قائمة بسيطة لتخزين أداء المشرفين القادم من السيرفر
   List<dynamic> supervisorsPerformance = [];
   StatisticsModel? statistics;
 
-  // حالات الواجهة
   bool isLoading = false;
+  bool isLoadingAreas = false;
   String filter = "all";
   String? errorMessage;
 
-  // 1. جلب جميع المشرفين من السيرفر
+  /// يحمل جميع المشرفين من المستودع.
   Future<void> loadSupervisors() async {
     _setLoading(true);
     try {
@@ -35,52 +32,58 @@ class SupervisorViewModel extends ChangeNotifier {
     }
   }
 
+  /// يضيف مشرفاً جديداً ويحدث القائمة.
   Future<void> addSupervisor(SupervisorModel supervisor) async {
     isLoading = true;
     notifyListeners();
 
     try {
-      // استدعاء الريبوزيتوري لإرسال البيانات للسيرفر (Laravel API)
       await _repository.addSupervisor(supervisor);
-
-      // يمكنك هنا تحديث القائمة المحلية إذا أردت
-      // _supervisors.add(supervisor);
+      await loadSupervisors();
     } catch (e) {
-      debugPrint("Error adding supervisor: $e");
-      rethrow; // لإتاحة معالجة الخطأ في شاشة الـ Login
+      rethrow;
     } finally {
       isLoading = false;
       notifyListeners();
     }
   }
 
-  // 2. جلب الإحصائيات (CountStatistics)
+  /// يحمل إحصائيات المشرفين.
   Future<void> loadStatistics() async {
     try {
       statistics = await _repository.fetchStatistics();
       notifyListeners();
     } catch (e) {
-      debugPrint("خطأ في جلب الإحصائيات: $e");
     }
   }
 
-  // 3. جلب المربعات للقائمة المنسدلة (Dropdown)
+  int _loadAreasCounter = 0;
+
+  /// يحمل المناطق حسب النوع، متجاهلاً الاستجابات القديمة من الاستدعاءات السابقة.
   Future<void> loadAreas(String type) async {
+    _loadAreasCounter++;
+    final int callId = _loadAreasCounter;
+    isLoadingAreas = true;
+    notifyListeners();
     try {
-      areas = await _repository.fetchAreas(type);
-      notifyListeners();
+      final result = await _repository.fetchAreas(type);
+      if (callId == _loadAreasCounter) {
+        areas = result;
+      }
     } catch (e) {
-      debugPrint("خطأ في جلب المربعات: $e");
+    } finally {
+      isLoadingAreas = false;
+      notifyListeners();
     }
   }
 
-  // 4. تحديث بيانات مشرف (تواصل مع السيرفر وتحديث محلي)
+  /// يحدث مشرفاً ويجدد القائمة عند النجاح.
   Future<bool> updateSupervisor(int id, Map<String, dynamic> data) async {
     _setLoading(true);
     try {
       bool success = await _repository.updateSupervisorInfo(id, data);
       if (success) {
-        await loadSupervisors(); // إعادة جلب البيانات لتحديث القائمة
+        await loadSupervisors();
         return true;
       }
       return false;
@@ -91,7 +94,7 @@ class SupervisorViewModel extends ChangeNotifier {
     }
   }
 
-  // 5. منطق الفلترة (Filtered List)
+  /// يعيد المشرفين المصفاة حسب قيمة الفلتر الحالية.
   List<SupervisorModel> get filteredSupervisors {
     if (filter == "sweeping") {
       return supervisors.where((e) => e.type == "sweeping").toList();
@@ -101,44 +104,87 @@ class SupervisorViewModel extends ChangeNotifier {
     return supervisors;
   }
 
-  // 6. عدادات سريعة للواجهة
   int get sweepingCount =>
       supervisors.where((e) => e.type == "sweeping").length;
   int get liftingCount => supervisors.where((e) => e.type == "lifting").length;
 
-  // تغيير الفلتر
+  /// يغير الفلتر الحالي ويخطر المستمعين.
   void changeFilter(String f) {
     filter = f;
     notifyListeners();
   }
 
-  // دالة مساعدة لتغيير حالة التحميل
   void _setLoading(bool value) {
     isLoading = value;
     notifyListeners();
   }
 
-  // --- تقييم أداء المشرفين ---
-
+  /// يجلب تقرير الأداء لاسم مشرف ونوع معينين.
   Future<void> fetchPerformanceReport(String name, String type) async {
     isLoading = true;
     notifyListeners();
 
     try {
-      FormData formData = FormData.fromMap({
-        "name": name,
-        "type":
-            type == "رفع" ? "lifting" : "sweeping", // التحويل لإنجليزية السيرفر
-      });
-
-      final result = await _repository.fetchSupervisorPerformance(name, type);
+      final result = await _repository.fetchSupervisorPerformance(
+        name,
+        type == "رفع" ? "lifting" : "sweeping",
+      );
       supervisorsPerformance = result;
       errorMessage = null;
     } catch (e) {
-      debugPrint("❌ فشل جلب الأداء: $e");
     } finally {
       isLoading = false;
       notifyListeners();
+    }
+  }
+
+  /// الخطوة 1: ينشئ حساب خادم ويعيد المعرف والرمز المميز.
+  Future<Map<String, dynamic>?> createServerAccount(
+    String idToken,
+    String name,
+  ) async {
+    _setLoading(true);
+    try {
+      final result = await _repository.createAccountOnServer(
+        idToken: idToken,
+        name: name,
+        role: "supervisors",
+      );
+      _setLoading(false);
+      return result;
+    } catch (e) {
+      _setLoading(false);
+      rethrow;
+    }
+  }
+
+  /// الخطوة 2: يكمل بيانات المشرف (النوع والمنطقة) على الخادم.
+  Future<bool> completeSupervisorData(
+    String type,
+    String areaId, {
+    String? name,
+    int? userId,
+    String? firebaseToken,
+    String? serverToken,
+  }) async {
+    _setLoading(true);
+    try {
+      bool success = await _repository.saveSupervisorDetails(
+        type: type,
+        areaId: areaId,
+        name: name,
+        userId: userId,
+        firebaseToken: firebaseToken,
+        serverToken: serverToken,
+      );
+      if (success) {
+        await loadSupervisors();
+      }
+      return success;
+    } catch (e) {
+      return false;
+    } finally {
+      _setLoading(false);
     }
   }
 }

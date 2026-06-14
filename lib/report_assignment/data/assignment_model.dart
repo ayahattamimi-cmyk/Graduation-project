@@ -13,6 +13,7 @@ class AssignmentSuggestionModel {
     required this.reportsCount,
   });
 
+  /// ينشئ [AssignmentSuggestionModel] من خريطة JSON.
   factory AssignmentSuggestionModel.fromJson(Map<String, dynamic> json) {
     return AssignmentSuggestionModel(
       squareId: json['id'] ?? 0,

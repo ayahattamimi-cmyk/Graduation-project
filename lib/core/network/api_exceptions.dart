@@ -1,8 +1,10 @@
 import 'package:dio/dio.dart';
 
+/// يترجم أكواد [DioException] إلى رسائل خطأ عربية سهلة للمستخدم.
 class ApiExceptions implements Exception {
   late String message;
 
+  /// يبني [ApiExceptions] عن طريق ربط أنواع [DioException] بالرسائل.
   ApiExceptions.fromDioError(DioException dioError) {
     switch (dioError.type) {
       case DioExceptionType.cancel:
@@ -32,6 +34,7 @@ class ApiExceptions implements Exception {
     }
   }
 
+  /// يربط أكواد حالة HTTP برسائل خطأ عربية.
   String _handleError(int? statusCode, dynamic error) {
     switch (statusCode) {
       case 400:

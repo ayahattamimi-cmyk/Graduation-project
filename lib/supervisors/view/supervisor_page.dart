@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:web2/supervisors/view/widgets/supervisor_row.dart';
 import '../viewmodel/supervisor_viewmodel.dart';
 import 'dialogs/add_supervisor_dialog.dart';
+import 'package:web2/dashboard/view/widgets/stat_card.dart';
 
 class SupervisorPage extends StatefulWidget {
   const SupervisorPage({super.key});
@@ -31,7 +32,6 @@ class _SupervisorPageState extends State<SupervisorPage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          /// العنوان + زر الإضافة
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -47,7 +47,7 @@ class _SupervisorPageState extends State<SupervisorPage> {
 
                   Text(
                     "عرض وإدارة بيانات جميع المشرفين",
-                    style: TextStyle(color: Colors.grey),
+                    style: TextStyle(color: Color(0xFF616161)),
                   ),
                 ],
               ),
@@ -84,28 +84,42 @@ class _SupervisorPageState extends State<SupervisorPage> {
 
           const SizedBox(height: 25),
 
-          /// الإحصائيات
           Row(
             children: [
-              stat("مشرفي الرفع", vm.liftingCount.toString(), Colors.orange),
-
-              const SizedBox(width: 15),
-
-              stat("مشرفي الكنس", vm.sweepingCount.toString(), Colors.green),
-
-              const SizedBox(width: 15),
-
-              stat(
-                "إجمالي المشرفين",
-                vm.supervisors.length.toString(),
-                Colors.blue,
+              Expanded(
+                child: StatCard(
+                  title: "مشرفي الرفع",
+                  value: vm.liftingCount.toString(),
+                  subtitle: "مشرفي رفع النفايات",
+                  icon: Icons.upload_file,
+                  color: Colors.orange,
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: StatCard(
+                  title: "مشرفي الكنس",
+                  value: vm.sweepingCount.toString(),
+                  subtitle: "مشرفي نظافة الشوارع",
+                  icon: Icons.cleaning_services,
+                  color: Colors.green,
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: StatCard(
+                  title: "إجمالي المشرفين",
+                  value: vm.supervisors.length.toString(),
+                  subtitle: "جميع المشرفين المسجلين",
+                  icon: Icons.people,
+                  color: Colors.blue,
+                ),
               ),
             ],
           ),
 
           const SizedBox(height: 30),
 
-          /// الفلتر
           Container(
             height: 36,
             padding: const EdgeInsets.symmetric(horizontal: 10),
@@ -144,7 +158,6 @@ class _SupervisorPageState extends State<SupervisorPage> {
 
           const SizedBox(height: 20),
 
-          /// الجدول
           Expanded(
             child: Container(
               decoration: BoxDecoration(
@@ -155,7 +168,6 @@ class _SupervisorPageState extends State<SupervisorPage> {
 
               child: Column(
                 children: [
-                  /// Header
                   Container(
                     padding: const EdgeInsets.symmetric(
                       horizontal: 20,
@@ -176,7 +188,7 @@ class _SupervisorPageState extends State<SupervisorPage> {
                             "الاسم",
                             style: TextStyle(
                               fontWeight: FontWeight.bold,
-                              color: Colors.grey,
+                              color: Color(0xFF616161),
                             ),
                           ),
                         ),
@@ -187,7 +199,7 @@ class _SupervisorPageState extends State<SupervisorPage> {
                             "نوع العمل",
                             style: TextStyle(
                               fontWeight: FontWeight.bold,
-                              color: Colors.grey,
+                              color: Color(0xFF616161),
                             ),
                           ),
                         ),
@@ -198,18 +210,18 @@ class _SupervisorPageState extends State<SupervisorPage> {
                             "المربع",
                             style: TextStyle(
                               fontWeight: FontWeight.bold,
-                              color: Colors.grey,
+                              color: Color(0xFF616161),
                             ),
                           ),
                         ),
 
                         Expanded(
-                          flex: 3,
+                          flex: 4,
                           child: Text(
-                            "جدولة العمل",
+                            "تفاصيل العمل",
                             style: TextStyle(
                               fontWeight: FontWeight.bold,
-                              color: Colors.grey,
+                              color: Color(0xFF616161),
                             ),
                           ),
                         ),
@@ -219,7 +231,6 @@ class _SupervisorPageState extends State<SupervisorPage> {
                     ),
                   ),
 
-                  /// rows
                   Expanded(
                     child: ListView.builder(
                       itemCount: vm.filteredSupervisors.length,
@@ -236,36 +247,6 @@ class _SupervisorPageState extends State<SupervisorPage> {
             ),
           ),
         ],
-      ),
-    );
-  }
-
-  Widget stat(String title, String value, Color color) {
-    return Expanded(
-      child: Container(
-        padding: const EdgeInsets.all(20),
-
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(15),
-          border: Border.all(color: Colors.grey.shade200),
-        ),
-
-        child: Column(
-          children: [
-            Text(title),
-
-            const SizedBox(height: 6),
-
-            Text(
-              value,
-              style: TextStyle(
-                fontSize: 22,
-                fontWeight: FontWeight.bold,
-                color: color,
-              ),
-            ),
-          ],
-        ),
       ),
     );
   }

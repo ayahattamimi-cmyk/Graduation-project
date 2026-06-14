@@ -2,11 +2,12 @@ import 'package:flutter/material.dart';
 
 class StatCard extends StatelessWidget {
   final String title;
-  final String? value; // يجي من الباك اند لاحقًا
-  final String subtitle; // العبارة اللي تحت
-  final IconData icon; // الأيقونة
+  final String? value;
+  final String subtitle;
+  final IconData icon;
   final Color color;
 
+  /// ينشئ [StatCard] يعرض عنواناً وقيمة اختيارية ونصاً فرعياً وأيقونة.
   const StatCard({
     super.key,
     required this.title,
@@ -34,7 +35,6 @@ class StatCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // [تعديل هنا] استخدام Expanded لمنع الـ Overflow في العناوين الطويلة
           Row(
             children: [
               Icon(icon, color: color, size: 22),
@@ -46,10 +46,8 @@ class StatCard extends StatelessWidget {
                     fontSize: 14,
                     fontWeight: FontWeight.w500,
                   ),
-                  maxLines: 1, // إبقاء النص في سطر واحد
-                  overflow:
-                      TextOverflow
-                          .ellipsis, // وضع نقاط (...) إذا كان النص طويلاً
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
               ),
             ],
@@ -57,9 +55,7 @@ class StatCard extends StatelessWidget {
 
           const SizedBox(height: 20),
 
-          // الرقم - مع إضافة حماية بسيطة للمساحة
           FittedBox(
-            // [إضافة] تجعل الرقم يصغر حجمه تلقائياً إذا كان كبيراً جداً بدل الانفجار
             fit: BoxFit.scaleDown,
             child: Text(
               value ?? '--',
@@ -73,11 +69,10 @@ class StatCard extends StatelessWidget {
 
           const SizedBox(height: 6),
 
-          // الوصف الي تحت
           Text(
             subtitle,
             style: TextStyle(
-              fontSize: 12, // تصغير بسيط ليناسب الويب
+              fontSize: 12,
               color: Colors.grey.shade600,
             ),
             maxLines: 1,

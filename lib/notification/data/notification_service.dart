@@ -1,33 +1,43 @@
-// notification_service.dart
-// التوكن يُضاف تلقائياً لكل الطلبات عبر DioClient interceptor
+import '../../core/network/api_service.dart';
 import 'package:dio/dio.dart';
-import 'package:flutter/foundation.dart';
 
+/// خدمة تعالج طلبات HTTP لنقاط نهاية الإشعارات والبلاغات.
 class NotificationService {
-  final Dio _dio;
-  NotificationService(this._dio);
+  final ApiService _apiService;
+  NotificationService(this._apiService);
 
-  // جلب الإشعارات - POST كما هو في Postman
-  // التوكن يُحقن تلقائياً في الـ body عبر DioClient interceptor
-  Future<Response> getNotifications() async {
-    return await _dio.post('notifications');
+  /// يجلب جميع الإشعارات من الخادم.
+  Future<dynamic> getNotifications() async {
+    return await _apiService.post('notifications');
   }
 
-  // تحديث كمقروء
-  Future<Response> markAsRead(String id) async =>
-      await _dio.post('notifications/$id/read');
-
-  // جلب تفاصيل البلاغ - POST كما هو في Postman
-  Future<Response> getReportDetails(int id) async {
-    debugPrint('[NotificationService] Fetching report details for id: $id');
-    return await _dio.post('reports/$id');
+  /// يعلّم إشعاراً محدّداً كمقروء.
+  Future<dynamic> markAsRead(String id) async {
+    return await _apiService.post('notifications/$id/read');
   }
 
-  // نشر البلاغ
-  Future<Response> publishReport(int id) async =>
-      await _dio.patch('reports/$id/publish');
+  /// يجلب معلومات تفصيلية لبلاغ محدّد.
+  Future<dynamic> getReportDetails(int id) async {
+    return await _apiService.post('reports/$id');
+  }
 
-  // جلب الإحصائيات
-  Future<Response> getStatistics() async =>
-      await _dio.get('reports/statistics');
+  /// ينشر أو يلغي نشر بلاغ بقيمة صريحة.
+  Future<dynamic> publishReport(int id, bool isPublished) async {
+    return await _apiService.patch(
+      'reports/$id/publish',
+      data: FormData.fromMap({'is_published': isPublished ? 1 : 0}),
+    );
+  }
+
+  /// يلغي بلاغاً مع سبب.
+  Future<dynamic> cancelReport(int id, String reason) async {
+    return await _apiService.post(
+      'reports/$id/cancel',
+      data: FormData.fromMap({'reason': reason}),
+    );
+  }
+
+  /// يجلب إحصائيات البلاغات من الخادم.
+  Future<dynamic> getStatistics() async =>
+      await _apiService.get('reports/statistics');
 }
